@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Essential for Mobile Camera / Mic Access -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>AI Queue Assistant</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Correct TensorFlow.js Core (Full build) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+    <!-- MoveNet & Pose Detection Dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
+</head>
+
+<body>
+    <div id="container">
+
+        <!-- Camera feed -->
+        <video id="webcam" playsinline autoplay muted></video>
+
+        <!-- AI drawing layer -->
+        <canvas id="output"></canvas>
+
+        <!-- Status Overlay -->
+        <div id="status-overlay">
+            <p id="status-text">Waiting for camera…</p>
+            <p id="debug-info"></p>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <button id="start-btn">Tap to Start Assistant</button>
+            <p>Please allow camera permission when prompted.</p>
+        </div>
+
+    </div>
+
+    <!-- Return Button -->
+    <a id="returnBtn" href="../index.html">Return</a>
+
+    <!-- MAIN LOGIC FILE -->
+    <script src="app.js"></script>
+
+    <!-- VOICE COMMAND HANDLER FOR 'RETURN' -->
+    <script>
+        (() => {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn("Speech Recognition not supported.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+
+            recognition.onresult = (e) => {
+                const text = e.results[e.results.length - 1][0].transcript.toLowerCase();
+                console.log("🎤 Transcript:", text);
+
+                if (text.includes("return") ||
+                    text.includes("go back") ||
+                    text.includes("exit") ||
+                    text.includes("exit mode")) {
+                    window.location.href = "../index.html";
+                }
+            };
+
+            recognition.onend = () => {
+                try { recognition.start(); } catch (e) { }
+            };
+
+            try { recognition.start(); } catch (e) {
+                console.warn("Speech recognition failed to start.");
+            }
+        })();
+    </script>
+
+    <!-- START BUTTON HANDLER -->
+    <script>
+        document.getElementById("start-btn").addEventListener("click", () => {
+            document.getElementById("start-screen").style.display = "none";
+        });
+    </script>
+
+</body>
+
+</html>

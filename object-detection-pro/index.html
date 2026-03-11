@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection Pro | VisionAid AI</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load TensorFlow.js and COCO-SSD -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+</head>
+
+<body>
+    <div class="glass-container">
+        <header>
+            <div class="logo">
+                <span class="icon">🔍</span>
+                <h1>Object<span>Detector</span> Pro</h1>
+            </div>
+            <div class="status-pill" id="model-status">Loading AI Model...</div>
+        </header>
+
+        <main>
+            <div class="camera-wrapper">
+                <video id="webcam" autoplay playsinline muted></video>
+                <canvas id="overlay"></canvas>
+
+                <div class="scanner-line"></div>
+
+                <div class="detection-overlay" id="detection-info">
+                    <div class="label">SCANNING SCENE...</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-card">
+                    <h3>Voice Guidance</h3>
+                    <p>Speaks detected objects in real-time.</p>
+                    <label class="switch">
+                        <input type="checkbox" id="voice-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="control-card">
+                    <h3>Accuracy Threshold</h3>
+                    <p>Minimum confidence for detection.</p>
+                    <input type="range" id="threshold-range" min="30" max="90" value="60">
+                    <span id="threshold-val">60%</span>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="detected-list" id="object-list">
+                <!-- Detected objects will appear here -->
+            </div>
+            <button class="back-btn" onclick="location.href='../index.html'">BACK TO DASHBOARD</button>
+        </footer>
+    </div>
+
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader"></div>
+        <p>Initializing Neural Engine...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

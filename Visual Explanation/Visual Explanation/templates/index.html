@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VisionAid | AI Assistant for the Visually Impaired</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Inter:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00E676;
+            --primary-bg: #0b1120;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --accent-red: #ff3c3c;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            background: rgba(16, 24, 40, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 2px;
+            font-size: 1.8rem;
+        }
+
+        h1 span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .main-container {
+            width: 90%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 30px 0;
+        }
+
+        /* Camera Section */
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 24px;
+            border: 2px solid var(--card-border);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        canvas {
+            display: none;
+        }
+
+        .scanning-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 2.5s infinite linear;
+            z-index: 5;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+
+            50% {
+                top: 100%;
+            }
+
+            100% {
+                top: 0;
+            }
+        }
+
+        .overlay-status {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .mode-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px 10px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .mode-btn.active {
+            background: rgba(0, 230, 118, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.1);
+        }
+
+        .mode-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .scan-action-btn {
+            grid-column: span 2;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 50px;
+            padding: 18px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 10px 30px rgba(0, 230, 118, 0.3);
+            margin-top: 10px;
+        }
+
+        .scan-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 230, 118, 0.4);
+        }
+
+        .scan-action-btn:disabled {
+            background: #2d3748;
+            color: #718096;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Results Display */
+        .result-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 25px;
+            min-height: 100px;
+            position: relative;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 10px;
+        }
+
+        .ai-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-sub);
+        }
+
+        .read-aloud-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        #result-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            word-wrap: break-word;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            padding: 40px 0;
+            color: var(--text-sub);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 600px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .scan-action-btn {
+                grid-column: span 1;
+            }
+
+            .navbar h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <h1>VISIONAID <span>AI</span></h1>
+    </div>
+
+    <div class="main-container">
+        <!-- Camera View -->
+        <div class="camera-wrapper">
+            <video id="video" autoplay playsinline muted></video>
+            <div id="scanner" class="scanning-animation"></div>
+            <div class="overlay-status">
+                <span id="dot"
+                    style="width:8px; height:8px; background:var(--primary); border-radius:50%; animation: blink 1s infinite;"></span>
+                LIVE FEED
+            </div>
+        </div>
+
+        <!-- Mode Selectors -->
+        <div class="controls">
+            <button class="mode-btn active" data-mode="medicine">
+                <span>💊</span>
+                Medicine
+            </button>
+            <button class="mode-btn" data-mode="document">
+                <span>📄</span>
+                Document
+            </button>
+            <button class="mode-btn" data-mode="object">
+                <span>📦</span>
+                Object
+            </button>
+            <button class="mode-btn" data-mode="navigation">
+                <span>🚶‍♂️</span>
+                Navigation
+            </button>
+
+            <button id="scan-btn" class="scan-action-btn">SCAN FOR AI ANALYSIS</button>
+        </div>
+
+        <!-- AI Analysis Result -->
+        <div class="result-panel">
+            <div class="result-header">
+                <span class="ai-label">AI ASSISTANT RESPONSE</span>
+                <button id="speak-btn" class="read-aloud-btn" style="display:none;">🔊 READ AGAIN</button>
+            </div>
+            <div id="result-text">
+                Waiting for scan... Place an item in front of the camera and tap analyze.
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Powered by VISIONAID Advanced Assistive Vision | 
+        <a href="/" style="color:var(--primary); text-decoration:none; font-weight:bold;">BACK TO HUB</a>
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const scanBtn = document.getElementById('scan-btn');
+        const scanner = document.getElementById('scanner');
+        const resultText = document.getElementById('result-text');
+        const speakBtn = document.getElementById('speak-btn');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        let currentMode = 'medicine';
+        let isAnalyzing = false;
+        let activeStream = null;
+
+        // Initialize Camera (Robust Production Pattern)
+        async function initCamera() {
+            // Prevent duplicate requests
+            if (activeStream && activeStream.active) return;
+
+            try {
+                // If stream exists but inactive, stop it cleanup
+                stopCamera();
+                
+                const highQuality = { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } };
+                const fallback = { video: true, audio: false };
+
+                let stream;
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia(highQuality);
+                } catch (e) {
+                    console.warn("High quality failed, falling back to simple video...");
+                    stream = await navigator.mediaDevices.getUserMedia(fallback);
+                }
+
+                activeStream = stream;
+                video.srcObject = stream;
+                
+                // Monitor tracks for health
+                stream.getVideoTracks().forEach(track => {
+                    track.onended = () => handleStreamInterruption("Track Ended");
+                    track.onmute = () => handleStreamInterruption("Track Muted");
+                    track.oninactive = () => handleStreamInterruption("Track Inactive");
+                });
+
+                await video.play(); 
+                resultText.style.color = "var(--text-main)";
+                console.log("Camera engine connected.");
+
+            } catch (err) {
+                handleCameraError(err);
+            }
+        }
+
+        function handleStreamInterruption(reason) {
+            if (document.hidden) return; // Ignore if tab hidden
+            console.warn(`Camera stream interrupted: ${reason}. Restarting...`);
+            
+            setTimeout(() => {
+                if (!document.hidden) initCamera();
+            }, 2000); // Increased delay for safer release
+        }
+
+        function handleCameraError(err) {
+            console.error("Camera error:", err);
+            let msg = "Error accessing camera.";
+            
+            if (err.name === 'NotReadableError') {
+                msg = "Camera busy. Retrying in 2 seconds...";
+                setTimeout(initCamera, 2000);
+            } else if (err.name === 'NotAllowedError') {
+                msg = "Permission Denied. Please allow camera access.";
+            } else {
+                msg = "Camera Error: " + err.name;
+            }
+
+            resultText.innerText = msg;
+            resultText.style.color = "var(--accent-red)";
+        }
+
+        function stopCamera() {
+            if (activeStream) {
+                console.log("Shutting down VisionAid camera tracks...");
+                activeStream.getTracks().forEach(track => {
+                    track.onended = null;
+                    track.onmute = null;
+                    track.oninactive = null;
+                    track.stop();
+                });
+                activeStream = null;
+            }
+            video.pause();
+            video.srcObject = null;
+        }
+
+        // Handle tab switching
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopCamera();
+            } else {
+                initCamera();
+            }
+        });
+
+        window.addEventListener('beforeunload', stopCamera);
+
+        // Mode Switching
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                speak(`Switched to ${currentMode} mode`);
+            });
+        });
+
+        // Speech Synthesis
+        function speak(text) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Capture and Analyze
+        scanBtn.addEventListener('click', async () => {
+            if (isAnalyzing) return;
+
+            isAnalyzing = true;
+            scanBtn.disabled = true;
+            scanBtn.innerText = "ANALYZING...";
+            scanner.style.display = "block";
+            resultText.innerText = "Analyzing the image... Please hold still.";
+            speak("Scanning. Please hold steady.");
+
+            // Capture frame from video
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            // Convert to base64
+            const imageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: imageBase64,
+                        mode: currentMode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultText.innerText = data.result;
+                    speak(data.result);
+                    speakBtn.style.display = 'block';
+                } else {
+                    throw new Error(data.error || "Analysis failed");
+                }
+            } catch (err) {
+                console.error("API error:", err);
+                resultText.innerText = "Error: " + err.message;
+                speak("I'm sorry, I encountered an error. Please try again.");
+            } finally {
+                isAnalyzing = false;
+                scanBtn.disabled = false;
+                scanBtn.innerText = "SCAN FOR AI ANALYSIS";
+                scanner.style.display = "none";
+            }
+        });
+
+        speakBtn.addEventListener('click', () => speak(resultText.innerText));
+
+        // Start
+        initCamera();
+
+        // Accessibility blink animation
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>
