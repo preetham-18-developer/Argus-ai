@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template, send_from_directory, jsonify
 from flask_socketio import SocketIO, emit
 import base64
 
@@ -102,9 +102,17 @@ gate = CameraQualityGate()
 def index():
     return render_template('index.html')
 
+@app.route('/api/health')
+def health_check():
+    return {"status": "ok", "module": "camera_check", "port": 5001}
+
 @app.route('/<path:filename>')
 def serve_static(filename):
-    return send_file(filename)
+    # Prevent directory traversal and block hidden/sensitive files
+    parts = filename.split('/')
+    if any(p.startswith('.') for p in parts) or '..' in filename or filename.endswith(('.py', '.pyc', '.env')):
+        return "Access denied", 403
+    return send_from_directory(os.path.dirname(os.path.abspath(__file__)), filename)
 
 @socketio.on('analyze_frame')
 def handle_analysis(data):

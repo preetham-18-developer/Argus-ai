@@ -448,6 +448,50 @@ def internal_server_error(error):
     }), 500
 
 
+@app.route("/api/validate-key", methods=["GET", "POST"])
+def validate_key():
+    """Validate configured or provided API key."""
+    data = request.get_json(silent=True) or {}
+    provider = data.get("provider", AI_PROVIDER).lower()
+    key = data.get("key", GEMINI_API_KEY if provider == "gemini" else NVIDIA_API_KEY)
+    
+    if not _is_valid_api_key(key):
+        return jsonify({
+            "valid": False,
+            "provider": provider,
+            "error": "No API key configured. Currently running in Demo Mode."
+        })
+    
+    if provider == "gemini":
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content("Ping")
+            return jsonify({"valid": True, "provider": "gemini", "message": "Gemini API key is valid!"})
+        except Exception as e:
+            return jsonify({"valid": False, "provider": "gemini", "error": str(e)})
+            
+    elif provider == "nvidia":
+        try:
+            import requests
+            headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+            payload = {
+                "model": "meta/llama-3.2-11b-vision-instruct",
+                "messages": [{"role": "user", "content": "Ping"}],
+                "max_tokens": 10
+            }
+            resp = requests.post("https://integrate.api.nvidia.com/v1/chat/completions", headers=headers, json=payload, timeout=10)
+            if resp.status_code == 200:
+                return jsonify({"valid": True, "provider": "nvidia", "message": "NVIDIA API key is valid!"})
+            else:
+                return jsonify({"valid": False, "provider": "nvidia", "error": f"HTTP {resp.status_code}: {resp.text}"})
+        except Exception as e:
+            return jsonify({"valid": False, "provider": "nvidia", "error": str(e)})
+            
+    return jsonify({"valid": False, "error": "Unknown provider"})
+
+
 # ─── Run ─────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -464,7 +508,8 @@ if __name__ == "__main__":
         print("  📌 Get a free Gemini key: https://aistudio.google.com/apikey")
         print("  📌 Then add it to your .env file")
     
-    print(f"\n  🌐 Open http://localhost:5000 in your browser")
+    print(f"\n  🌐 Backend listening on port 5002")
     print("=" * 60 + "\n")
     
-    app.run(debug=True, host="0.0.0.0", port=5002)
+    debug_mode = os.environ.get("FLASK_DEBUG", "0").lower() in ("true", "1")
+    app.run(debug=debug_mode, host="0.0.0.0", port=5002)

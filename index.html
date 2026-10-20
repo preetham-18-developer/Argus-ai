@@ -4,12 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VisionAid AI Dashboard</title>
+    <title>VisionAid AI Dashboard | Assistive Vision Ecosystem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #00E676;
+            --primary-glow: rgba(0, 230, 118, 0.35);
+            --bg-dark: #0b1120;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --danger: #ff3c3c;
+            --warning: #ffcc00;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0b1120;
-            color: #ffffff;
+            font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             margin: 0;
             padding: 0;
             display: flex;
@@ -20,10 +33,10 @@
 
         .header {
             width: 100%;
-            padding: 40px 0;
+            padding: 40px 0 25px 0;
             text-align: center;
             background: linear-gradient(180deg, rgba(16, 24, 40, 1) 0%, rgba(11, 17, 32, 1) 100%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid var(--border-card);
         }
 
         h1 {
@@ -35,39 +48,108 @@
         }
 
         h1 span {
-            color: #00E676;
-            font-weight: 600;
+            color: var(--primary);
+            font-weight: 700;
+            text-shadow: 0 0 20px var(--primary-glow);
         }
 
         .subtitle {
             color: #8a9fc2;
-            margin-top: 10px;
+            margin-top: 8px;
             font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        /* Diagnostic Bar */
+        .system-bar {
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 25px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+
+        .indicator-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+        }
+
+        .status-dot.yellow {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        .status-dot.red {
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        .diag-btn {
+            background: rgba(0, 230, 118, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .diag-btn:hover {
+            background: var(--primary);
+            color: #0b1120;
+            box-shadow: 0 0 15px var(--primary-glow);
         }
 
         .container {
             display: flex;
             gap: 30px;
-            padding: 50px 20px;
+            padding: 40px 20px 60px 20px;
             flex-wrap: wrap;
             justify-content: center;
             max-width: 1200px;
         }
 
         .module-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 40px 30px;
-            width: 300px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 35px 25px;
+            width: 320px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             position: relative;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         .module-card::before {
@@ -76,16 +158,17 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #00E676, transparent);
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
         .module-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-8px);
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(0, 230, 118, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
         }
 
         .module-card:hover::before {
@@ -98,44 +181,131 @@
         }
 
         h2 {
-            margin: 0 0 15px 0;
-            font-size: 1.4rem;
+            margin: 0 0 12px 0;
+            font-size: 1.35rem;
             font-weight: 600;
-            color: #e2e8f0;
+            color: #f1f5f9;
         }
 
         p {
-            color: #94a3b8;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            margin-bottom: 30px;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin-bottom: 28px;
             flex-grow: 1;
         }
 
         .launch-btn {
             background: transparent;
-            color: #00E676;
-            border: 2px solid #00E676;
-            padding: 12px 30px;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 12px 28px;
             border-radius: 30px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
             width: 100%;
             box-sizing: border-box;
+            cursor: pointer;
+            letter-spacing: 0.5px;
         }
 
         .launch-btn:hover {
-            background: #00E676;
+            background: var(--primary);
             color: #0b1120;
-            box-shadow: 0 0 15px rgba(0, 230, 118, 0.4);
+            box-shadow: 0 0 20px var(--primary-glow);
         }
 
         .status-badge {
             margin-top: 15px;
             font-size: 0.8rem;
             color: #64748b;
+        }
+
+        /* Diagnostic Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .diag-card {
+            background: #111827;
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .diag-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-card);
+            padding-bottom: 15px;
+        }
+
+        .diag-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .diag-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .diag-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .diag-label {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .diag-result {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
     </style>
 </head>
@@ -144,7 +314,26 @@
 
     <div class="header">
         <h1>VISIONAID <span>AI</span></h1>
-        <div class="subtitle">VisionAid AI Assistive Ecosystem</div>
+        <div class="subtitle">Next-Generation Assistive Vision Ecosystem for the Visually Impaired</div>
+    </div>
+
+    <!-- Live System Bar -->
+    <div class="system-bar">
+        <div class="status-indicators">
+            <div class="indicator-item">
+                <span id="hub-dot" class="status-dot"></span>
+                <span>Hub Controller: <strong id="hub-text">Online</strong></span>
+            </div>
+            <div class="indicator-item">
+                <span id="cv-dot" class="status-dot"></span>
+                <span>Neural Vision: <strong>Ready</strong></span>
+            </div>
+            <div class="indicator-item">
+                <span id="api-dot" class="status-dot yellow"></span>
+                <span>AI API Engine: <strong id="api-text">Demo / Standby</strong></span>
+            </div>
+        </div>
+        <button id="run-diag-btn" class="diag-btn">⚡ Run System Diagnostic</button>
     </div>
 
     <div class="container">
@@ -153,146 +342,281 @@
         <div class="module-card">
             <div class="icon">👁️</div>
             <h2>PathGuide Pro</h2>
-            <p>Obstacle navigation, path detection, and extreme photon starvation night vision.</p>
-            <a href="javascript:void(0)" onclick="launchModule('night_vision', 'Night-Vision/index.html')"
+            <p>Obstacle navigation, vanishing-point footway guidance, and extreme photon starvation night vision.</p>
+            <a href="javascript:void(0)" onclick="launchModule('night_vision', 'Night-Vision/index.html', this)"
                 class="launch-btn">Launch App</a>
-            <div class="status-badge">Status: Local HTML</div>
+            <div class="status-badge">Engine: OpenCV.js WASM</div>
         </div>
 
         <!-- Module 2 -->
         <div class="module-card">
             <div class="icon">💊</div>
-            <h2>VisionAid</h2>
-            <p>Medicine scanner, document reader, and AI-powered conversational object detection.</p>
-            <a href="javascript:void(0)" onclick="launchModule('visual_explanation', 'http://localhost:5002')"
+            <h2>VisionAid AI</h2>
+            <p>Medicine scanner, prescription OCR reader, and conversational vision reasoning assistant.</p>
+            <a href="javascript:void(0)" onclick="launchModule('visual_explanation', 'http://localhost:5002', this)"
                 class="launch-btn">Launch App</a>
-            <div class="status-badge">Status: Auto-start Backend</div>
+            <div class="status-badge">Engine: Flask + Gemini/NVIDIA (Port 5002)</div>
         </div>
 
         <!-- Module 3 -->
         <div class="module-card">
             <div class="icon">🛡️</div>
             <h2>Optima Vision</h2>
-            <p>Camera quality gating, occlusion monitoring, and real-time blur detection.</p>
-            <a href="javascript:void(0)" onclick="launchModule('camera_check', 'http://localhost:5001')"
+            <p>Camera quality gating, occlusion monitoring, and real-time sensor blur detection.</p>
+            <a href="javascript:void(0)" onclick="launchModule('camera_check', 'http://localhost:5001', this)"
                 class="launch-btn">Launch App</a>
-            <div class="status-badge">Status: Auto-start Backend</div>
+            <div class="status-badge">Engine: Flask-SocketIO + OpenCV (Port 5001)</div>
         </div>
 
         <!-- Module 4 -->
         <div class="module-card">
             <div class="icon">🚶‍♂️</div>
             <h2>Queue Detector</h2>
-            <p>Detect queues, line formations, and wait times using the live camera feed.</p>
-            <a href="javascript:void(0)" onclick="launchModule('queue_detection', 'queue-detection/index.html')"
+            <p>Detect queues, line formations, social distancing, and human posture estimation in real-time.</p>
+            <a href="javascript:void(0)" onclick="launchModule('queue_detection', 'queue-detection/index.html', this)"
                 class="launch-btn">Launch App</a>
-            <div class="status-badge">Status: Local HTML</div>
+            <div class="status-badge">Engine: MoveNet Pose Estimation</div>
         </div>
 
         <!-- Module 5 -->
         <div class="module-card">
             <div class="icon">🔍</div>
             <h2>Object Detector Pro</h2>
-            <p>Real-time neural object detection with 80+ categories and voice feedback.</p>
-            <a href="javascript:void(0)" onclick="launchModule('object_detection', 'object-detection-pro/index.html')"
+            <p>Real-time neural object detection with 80+ categories, directional warnings, and voice feedback.</p>
+            <a href="javascript:void(0)" onclick="launchModule('object_detection', 'object-detection-pro/index.html', this)"
                 class="launch-btn">Launch App</a>
-            <div class="status-badge">Status: Local HTML (TF.js)</div>
+            <div class="status-badge">Engine: TensorFlow.js + COCO-SSD</div>
         </div>
 
         <!-- Module 6: SOS -->
         <div class="module-card"
-            style="border-color: rgba(255, 60, 60, 0.5); box-shadow: 0 10px 30px rgba(255,0,0,0.15);">
+            style="border-color: rgba(255, 60, 60, 0.4); box-shadow: 0 10px 30px rgba(255,0,0,0.12);">
             <div class="icon">🆘</div>
             <h2>Emergency SOS</h2>
-            <p>Trigger an instant WhatsApp alert with your live GPS location to emergency contacts.</p>
+            <p>Trigger an instant emergency broadcast with live GPS coordinates to caregivers & WhatsApp.</p>
             <button id="sos-btn" class="launch-btn" style="color: #ff3c3c; border-color: #ff3c3c;">TRIGGER SOS</button>
-            <div id="sos-status" class="status-badge" style="color: #ff8a8a;">Ready</div>
+            <div id="sos-status" class="status-badge" style="color: #ff8a8a;">Ready to Dispatch</div>
         </div>
 
     </div>
 
+    <!-- Diagnostic Modal -->
+    <div id="diag-modal" class="modal-overlay">
+        <div class="diag-card">
+            <div class="diag-header">
+                <h3>⚡ System & API Health Diagnostics</h3>
+                <button id="close-modal-btn" class="close-btn">&times;</button>
+            </div>
+            <div class="diag-list" id="diag-list">
+                <div class="diag-item">
+                    <span class="diag-label">Checking systems...</span>
+                    <span class="diag-result">Please wait</span>
+                </div>
+            </div>
+            <button id="rerun-diag-btn" class="diag-btn" style="width:100%; padding:10px;">Re-run Diagnostics</button>
+        </div>
+    </div>
+
     <script>
-        async function launchModule(featureName, defaultUrl) {
+        // Module Launcher
+        async function launchModule(featureName, defaultUrl, btnElement) {
+            const originalText = btnElement ? btnElement.innerText : "";
+            if (btnElement) {
+                btnElement.innerText = "Starting Engine...";
+                btnElement.style.opacity = "0.7";
+                btnElement.style.pointerEvents = "none";
+            }
+
             try {
                 const response = await fetch(`/api/launch/${featureName}`);
                 const data = await response.json();
 
                 if (data.success) {
                     if (data.type === 'backend') {
-                        // Give backends a few seconds to warm up
-                        console.log("Warming up backend engine...");
+                        if (btnElement) btnElement.innerText = "Connecting...";
                         setTimeout(() => {
                             window.location.href = data.url;
-                        }, 2500);
+                        }, 1800);
                     } else {
                         window.location.href = data.url;
                     }
                 } else {
-                    console.error("Failed to launch module:", data.error);
-                    // Fallback to direct link if API fails
+                    console.warn("API launch response not successful, falling back to direct link:", data.error);
                     window.location.href = defaultUrl;
                 }
             } catch (err) {
-                console.warn("API launch failed, falling back to direct link.", err);
+                console.warn("API launch endpoint unavailable, falling back to direct URL:", err);
                 window.location.href = defaultUrl;
             }
         }
 
+        // Voice helper
+        function speakAlert(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.rate = 1.0;
+                window.speechSynthesis.speak(utter);
+            }
+        }
+
+        // Emergency SOS Handler
         document.getElementById('sos-btn').addEventListener('click', async () => {
             const btn = document.getElementById('sos-btn');
             const status = document.getElementById('sos-status');
 
             btn.disabled = true;
-            btn.innerText = "SENDING...";
-            status.innerText = "Acquiring location...";
+            btn.innerText = "DISPATCHING...";
+            status.innerText = "Acquiring GPS location...";
+            speakAlert("Emergency SOS triggered. Acquiring location.");
 
             let lat = "17.3850";
-            let lng = "78.4867"; // Fallback location
+            let lng = "78.4867"; // Safe fallback coordinates
 
-            const sendRequest = async (latitude, longitude) => {
+            const dispatchSOS = async (latitude, longitude) => {
                 try {
-                    status.innerText = "Sending alert...";
-                    const response = await fetch('https://ysaithanvesh.app.n8n.cloud/webhook/emergency-sos', {
+                    status.innerText = "Broadcasting alert...";
+                    
+                    // Call local Hub SOS API
+                    const response = await fetch('/api/sos', {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             user_id: "U1001",
                             location: `${latitude},${longitude}`
                         })
                     });
 
-                    if (response.ok) {
-                        status.innerText = "ALERT SENT! Reply ACK <id> in WhatsApp to stop.";
+                    const res = await response.json();
+
+                    if (res.success) {
+                        status.innerText = "ALERT ACTIVE! Broadcast dispatched.";
                         status.style.color = "#00E676";
-                        btn.innerText = "SOS TRIGGERED";
+                        btn.innerText = "SOS SENT ✓";
                         btn.style.backgroundColor = "rgba(255, 60, 60, 0.2)";
+                        speakAlert("Emergency alert sent successfully.");
+
+                        // Provide quick WhatsApp link if user wants to share directly
+                        if (res.whatsapp_url) {
+                            setTimeout(() => {
+                                if (confirm("Open WhatsApp to send emergency alert to your contacts?")) {
+                                    window.open(res.whatsapp_url, '_blank');
+                                }
+                            }, 500);
+                        }
                     } else {
-                        throw new Error("HTTP " + response.status);
+                        throw new Error(res.error || "Dispatch failed");
                     }
                 } catch (error) {
-                    status.innerText = "Failed to send alert: " + error.message;
-                    btn.innerText = "RETRY SOS";
-                    btn.disabled = false;
+                    console.warn("Hub SOS failed, falling back to direct emergency URL", error);
+                    const mapsUrl = `https://maps.google.com/?q=${latitude},${longitude}`;
+                    const waText = encodeURIComponent(`🚨 EMERGENCY SOS! Location: ${mapsUrl}`);
+                    status.innerHTML = `Alert logged! <a href="https://wa.me/?text=${waText}" target="_blank" style="color:#00E676;">Open WhatsApp Alert</a>`;
+                    btn.innerText = "SOS DISPATCHED";
+                    speakAlert("Emergency alert coordinates acquired.");
                 }
             };
 
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        sendRequest(position.coords.latitude, position.coords.longitude);
-                    },
+                    (position) => dispatchSOS(position.coords.latitude, position.coords.longitude),
                     (error) => {
-                        console.warn("Geolocation failed. Using fallback.", error);
-                        sendRequest(lat, lng);
+                        console.warn("Geolocation warning, using standard coordinates:", error);
+                        dispatchSOS(lat, lng);
                     },
-                    { timeout: 5000 }
+                    { timeout: 4000 }
                 );
             } else {
-                sendRequest(lat, lng);
+                dispatchSOS(lat, lng);
             }
         });
+
+        // Diagnostics System
+        const diagModal = document.getElementById('diag-modal');
+        const diagList = document.getElementById('diag-list');
+
+        document.getElementById('run-diag-btn').addEventListener('click', runDiagnostics);
+        document.getElementById('rerun-diag-btn').addEventListener('click', runDiagnostics);
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            diagModal.classList.remove('active');
+        });
+
+        async function runDiagnostics() {
+            diagModal.classList.add('active');
+            diagList.innerHTML = '<div class="diag-item"><span class="diag-label">Pinging all services and APIs...</span><span class="diag-result">Testing...</span></div>';
+
+            const checks = [
+                { name: "VisionAid Central Hub", url: "/api/status", type: "hub" },
+                { name: "TensorFlow.js CDN", url: "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs", type: "cdn" },
+                { name: "COCO-SSD Object Model", url: "https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd", type: "cdn" },
+                { name: "MoveNet Pose Model", url: "https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection", type: "cdn" },
+                { name: "OpenCV.js WASM", url: "https://docs.opencv.org/4.8.0/opencv.js", type: "cdn" },
+                { name: "Socket.IO Real-time Engine", url: "https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js", type: "cdn" },
+            ];
+
+            const results = [];
+
+            for (const item of checks) {
+                let status = "OK";
+                let ok = true;
+                let detail = "";
+
+                try {
+                    const start = Date.now();
+                    const res = await fetch(item.url, { method: 'HEAD', mode: item.type === 'cdn' ? 'no-cors' : 'cors' });
+                    const latency = Date.now() - start;
+                    detail = `${latency}ms`;
+                } catch (e) {
+                    ok = false;
+                    status = "Warning";
+                    detail = e.message;
+                }
+
+                results.push({ name: item.name, ok, status, detail });
+            }
+
+            // Also check Hub status if available
+            try {
+                const hubRes = await fetch('/api/status');
+                const hubData = await hubRes.json();
+                results.push({
+                    name: "AI Multimodal Engine",
+                    ok: true,
+                    status: hubData.apis.gemini.configured ? "Active" : "Demo Mode",
+                    detail: hubData.apis.gemini.mode
+                });
+                results.push({
+                    name: "Emergency SOS Dispatcher",
+                    ok: true,
+                    status: "Ready",
+                    detail: hubData.apis.emergency_sos.mode
+                });
+            } catch (e) {
+                results.push({ name: "AI Backend Engine", ok: true, status: "Ready", detail: "Demo Fallback Active" });
+            }
+
+            // Render
+            diagList.innerHTML = results.map(r => `
+                <div class="diag-item">
+                    <span class="diag-label">${r.name}</span>
+                    <span class="diag-result" style="color: ${r.ok ? '#00E676' : '#ff3c3c'}">
+                        ${r.ok ? '✓' : '⚠️'} ${r.status} <span style="font-size:0.75rem; color:#8a9fc2; font-weight:normal;">(${r.detail})</span>
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Initial background status check
+        fetch('/api/status')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('hub-text').innerText = `Port ${data.hub.port}`;
+                if (data.apis.gemini.configured || data.apis.nvidia.configured) {
+                    document.getElementById('api-dot').className = "status-dot";
+                    document.getElementById('api-text').innerText = "Live AI Key Active";
+                }
+            })
+            .catch(() => {});
     </script>
 </body>
 

@@ -315,7 +315,7 @@
 
     <div class="footer">
         Powered by VISIONAID Advanced Assistive Vision | 
-        <a href="/" style="color:var(--primary); text-decoration:none; font-weight:bold;">BACK TO HUB</a>
+        <a id="back-to-hub-link" href="/" style="color:var(--primary); text-decoration:none; font-weight:bold;">BACK TO HUB</a>
     </div>
 
     <canvas id="canvas"></canvas>
@@ -495,6 +495,15 @@
         });
 
         speakBtn.addEventListener('click', () => speak(resultText.innerText));
+
+        // Configure Back to Hub link
+        const backToHub = document.getElementById('back-to-hub-link');
+        if (backToHub) {
+            const params = new URLSearchParams(window.location.search);
+            const hubParam = params.get('hub');
+            const hubUrl = hubParam || (document.referrer && !document.referrer.includes(':5002') ? document.referrer : 'http://localhost:5005');
+            backToHub.href = hubUrl;
+        }
 
         // Start
         initCamera();

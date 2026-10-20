@@ -231,6 +231,11 @@ async function detectFrame() {
 
     try {
         if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+            if (video.videoWidth > 0 && (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            }
+
             const predictions = await model.detect(video);
 
             // Clear canvas

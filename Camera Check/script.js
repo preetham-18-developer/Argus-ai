@@ -19,7 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add Hub link
     const backBtn = document.createElement('a');
-    backBtn.href = "/";
+    const params = new URLSearchParams(window.location.search);
+    const hubParam = params.get('hub');
+    const hubUrl = hubParam || (document.referrer && !document.referrer.includes(':5001') ? document.referrer : 'http://localhost:5005');
+    backBtn.href = hubUrl;
     backBtn.innerText = "← BACK TO HUB";
     backBtn.style = `
         position:fixed;
