@@ -1,13 +1,16 @@
 /**
  * Automated Test Suite for Argus.AI Single-Page Companion UI & Voice Controller
- * Tests Phase C Requirements:
- * - Every voice command and required aliases for all 6 features + Emergency SOS + Profile
- * - Normalization of conversational prefixes, punctuation, and whitespace variations
- * - Unknown, empty, and whitespace-only speech handling
- * - Tap to Speak state toggling, speaking cancellation, and debounce guards
- * - Modal speech isolation (Profile and SOS modal locks)
+ * Tests Phase D Requirements:
+ * - Natural "Hey Argus" wake-word detection & conversational greeting with personalized user name
+ * - Separation of wake-word detection from command recognition
+ * - Acoustic feedback loop prevention (microphone stays off while assistant speaks)
+ * - Hands-Free mode toggle (button state, aria-pressed, persistent preference)
+ * - Every voice command and expanded aliases for all 6 features + Emergency SOS + Profile
+ * - Canonical route resolution with verified percent-encoded URIs (Visual%20Explanation, Camera%20Check)
  * - Verification that all 6 module target routes match existing filesystem assets & Vercel rewrites
- * - Emergency SOS confirmation workflow & cancellation protection
+ * - Night Vision mode URL parameter verification (?mode=ON)
+ * - Modal speech isolation (Profile and SOS modal locks)
+ * - Command timeout, unknown phrase handling, and graceful error notices
  */
 
 const { test, describe, beforeEach } = require('node:test');
@@ -45,6 +48,7 @@ function setupMockEnvironment() {
         }
       };
       this.listeners = new Map();
+      this.attributes = new Map();
       this.textContent = '';
       this.innerHTML = '';
       this.children = [];
@@ -58,6 +62,14 @@ function setupMockEnvironment() {
     dispatchEvent(event) {
       const cbs = this.listeners.get(event.type) || [];
       cbs.forEach(cb => cb(event));
+    }
+
+    setAttribute(k, v) {
+      this.attributes.set(k, String(v));
+    }
+
+    getAttribute(k) {
+      return this.attributes.has(k) ? this.attributes.get(k) : null;
     }
 
     click() {
@@ -83,6 +95,8 @@ function setupMockEnvironment() {
   getOrCreateElement('companion-greeting-text');
   getOrCreateElement('btn-tap-to-speak', 'button');
   getOrCreateElement('tap-to-speak-label');
+  getOrCreateElement('btn-wake-toggle', 'button');
+  getOrCreateElement('wake-toggle-label');
   getOrCreateElement('voice-hint-text');
   getOrCreateElement('voice-transcript-card');
   getOrCreateElement('voice-transcript-text');
@@ -116,7 +130,7 @@ function setupMockEnvironment() {
 // Load core profile library for testing
 const ArgusProfile = require('../assets/js/voice-profile-core.js');
 
-describe('6. Voice-Command Integration & Companion Controller', () => {
+describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => {
 
   function loadController(mockWindow) {
     mockWindow.ArgusProfile = ArgusProfile;
@@ -140,18 +154,109 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
     assert.equal(controller._normalizeCommand(null), '');
   });
 
-  test('resolves PathGuide Pro with required phrases and spoken confirmation', () => {
+  test('detects wake word "Hey Argus" and "Argus" reliably', () => {
+    const { mockWindow } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    assert.equal(controller._detectWakeWord('hey argus'), true);
+    assert.equal(controller._detectWakeWord('argus'), true);
+    assert.equal(controller._detectWakeWord('hey argus please help'), true);
+    assert.equal(controller._detectWakeWord('open visionaid'), false);
+    assert.equal(controller._detectWakeWord(''), false);
+  });
+
+  test('wake word triggers personalized greeting when user profile exists', () => {
+    const { mockWindow, mockStorage } = setupMockEnvironment();
+    // Save profile with name
+    const profile = ArgusProfile.createEmptyProfile();
+    profile.displayName = 'Prem';
+    mockStorage.setItem('argus_user_profile', JSON.stringify(profile));
+
+    const controller = loadController(mockWindow);
+
+    let spokenGreeting = '';
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => {
+        spokenGreeting = text;
+        if (cb) cb();
+      },
+      startListening: () => {},
+      stopListening: () => {}
+    };
+
+    controller._triggerWakeWordReaction();
+
+    assert.equal(spokenGreeting, "I'm here, Prem. What kind of help do you need?");
+    assert.equal(controller.currentState, 'speaking');
+  });
+
+  test('wake word triggers neutral greeting when user profile name is absent', () => {
+    const { mockWindow } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    let spokenGreeting = '';
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => {
+        spokenGreeting = text;
+        if (cb) cb();
+      },
+      startListening: () => {},
+      stopListening: () => {}
+    };
+
+    controller._triggerWakeWordReaction();
+
+    assert.equal(spokenGreeting, "I'm here. What kind of help do you need?");
+    assert.equal(controller.currentState, 'speaking');
+  });
+
+  test('hands-free toggle button toggles wakeWordEnabled and updates accessible attributes', () => {
+    const { mockWindow, elements } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => { if (cb) cb(); },
+      startListening: () => {},
+      stopListening: () => {}
+    };
+
+    const toggleBtn = elements.get('btn-wake-toggle');
+
+    // Initially disabled
+    assert.equal(controller.wakeWordEnabled, false);
+
+    // Toggle ON
+    controller.toggleWakeWord();
+    assert.equal(controller.wakeWordEnabled, true);
+    assert.equal(toggleBtn.getAttribute('aria-pressed'), 'true');
+    assert.equal(toggleBtn.classList.contains('is-active'), true);
+
+    // Toggle OFF
+    controller.toggleWakeWord();
+    assert.equal(controller.wakeWordEnabled, false);
+    assert.equal(toggleBtn.getAttribute('aria-pressed'), 'false');
+    assert.equal(toggleBtn.classList.contains('is-active'), false);
+    assert.equal(controller.currentState, 'idle');
+  });
+
+  test('resolves PathGuide Pro with expanded phrases and spoken confirmation', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
 
     const aliases = [
       'Open PathGuide',
       'Start PathGuide',
-      'Activate navigation mode',
+      'PathGuide Pro',
       'pathguide',
       'path guide',
       'navigation mode',
-      'walking guidance'
+      'walking guidance',
+      'start navigation',
+      'navigate',
+      'obstacle awareness'
     ];
 
     for (const phrase of aliases) {
@@ -164,17 +269,19 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
     }
   });
 
-  test('resolves Object Detection Pro with required phrases and spoken confirmation', () => {
+  test('resolves Object Detection Pro with expanded phrases and spoken confirmation', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
 
     const aliases = [
       'Open object detection',
-      'Activate detection mode',
+      'Start object detection',
+      'Object Detection Pro',
       'Detect objects',
       'object detector',
       'identify objects',
-      'find objects'
+      'find objects',
+      'object scanner'
     ];
 
     for (const phrase of aliases) {
@@ -187,17 +294,20 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
     }
   });
 
-  test('resolves VisionAid AI with required phrases and spoken confirmation', () => {
+  test('resolves VisionAid AI with percent-encoded URI and expanded natural phrases', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
 
     const aliases = [
       'Open VisionAid',
-      'Explain my surroundings',
-      'Read this document',
-      'visionaid',
-      'vision aid',
-      'read text',
+      'Start VisionAid',
+      'Open Vision Aid',
+      'VisionAid AI',
+      'visual explanation',
+      'Explain surroundings',
+      'Describe scene',
+      'Read text',
+      'Read document',
       'medicine scanner'
     ];
 
@@ -206,23 +316,26 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
       const match = controller._resolveCommand(normalized);
       assert.ok(match, `Must match phrase: "${phrase}"`);
       assert.equal(match.id, 'visionaid');
-      assert.equal(match.url, './Visual Explanation/index.html');
-      assert.equal(match.spokenConfirm, 'Activating VisionAid AI.');
+      assert.equal(match.url, './Visual%20Explanation/index.html', 'URL must be percent-encoded to prevent HTTP 400');
+      assert.equal(match.spokenConfirm, 'Opening VisionAid AI.');
     }
   });
 
-  test('resolves Queue Detector with required phrases and spoken confirmation', () => {
+  test('resolves Queue Detector with natural short phrases (Open queue, Check queue, Line check)', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
 
     const aliases = [
+      'Open Queue',
+      'Start Queue',
+      'Queue',
       'Open Queue Detector',
+      'Check queue',
       'Check the queue',
       'Detect people in line',
-      'queue detector',
-      'people tracker',
-      'distance tracker',
-      'check line'
+      'people in line',
+      'track queue',
+      'line check'
     ];
 
     for (const phrase of aliases) {
@@ -231,22 +344,27 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
       assert.ok(match, `Must match phrase: "${phrase}"`);
       assert.equal(match.id, 'queue-detector');
       assert.equal(match.url, './queue-detection/index.html');
-      assert.equal(match.spokenConfirm, 'Launching Queue Detector.');
+      assert.equal(match.spokenConfirm, 'Opening Queue Detector.');
     }
   });
 
-  test('resolves Optima Vision with required phrases and spoken confirmation', () => {
+  test('resolves Optima Vision with percent-encoded URI and expanded natural phrases', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
 
     const aliases = [
       'Open Optima Vision',
+      'Start Optima',
+      'Open Optima',
       'Check camera quality',
+      'Check camera',
+      'Camera quality',
       'optima vision',
       'optima',
       'camera check',
       'check visibility',
-      'check lens'
+      'check lens',
+      'optical monitor'
     ];
 
     for (const phrase of aliases) {
@@ -254,20 +372,25 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
       const match = controller._resolveCommand(normalized);
       assert.ok(match, `Must match phrase: "${phrase}"`);
       assert.equal(match.id, 'optima-vision');
-      assert.equal(match.url, './Camera Check/index.html');
+      assert.equal(match.url, './Camera%20Check/index.html', 'URL must be percent-encoded to prevent HTTP 400');
       assert.equal(match.spokenConfirm, 'Opening Optima Vision camera check.');
     }
   });
 
-  test('resolves Night Vision with required phrases and verified URL parameter', () => {
+  test('resolves Night Vision with verified mode=ON parameter and natural variations', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
 
     const aliases = [
       'Turn on Night Vision',
+      'Turn Night Vision on',
       'Activate Night Vision',
+      'Enable Night Vision',
+      'Start Night Vision',
+      'Open Night Vision',
       'night vision',
       'night mode',
+      'dark mode',
       'low light mode'
     ];
 
@@ -292,7 +415,8 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
       'Emergency SOS',
       'Call my emergency contact',
       'trigger emergency sos',
-      'help me'
+      'help me',
+      'emergency'
     ];
 
     for (const phrase of aliases) {
@@ -320,7 +444,8 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
       'Edit my details',
       'set up profile',
       'edit profile',
-      'change my name'
+      'change my name',
+      'profile settings'
     ];
 
     for (const phrase of aliases) {
@@ -341,10 +466,10 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
     const controller = loadController(mockWindow);
 
     // Empty and whitespace speech results
-    controller.handleSpeechResult('', true);
+    controller.handleCommandSpeechResult('', true);
     assert.equal(controller.currentState, 'idle');
 
-    controller.handleSpeechResult('   ', true);
+    controller.handleCommandSpeechResult('   ', true);
     assert.equal(controller.currentState, 'idle');
 
     // Unknown command
@@ -368,7 +493,7 @@ describe('6. Voice-Command Integration & Companion Controller', () => {
       cancel: () => { cancelCalled = true; }
     };
 
-    // Click while idle starts listening
+    // Click while idle starts command listening
     controller.currentState = 'idle';
     controller.isListening = false;
     controller.isSpeaking = false;

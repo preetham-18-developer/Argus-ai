@@ -1,50 +1,97 @@
 /* ==========================================================================
-   ARGUS.AI — SINGLE-PAGE ASSISTIVE COMPANION INTERFACE
-   Design System: Futuristic Dark Navy (#060B10 / #0A0F1D), Pearl Robot Shell,
-   Controlled Cyan/Teal Accents (#00F2FE / #5EEAD4), Accessible Typography
+   ARGUS.AI — SINGLE-PAGE ASSISTIVE COMPANION INTERFACE (PHASE D)
+   Visual Design System: Premium Light Accessibility-First Interface
+   - Warm Ivory / Off-White Background (#FBFBFA / #F5F4F0)
+   - Deep Forest Green (#163324 / #1A382B) & Restrained Teal (#0D7A68 / #0E8370)
+   - High-Contrast Forest Slate Body (#131E18, WCAG AAA > 13:1)
+   - Friendly 3D Robot Presentation with Natural Floor Shadow
+   - Crisp White Cards, Subtle Borders, Natural Depth Shadows
+   - Full Hands-Free "Hey Argus" Status Indicators & Controls
    ========================================================================== */
 
 :root {
-  --comp-bg-deep: #060B10;
-  --comp-bg-surface: #0A0F1D;
-  --comp-bg-card: rgba(13, 21, 38, 0.72);
-  --comp-bg-card-hover: rgba(19, 31, 56, 0.9);
+  /* Surface & Background Palette (Warm Ivory / White) */
+  --comp-bg-ivory: #FBFBFA;
+  --comp-bg-surface: #FFFFFF;
+  --comp-bg-subtle: #F5F4F0;
+  --comp-bg-hover: #F0EFEA;
   
-  --comp-border-subtle: rgba(255, 255, 255, 0.08);
-  --comp-border-card: rgba(94, 234, 212, 0.18);
-  --comp-border-glow: rgba(0, 242, 254, 0.45);
-  
-  --comp-text-primary: #F8FAFC;
-  --comp-text-secondary: #94A3B8;
-  --comp-text-muted: #64748B;
-  
-  --comp-cyan: #00F2FE;
-  --comp-teal: #5EEAD4;
-  --comp-emerald: #10B981;
-  --comp-blue: #38BDF8;
-  --comp-purple: #A855F7;
-  --comp-coral: #FF6B5C;
-  --comp-coral-glow: rgba(255, 107, 92, 0.35);
+  /* Borders & Dividers */
+  --comp-border-subtle: #E2E8E4;
+  --comp-border-card: #D8E2DC;
+  --comp-border-active: #0D7A68;
+  --comp-border-focus: rgba(13, 122, 104, 0.4);
 
+  /* High-Contrast Typography */
+  --comp-text-primary: #131E18;      /* Deep Forest Charcoal (> 13:1 contrast) */
+  --comp-text-secondary: #4A5E53;    /* Muted Forest Slate (> 5.5:1 contrast) */
+  --comp-text-muted: #6B7F74;        /* Accessible Label Slate */
+  --comp-text-inverse: #FFFFFF;      /* Pure Crisp White */
+
+  /* Brand Accents: Deep Forest Green & Restrained Teal */
+  --comp-forest: #163324;            /* Primary Deep Forest Green */
+  --comp-forest-deep: #0E2419;
+  --comp-forest-light: #234B36;
+  --comp-teal: #0D7A68;              /* Restrained Calibrated Teal */
+  --comp-teal-light: #129B84;
+  --comp-teal-soft: #E0F4F0;         /* Soft Mint/Teal Tint */
+  --comp-sage-tint: #EBF5F0;         /* Soft Sage Badge Tint */
+
+  /* Status Colors */
+  --comp-ready-bg: #EBF5F0;
+  --comp-ready-text: #1A5336;
+  --comp-ready-border: #C6E7D8;
+
+  --comp-listening-bg: #E0F4F0;
+  --comp-listening-text: #0A5C4E;
+  --comp-listening-border: #8CE0D0;
+
+  --comp-processing-bg: #EEF2F6;
+  --comp-processing-text: #2A4365;
+  --comp-processing-border: #CBD5E1;
+
+  --comp-speaking-bg: #E6F7F2;
+  --comp-speaking-text: #0D6E57;
+  --comp-speaking-border: #9DE5D4;
+
+  --comp-error-bg: #FDE8E8;
+  --comp-error-text: #9B1C1C;
+  --comp-error-border: #F8B4B4;
+
+  /* Emergency SOS Alert Colors */
+  --comp-sos-red: #DC2626;
+  --comp-sos-red-dark: #B91C1C;
+  --comp-sos-bg: #FEF2F2;
+  --comp-sos-border: #FCA5A5;
+  --comp-sos-badge: #FEE2E2;
+
+  /* Typography Scales */
   --comp-font-display: 'Space Grotesk', -apple-system, sans-serif;
   --comp-font-body: 'Inter', -apple-system, sans-serif;
   --comp-font-mono: 'IBM Plex Mono', monospace;
 
+  /* Border Radii */
   --comp-radius-sm: 8px;
   --comp-radius-md: 14px;
   --comp-radius-lg: 20px;
   --comp-radius-pill: 9999px;
 
-  --comp-transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Elevation Shadows */
+  --comp-shadow-subtle: 0 2px 6px rgba(22, 51, 36, 0.04);
+  --comp-shadow-card: 0 3px 12px rgba(22, 51, 36, 0.05), 0 1px 3px rgba(22, 51, 36, 0.03);
+  --comp-shadow-hover: 0 8px 24px rgba(22, 51, 36, 0.08), 0 2px 6px rgba(22, 51, 36, 0.04);
+  --comp-shadow-button: 0 4px 16px rgba(22, 51, 36, 0.16);
+
+  --comp-transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-/* Base Body Overrides for Companion Layout */
+/* Base Body: Warm Ivory Background */
 body.companion-mode {
-  background-color: var(--comp-bg-deep);
+  background-color: var(--comp-bg-ivory);
   color: var(--comp-text-primary);
   font-family: var(--comp-font-body);
   margin: 0;
@@ -52,9 +99,9 @@ body.companion-mode {
   min-height: 100vh;
   overflow-x: hidden;
   background-image: 
-    radial-gradient(circle at 50% 120px, rgba(0, 242, 254, 0.07) 0%, transparent 60%),
-    radial-gradient(circle at 80% 450px, rgba(94, 234, 212, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 20% 800px, rgba(56, 189, 248, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 50% 120px, rgba(13, 122, 104, 0.03) 0%, transparent 60%),
+    radial-gradient(circle at 80% 450px, rgba(22, 51, 36, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 20% 800px, rgba(13, 122, 104, 0.02) 0%, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -76,9 +123,9 @@ body.companion-mode {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 0;
+  padding: 22px 0 18px 0;
   border-bottom: 1px solid var(--comp-border-subtle);
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   gap: 12px;
 }
 
@@ -100,11 +147,11 @@ body.companion-mode {
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--comp-text-primary);
+  color: var(--comp-forest);
 }
 
 .companion-wordmark span {
-  color: var(--comp-cyan);
+  color: var(--comp-teal);
 }
 
 .companion-live-pulse {
@@ -113,14 +160,14 @@ body.companion-mode {
   height: 8px;
   border-radius: 50%;
   background: var(--comp-teal);
-  box-shadow: 0 0 10px var(--comp-teal);
-  animation: pulseBeacon 2.2s infinite ease-in-out;
+  box-shadow: 0 0 8px rgba(13, 122, 104, 0.5);
+  animation: pulseBeacon 2.4s infinite ease-in-out;
 }
 
 .companion-tagline {
   font-size: 11px;
   font-family: var(--comp-font-mono);
-  color: var(--comp-teal);
+  color: var(--comp-text-secondary);
   text-transform: lowercase;
   letter-spacing: 0.5px;
   margin-top: 2px;
@@ -139,31 +186,32 @@ body.companion-mode {
   gap: 8px;
   padding: 8px 14px;
   border-radius: var(--comp-radius-pill);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--comp-bg-surface);
   border: 1px solid var(--comp-border-subtle);
-  color: var(--comp-text-primary);
+  color: var(--comp-forest);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   text-decoration: none;
   transition: var(--comp-transition);
   min-height: 40px;
+  box-shadow: var(--comp-shadow-subtle);
 }
 
 .btn-companion-profile:hover,
 .btn-companion-profile:focus-visible {
-  background: rgba(0, 242, 254, 0.12);
-  border-color: var(--comp-cyan);
+  background: var(--comp-sage-tint);
+  border-color: var(--comp-teal);
   outline: none;
-  box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
+  box-shadow: 0 0 0 3px var(--comp-border-focus);
 }
 
 .btn-companion-profile .profile-avatar-icon {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--comp-cyan), var(--comp-teal));
-  color: #060B10;
+  background: var(--comp-forest);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,22 +226,23 @@ body.companion-mode {
   gap: 6px;
   padding: 8px 14px;
   border-radius: var(--comp-radius-pill);
-  background: rgba(255, 107, 92, 0.12);
-  border: 1px solid rgba(255, 107, 92, 0.35);
-  color: #FF8A7D;
+  background: var(--comp-sos-bg);
+  border: 1.5px solid var(--comp-sos-border);
+  color: var(--comp-sos-red-dark);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: var(--comp-transition);
   min-height: 40px;
+  box-shadow: var(--comp-shadow-subtle);
 }
 
 .btn-companion-sos-header:hover,
 .btn-companion-sos-header:focus-visible {
-  background: rgba(255, 107, 92, 0.25);
-  border-color: var(--comp-coral);
-  color: #FFF;
-  box-shadow: 0 0 16px var(--comp-coral-glow);
+  background: #FEE2E2;
+  border-color: var(--comp-sos-red);
+  color: var(--comp-sos-red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
   outline: none;
 }
 
@@ -205,36 +254,35 @@ body.companion-mode {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 0 24px 0;
+  padding: 10px 0 20px 0;
   text-align: center;
   position: relative;
 }
 
-/* Soft Ambient Rim Light behind Robot */
+/* Soft Warm Rim Light behind Robot */
 .robot-ambient-glow {
   position: absolute;
   top: 15px;
-  width: 240px;
-  height: 240px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 242, 254, 0.18) 0%, rgba(94, 234, 212, 0.05) 50%, transparent 75%);
-  filter: blur(24px);
+  background: radial-gradient(circle, rgba(13, 122, 104, 0.08) 0%, rgba(22, 51, 36, 0.02) 50%, transparent 75%);
+  filter: blur(20px);
   pointer-events: none;
   z-index: 0;
-  transition: background 0.4s ease;
+  transition: background 0.35s ease;
 }
 
 .robot-3d-wrapper {
   position: relative;
-  width: 190px;
-  height: 190px;
+  width: 180px;
+  height: 180px;
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Floating animation applied to inner container */
 .robot-3d-floating-rig {
   width: 100%;
   height: 100%;
@@ -246,16 +294,16 @@ body.companion-mode {
 .robot-3d-svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.65));
+  filter: drop-shadow(0 10px 18px rgba(22, 51, 36, 0.16));
 }
 
-/* Robot Floor Shadow */
+/* Robot Natural Floor Shadow */
 .robot-floor-shadow {
-  width: 110px;
-  height: 14px;
-  background: radial-gradient(ellipse at center, rgba(0, 242, 254, 0.22) 0%, rgba(0, 0, 0, 0.6) 50%, transparent 75%);
+  width: 100px;
+  height: 12px;
+  background: radial-gradient(ellipse at center, rgba(19, 30, 24, 0.2) 0%, rgba(19, 30, 24, 0.05) 50%, transparent 75%);
   border-radius: 50%;
-  margin: -10px auto 14px auto;
+  margin: -8px auto 14px auto;
   animation: shadowScale 3.8s ease-in-out infinite;
   z-index: 0;
 }
@@ -267,13 +315,14 @@ body.companion-mode {
   gap: 7px;
   padding: 5px 14px;
   border-radius: var(--comp-radius-pill);
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid var(--comp-border-subtle);
+  background: var(--comp-ready-bg);
+  border: 1px solid var(--comp-ready-border);
   font-size: 12px;
   font-family: var(--comp-font-mono);
-  color: var(--comp-teal);
+  color: var(--comp-ready-text);
+  font-weight: 600;
   letter-spacing: 0.3px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--comp-shadow-subtle);
   transition: var(--comp-transition);
 }
 
@@ -281,60 +330,61 @@ body.companion-mode {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--comp-teal);
-  box-shadow: 0 0 8px var(--comp-teal);
+  background: var(--comp-ready-text);
+  box-shadow: 0 0 6px rgba(26, 83, 54, 0.4);
 }
 
 /* Robot Contextual Greeting */
 .companion-greeting {
   margin-top: 10px;
   font-family: var(--comp-font-display);
-  font-size: 19px;
-  font-weight: 600;
-  color: var(--comp-text-primary);
-  letter-spacing: -0.01em;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--comp-forest);
+  letter-spacing: -0.015em;
   padding: 0 12px;
   max-width: 100%;
   box-sizing: border-box;
 }
 
 .companion-greeting .user-name-highlight {
-  color: var(--comp-cyan);
+  color: var(--comp-teal);
 }
 
 /* ==========================================================================
-   ROBOT STATE MODIFIERS (IDLE, LISTENING, PROCESSING, SPEAKING, ERROR)
+   ROBOT STATE MODIFIERS
    ========================================================================== */
 
-/* State: LISTENING */
-.robot-stage-section.state-listening .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(0, 242, 254, 0.32) 0%, rgba(94, 234, 212, 0.12) 50%, transparent 75%);
+/* State: LISTENING (Command or Wake) */
+.robot-stage-section.state-listening .robot-ambient-glow,
+.robot-stage-section.state-listening-wake .robot-ambient-glow {
+  background: radial-gradient(circle, rgba(13, 122, 104, 0.22) 0%, rgba(18, 155, 132, 0.08) 50%, transparent 75%);
 }
 
-.robot-stage-section.state-listening .robot-listening-ring {
+.robot-stage-section.state-listening .robot-listening-ring,
+.robot-stage-section.state-listening-wake .robot-listening-ring {
   opacity: 0.9;
+  stroke: var(--comp-teal);
   animation: listeningPulse 1.8s infinite ease-out;
 }
 
-.robot-stage-section.state-listening .robot-eye-glow {
-  fill: #00F2FE;
-  filter: drop-shadow(0 0 10px #00F2FE);
+.robot-stage-section.state-listening .robot-status-pill,
+.robot-stage-section.state-listening-wake .robot-status-pill {
+  background: var(--comp-listening-bg);
+  border-color: var(--comp-listening-border);
+  color: var(--comp-listening-text);
+  box-shadow: 0 0 12px rgba(13, 122, 104, 0.2);
 }
 
-.robot-stage-section.state-listening .robot-status-pill {
-  border-color: var(--comp-cyan);
-  color: var(--comp-cyan);
-  box-shadow: 0 0 16px rgba(0, 242, 254, 0.3);
-}
-
-.robot-stage-section.state-listening .robot-status-pill .status-dot {
-  background: var(--comp-cyan);
-  box-shadow: 0 0 10px var(--comp-cyan);
+.robot-stage-section.state-listening .robot-status-pill .status-dot,
+.robot-stage-section.state-listening-wake .robot-status-pill .status-dot {
+  background: var(--comp-teal);
+  box-shadow: 0 0 8px rgba(13, 122, 104, 0.6);
 }
 
 /* State: PROCESSING */
 .robot-stage-section.state-processing .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.28) 0%, rgba(0, 242, 254, 0.08) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(42, 67, 101, 0.16) 0%, transparent 75%);
 }
 
 .robot-stage-section.state-processing .robot-antenna-orb {
@@ -342,18 +392,19 @@ body.companion-mode {
 }
 
 .robot-stage-section.state-processing .robot-status-pill {
-  border-color: var(--comp-purple);
-  color: #C084FC;
+  background: var(--comp-processing-bg);
+  border-color: var(--comp-processing-border);
+  color: var(--comp-processing-text);
 }
 
 .robot-stage-section.state-processing .robot-status-pill .status-dot {
-  background: #C084FC;
-  box-shadow: 0 0 10px #C084FC;
+  background: var(--comp-processing-text);
+  box-shadow: 0 0 6px rgba(42, 67, 101, 0.5);
 }
 
 /* State: SPEAKING */
 .robot-stage-section.state-speaking .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(94, 234, 212, 0.32) 0%, rgba(0, 242, 254, 0.12) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(13, 122, 104, 0.22) 0%, transparent 75%);
 }
 
 .robot-stage-section.state-speaking .robot-mouth-wave {
@@ -362,41 +413,104 @@ body.companion-mode {
 }
 
 .robot-stage-section.state-speaking .robot-status-pill {
-  border-color: var(--comp-teal);
-  color: var(--comp-teal);
+  background: var(--comp-speaking-bg);
+  border-color: var(--comp-speaking-border);
+  color: var(--comp-speaking-text);
+}
+
+.robot-stage-section.state-speaking .robot-status-pill .status-dot {
+  background: var(--comp-speaking-text);
+  box-shadow: 0 0 8px rgba(13, 110, 87, 0.6);
 }
 
 /* State: ERROR */
 .robot-stage-section.state-error .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(255, 107, 92, 0.25) 0%, transparent 75%);
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.18) 0%, transparent 75%);
 }
 
 .robot-stage-section.state-error .robot-eye-glow {
-  fill: var(--comp-coral);
+  fill: var(--comp-sos-red);
 }
 
 .robot-stage-section.state-error .robot-status-pill {
-  border-color: var(--comp-coral);
-  color: #FF8A7D;
+  background: var(--comp-error-bg);
+  border-color: var(--comp-error-border);
+  color: var(--comp-error-text);
 }
 
 .robot-stage-section.state-error .robot-status-pill .status-dot {
-  background: var(--comp-coral);
-  box-shadow: 0 0 8px var(--comp-coral);
+  background: var(--comp-error-text);
+  box-shadow: 0 0 6px rgba(155, 28, 28, 0.5);
 }
 
 /* ==========================================================================
-   LARGE TAP TO SPEAK INTERACTIVE CONTROL
+   HANDS-FREE "HEY ARGUS" CONTROL ROW
+   ========================================================================== */
+.wake-word-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.btn-wake-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--comp-radius-pill);
+  background: var(--comp-bg-surface);
+  border: 1.5px solid var(--comp-border-subtle);
+  color: var(--comp-forest);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--comp-transition);
+  box-shadow: var(--comp-shadow-subtle);
+}
+
+.btn-wake-toggle:hover,
+.btn-wake-toggle:focus-visible {
+  border-color: var(--comp-teal);
+  background: var(--comp-sage-tint);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--comp-border-focus);
+}
+
+.btn-wake-toggle.is-active {
+  background: var(--comp-listening-bg);
+  border-color: var(--comp-teal);
+  color: var(--comp-listening-text);
+  box-shadow: 0 0 10px rgba(13, 122, 104, 0.15);
+}
+
+.btn-wake-toggle .wake-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94A3B8;
+  transition: var(--comp-transition);
+}
+
+.btn-wake-toggle.is-active .wake-dot {
+  background: var(--comp-teal);
+  box-shadow: 0 0 8px rgba(13, 122, 104, 0.7);
+  animation: pulseBeacon 1.8s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   LARGE TAP TO SPEAK ACCESSIBLE CONTROL
    ========================================================================== */
 .voice-control-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 10px 0 24px 0;
+  margin: 8px 0 24px 0;
   width: 100%;
 }
 
-/* Large Glowing Rounded Button */
 .btn-tap-to-speak {
   display: flex;
   align-items: center;
@@ -406,32 +520,27 @@ body.companion-mode {
   max-width: 440px;
   padding: 18px 28px;
   border-radius: var(--comp-radius-pill);
-  background: linear-gradient(135deg, rgba(13, 27, 42, 0.95), rgba(10, 15, 29, 0.98));
-  border: 2px solid rgba(0, 242, 254, 0.4);
-  color: var(--comp-text-primary);
+  background: var(--comp-forest);
+  border: 2px solid var(--comp-teal);
+  color: var(--comp-text-inverse);
   font-family: var(--comp-font-display);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.5),
-    0 0 25px rgba(0, 242, 254, 0.15),
-    inset 0 1px 2px rgba(255, 255, 255, 0.15);
+  box-shadow: var(--comp-shadow-button);
   transition: var(--comp-transition);
   touch-action: manipulation;
 }
 
 .btn-tap-to-speak:hover,
 .btn-tap-to-speak:focus-visible {
-  border-color: var(--comp-cyan);
-  box-shadow: 
-    0 10px 36px rgba(0, 0, 0, 0.6),
-    0 0 35px rgba(0, 242, 254, 0.35),
-    inset 0 1px 3px rgba(255, 255, 255, 0.25);
+  background: var(--comp-forest-deep);
+  border-color: var(--comp-teal-light);
+  box-shadow: 0 6px 24px rgba(22, 51, 36, 0.28), 0 0 0 3px var(--comp-border-focus);
   transform: translateY(-2px);
   outline: none;
 }
@@ -445,13 +554,13 @@ body.companion-mode {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--comp-cyan), var(--comp-teal));
-  color: #060B10;
+  background: var(--comp-teal);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 14px rgba(0, 242, 254, 0.5);
+  box-shadow: 0 0 10px rgba(13, 122, 104, 0.35);
   transition: var(--comp-transition);
 }
 
@@ -463,23 +572,22 @@ body.companion-mode {
 
 /* Button Active / Listening State */
 .btn-tap-to-speak.is-listening {
-  border-color: var(--comp-cyan);
-  background: linear-gradient(135deg, rgba(8, 38, 56, 0.95), rgba(10, 25, 42, 0.98));
-  box-shadow: 
-    0 0 40px rgba(0, 242, 254, 0.45),
-    inset 0 0 18px rgba(0, 242, 254, 0.25);
-  animation: buttonPulseGlow 1.6s infinite alternate;
+  background: var(--comp-forest-deep);
+  border-color: var(--comp-teal-light);
+  box-shadow: 0 0 0 4px rgba(13, 122, 104, 0.3), var(--comp-shadow-button);
+  animation: buttonPulseTeal 1.6s infinite alternate;
 }
 
 .btn-tap-to-speak.is-listening .tap-to-speak-icon {
-  animation: iconRipple 1.2s infinite ease-out;
+  background: var(--comp-teal-light);
+  animation: iconRippleTeal 1.2s infinite ease-out;
 }
 
 /* Button Speaking State */
 .btn-tap-to-speak.is-speaking {
+  background: #113627;
   border-color: var(--comp-teal);
-  background: linear-gradient(135deg, rgba(8, 48, 46, 0.95), rgba(10, 25, 35, 0.98));
-  box-shadow: 0 0 30px rgba(94, 234, 212, 0.35);
+  box-shadow: 0 0 20px rgba(13, 122, 104, 0.25);
 }
 
 /* Supporting Hint Text */
@@ -488,10 +596,11 @@ body.companion-mode {
   color: var(--comp-text-secondary);
   margin-top: 10px;
   text-align: center;
+  line-height: 1.5;
 }
 
 .voice-hint-text strong {
-  color: var(--comp-teal);
+  color: var(--comp-forest);
   font-weight: 600;
 }
 
@@ -501,10 +610,10 @@ body.companion-mode {
   max-width: 520px;
   margin-top: 14px;
   padding: 14px 18px;
-  background: rgba(13, 21, 38, 0.85);
+  background: var(--comp-bg-surface);
   border: 1px solid var(--comp-border-subtle);
   border-radius: var(--comp-radius-md);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--comp-shadow-card);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -512,7 +621,8 @@ body.companion-mode {
 }
 
 .voice-transcript-card.has-content {
-  border-color: rgba(0, 242, 254, 0.3);
+  border-color: var(--comp-teal);
+  box-shadow: 0 4px 16px rgba(13, 122, 104, 0.12);
 }
 
 .voice-transcript-header {
@@ -530,7 +640,8 @@ body.companion-mode {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--comp-cyan);
+  color: var(--comp-teal);
+  font-weight: 600;
 }
 
 .voice-transcript-text {
@@ -542,7 +653,7 @@ body.companion-mode {
 }
 
 .voice-transcript-text.is-interim {
-  color: #7DD3FC;
+  color: var(--comp-teal);
   font-style: italic;
 }
 
@@ -559,7 +670,7 @@ body.companion-mode {
 .voice-wave-bar {
   width: 3px;
   height: 6px;
-  background: var(--comp-cyan);
+  background: var(--comp-teal);
   border-radius: var(--comp-radius-pill);
   transition: height 0.15s ease;
 }
@@ -575,23 +686,23 @@ body.companion-mode {
 .voice-wave-bar:nth-child(5) { animation-delay: 0.15s; }
 
 /* ==========================================================================
-   SIX CORE FEATURE LAUNCHERS (VERTICALLY STACKED CARDS)
+   SIX CORE FEATURE LAUNCHERS (WHITE CARDS, RESTRAINED ACCENTS)
    ========================================================================== */
 .features-stack-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .features-stack-label {
   font-family: var(--comp-font-mono);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--comp-teal);
+  letter-spacing: 0.8px;
+  color: var(--comp-forest);
   padding: 0 4px;
   margin-bottom: 2px;
   display: flex;
@@ -606,17 +717,15 @@ body.companion-mode {
   gap: 16px;
   width: 100%;
   padding: 16px 20px;
-  background: var(--comp-bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--comp-border-subtle);
+  background: var(--comp-bg-surface);
+  border: 1px solid var(--comp-border-card);
   border-radius: var(--comp-radius-lg);
   text-decoration: none;
   color: inherit;
   transition: var(--comp-transition);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--comp-shadow-card);
   cursor: pointer;
 }
 
@@ -625,7 +734,7 @@ body.companion-mode {
   position: absolute;
   top: 0;
   left: 0;
-  width: 3px;
+  width: 4px;
   height: 100%;
   background: transparent;
   transition: var(--comp-transition);
@@ -633,40 +742,37 @@ body.companion-mode {
 
 .feature-launcher-card:hover,
 .feature-launcher-card:focus-visible {
-  background: var(--comp-bg-card-hover);
-  border-color: var(--comp-border-card);
+  border-color: var(--comp-teal);
+  background: #FFFFFF;
   transform: translateY(-2px);
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.45),
-    0 0 20px rgba(0, 242, 254, 0.15);
+  box-shadow: var(--comp-shadow-hover);
   outline: none;
 }
 
 .feature-launcher-card:hover::before,
 .feature-launcher-card:focus-visible::before {
-  background: var(--comp-cyan);
+  background: var(--comp-teal);
 }
 
-/* Specific Border / Accent highlights */
-.feature-launcher-card.card-pathguide:hover::before { background: var(--comp-teal); }
-.feature-launcher-card.card-object:hover::before { background: var(--comp-cyan); }
-.feature-launcher-card.card-visionaid:hover::before { background: var(--comp-purple); }
-.feature-launcher-card.card-queue:hover::before { background: var(--comp-emerald); }
-.feature-launcher-card.card-optima:hover::before { background: var(--comp-blue); }
-.feature-launcher-card.card-nightvision:hover::before { background: #34D399; }
+/* Specific Accent Highlights */
+.feature-launcher-card.card-pathguide:hover::before { background: var(--comp-forest); }
+.feature-launcher-card.card-object:hover::before { background: var(--comp-teal); }
+.feature-launcher-card.card-visionaid:hover::before { background: #5B21B6; }
+.feature-launcher-card.card-queue:hover::before { background: #059669; }
+.feature-launcher-card.card-optima:hover::before { background: #0284C7; }
+.feature-launcher-card.card-nightvision:hover::before { background: #0F766E; }
 
 /* Icon Badge */
 .feature-card-icon-frame {
   width: 48px;
   height: 48px;
   border-radius: var(--comp-radius-md);
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--comp-bg-subtle);
   border: 1px solid var(--comp-border-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   transition: var(--comp-transition);
 }
 
@@ -676,7 +782,8 @@ body.companion-mode {
 }
 
 .feature-launcher-card:hover .feature-card-icon-frame {
-  border-color: rgba(94, 234, 212, 0.4);
+  background: var(--comp-sage-tint);
+  border-color: var(--comp-teal);
   transform: scale(1.05);
 }
 
@@ -701,7 +808,7 @@ body.companion-mode {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: var(--comp-text-primary);
+  color: var(--comp-forest);
   margin: 0;
 }
 
@@ -711,9 +818,9 @@ body.companion-mode {
   font-weight: 600;
   padding: 2px 7px;
   border-radius: var(--comp-radius-pill);
-  background: rgba(94, 234, 212, 0.12);
-  color: var(--comp-teal);
-  border: 1px solid rgba(94, 234, 212, 0.3);
+  background: var(--comp-ready-bg);
+  color: var(--comp-ready-text);
+  border: 1px solid var(--comp-ready-border);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -734,7 +841,7 @@ body.companion-mode {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--comp-bg-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -745,8 +852,8 @@ body.companion-mode {
 }
 
 .feature-launcher-card:hover .feature-card-chevron {
-  background: rgba(0, 242, 254, 0.15);
-  color: var(--comp-cyan);
+  background: var(--comp-teal);
+  color: #FFFFFF;
   transform: translateX(3px);
 }
 
@@ -759,25 +866,21 @@ body.companion-mode {
   gap: 16px;
   width: 100%;
   padding: 18px 22px;
-  background: linear-gradient(135deg, rgba(38, 14, 18, 0.85), rgba(20, 10, 15, 0.9));
-  border: 1.5px solid rgba(255, 107, 92, 0.4);
+  background: var(--comp-sos-bg);
+  border: 1.5px solid var(--comp-sos-border);
   border-radius: var(--comp-radius-lg);
   color: inherit;
   cursor: pointer;
   margin-top: 10px;
-  box-shadow: 
-    0 6px 24px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(255, 107, 92, 0.18);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
   transition: var(--comp-transition);
 }
 
 .emergency-sos-action-card:hover,
 .emergency-sos-action-card:focus-visible {
-  background: linear-gradient(135deg, rgba(58, 18, 24, 0.95), rgba(30, 12, 18, 0.98));
-  border-color: var(--comp-coral);
-  box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.5),
-    0 0 30px var(--comp-coral-glow);
+  background: #FEE2E2;
+  border-color: var(--comp-sos-red);
+  box-shadow: 0 6px 22px rgba(220, 38, 38, 0.18), 0 0 0 3px rgba(220, 38, 38, 0.25);
   transform: translateY(-2px);
   outline: none;
 }
@@ -786,14 +889,13 @@ body.companion-mode {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(255, 107, 92, 0.2);
-  border: 1.5px solid rgba(255, 107, 92, 0.5);
+  background: #FEE2E2;
+  border: 1.5px solid var(--comp-sos-border);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   flex-shrink: 0;
-  box-shadow: 0 0 14px var(--comp-coral-glow);
 }
 
 .sos-action-body {
@@ -805,13 +907,13 @@ body.companion-mode {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #FFA499;
+  color: var(--comp-sos-red-dark);
   margin: 0;
 }
 
 .sos-action-desc {
   font-size: 12.5px;
-  color: #CBD5E1;
+  color: #7F1D1D;
   margin-top: 2px;
 }
 
@@ -821,9 +923,9 @@ body.companion-mode {
   font-weight: 700;
   padding: 6px 12px;
   border-radius: var(--comp-radius-pill);
-  background: rgba(255, 107, 92, 0.2);
-  color: #FFA499;
-  border: 1px solid rgba(255, 107, 92, 0.4);
+  background: #FEE2E2;
+  color: var(--comp-sos-red-dark);
+  border: 1px solid var(--comp-sos-border);
   text-transform: uppercase;
   flex-shrink: 0;
 }
@@ -839,7 +941,7 @@ body.companion-mode {
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--comp-text-muted);
+  color: var(--comp-text-secondary);
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -847,6 +949,7 @@ body.companion-mode {
 .companion-footer a {
   color: var(--comp-teal);
   text-decoration: none;
+  font-weight: 600;
 }
 
 .companion-footer a:hover {
@@ -901,11 +1004,9 @@ body.companion-mode {
 @keyframes antennaThink {
   0% {
     transform: scale(1);
-    filter: drop-shadow(0 0 4px #C084FC);
   }
   100% {
     transform: scale(1.25);
-    filter: drop-shadow(0 0 14px #C084FC);
   }
 }
 
@@ -918,24 +1019,24 @@ body.companion-mode {
   }
 }
 
-@keyframes buttonPulseGlow {
+@keyframes buttonPulseTeal {
   0% {
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.35);
+    box-shadow: 0 4px 16px rgba(22, 51, 36, 0.2), 0 0 0 2px rgba(13, 122, 104, 0.2);
   }
   100% {
-    box-shadow: 0 0 45px rgba(0, 242, 254, 0.6);
+    box-shadow: 0 6px 24px rgba(22, 51, 36, 0.3), 0 0 0 6px rgba(13, 122, 104, 0.35);
   }
 }
 
-@keyframes iconRipple {
+@keyframes iconRippleTeal {
   0% {
-    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.7);
+    box-shadow: 0 0 0 0 rgba(13, 122, 104, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 12px rgba(0, 242, 254, 0);
+    box-shadow: 0 0 0 10px rgba(13, 122, 104, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+    box-shadow: 0 0 0 0 rgba(13, 122, 104, 0);
   }
 }
 
@@ -970,7 +1071,7 @@ body.companion-mode {
   }
 
   .companion-header {
-    padding: 14px 0;
+    padding: 16px 0 14px 0;
     margin-bottom: 16px;
     flex-wrap: nowrap;
     gap: 8px;
@@ -997,10 +1098,6 @@ body.companion-mode {
     min-height: 36px;
   }
 
-  .btn-companion-sos-header span:last-child {
-    display: inline;
-  }
-
   .robot-3d-wrapper {
     width: 150px;
     height: 150px;
@@ -1012,7 +1109,7 @@ body.companion-mode {
   }
 
   .btn-tap-to-speak {
-    font-size: 16px;
+    font-size: 15px;
     padding: 14px 20px;
     max-width: 100%;
   }
