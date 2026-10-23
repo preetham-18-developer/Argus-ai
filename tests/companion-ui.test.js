@@ -546,4 +546,192 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
     assert.ok(content.includes('modeParam'), 'Night-Vision script must inspect mode parameter');
   });
 
+  test('Night Vision card is rendered as exactly one complete feature card with all elements in index.html', () => {
+    const indexPath = path.join(__dirname, '../index.html');
+    const html = fs.readFileSync(indexPath, 'utf8');
+
+    // Exactly one launcher-nightvision element
+    const matches = html.match(/id="launcher-nightvision"/g);
+    assert.equal(matches ? matches.length : 0, 1, 'There must be exactly one launcher-nightvision element in index.html');
+
+    // Extract the entire Night Vision card snippet
+    const cardStart = html.indexOf('id="launcher-nightvision"');
+    assert.ok(cardStart !== -1, 'launcher-nightvision must exist');
+
+    // Find the enclosing <a> tag
+    const tagOpen = html.lastIndexOf('<a ', cardStart);
+    const tagClose = html.indexOf('</a>', cardStart);
+    assert.ok(tagOpen !== -1 && tagClose !== -1 && tagClose > tagOpen, 'Night Vision card must be an enclosed <a> tag');
+
+    const cardSnippet = html.slice(tagOpen, tagClose + 4);
+
+    // Verify all required components are contained within this single card
+    assert.ok(cardSnippet.includes('feature-card-icon-frame'), 'Must contain icon frame');
+    assert.ok(cardSnippet.includes('feature-card-body'), 'Must contain feature-card-body');
+    assert.ok(cardSnippet.includes('NIGHT VISION'), 'Must contain NIGHT VISION title');
+    assert.ok(cardSnippet.includes('Ready'), 'Must contain Ready badge');
+    assert.ok(cardSnippet.includes('Enhance dim images and warn when visibility is unreliable.'), 'Must contain description');
+    assert.ok(cardSnippet.includes('feature-card-chevron'), 'Must contain feature-card-chevron');
+    assert.ok(cardSnippet.includes('href="./Night-Vision/index.html?mode=ON"'), 'Must have correct canonical URL');
+  });
+
+  test('Hands-Free mode lifecycle: toggle, starting state, active listening, error on permission denial', () => {
+    const { mockWindow, elements } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    let startListeningOptions = null;
+    let listeningCallback = null;
+
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => { if (cb) cb(); },
+      startListening: (cb, opts) => {
+        listeningCallback = cb;
+        startListeningOptions = opts;
+      },
+      stopListening: () => {}
+    };
+
+    const toggleBtn = elements.get('btn-wake-toggle');
+    const toggleLabel = elements.get('wake-toggle-label');
+    const statusText = elements.get('companion-status-text');
+
+    // 1. Enable Hands-Free mode
+    controller.toggleWakeWord(true);
+    assert.equal(controller.wakeWordEnabled, true);
+    assert.equal(toggleBtn.getAttribute('aria-pressed'), 'true');
+    assert.equal(toggleLabel.textContent, 'Hands-Free: Starting Microphone...');
+    assert.equal(statusText.textContent, 'Starting microphone...');
+    assert.equal(startListeningOptions?.isWakeWord, true, 'Must pass isWakeWord: true to speech service');
+
+    // 2. Microphone actually starts (recognition.onstart fires -> onListeningChange(true))
+    controller._onListeningChange(true);
+    assert.equal(toggleLabel.textContent, 'Hands-Free: Listening for "Hey Argus"');
+    assert.equal(statusText.textContent, 'Listening for "Hey Argus"...');
+    assert.equal(controller.currentState, 'listening-wake');
+
+    // 3. Unexpected silence timeout (onListeningChange(false)) must NOT kill wake loop
+    controller._onListeningChange(false);
+    assert.equal(controller.wakeWordEnabled, true, 'Wake mode remains enabled on silence');
+    assert.equal(controller.isListeningWakeWord, true, 'Wake listening flag remains true to allow restart');
+
+    // 4. Permission denied error must cleanly disable toggle and show clear error
+    controller._onError('Microphone permission was denied. Please allow microphone access in your browser settings.');
+    assert.equal(controller.wakeWordEnabled, false, 'Permission denial must disable hands-free mode');
+    assert.equal(controller.isListeningWakeWord, false);
+    assert.equal(toggleBtn.getAttribute('aria-pressed'), 'false');
+    assert.equal(toggleLabel.textContent, 'Hands-Free: Microphone Access Denied');
+    assert.equal(statusText.textContent, 'Microphone blocked');
+    assert.equal(controller.currentState, 'error');
+  });
+
+  test('Full end-to-end flow: Hey Argus -> greeting with saved name Prem -> command listening -> Open VisionAid', async () => {
+    const { mockWindow, mockStorage } = setupMockEnvironment();
+
+    // Set user profile name
+    const profile = ArgusProfile.createEmptyProfile();
+    profile.displayName = 'Prem';
+    mockStorage.setItem('argus_user_profile', JSON.stringify(profile));
+
+    const controller = loadController(mockWindow);
+
+    let spokenTexts = [];
+    let startListeningCalls = [];
+
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => {
+        spokenTexts.push(text);
+        if (cb) cb();
+      },
+      startListening: (cb, opts) => {
+        startListeningCalls.push({ cb, opts });
+      },
+      stopListening: () => {}
+    };
+
+    // 1. Enable wake word
+    controller.toggleWakeWord(true);
+    controller._onListeningChange(true);
+
+    // 2. User says "Hey Argus"
+    controller.handleWakeSpeechResult('Hey Argus', true);
+
+    // 3. Argus responds with personalized greeting using saved name Prem
+    assert.equal(spokenTexts.length >= 1, true);
+    assert.equal(spokenTexts[0], "I'm here, Prem. What kind of help do you need?");
+
+    // 4. Wait for acoustic guard delay (200ms) to transition to command listening
+    await new Promise(r => setTimeout(r, 250));
+
+    // After greeting, command listening is triggered
+    assert.equal(controller.isListeningCommand, true);
+    assert.equal(controller.currentState, 'listening');
+
+    // 5. User speaks command: "Open VisionAid"
+    controller.handleCommandSpeechResult('Open VisionAid', true);
+
+    // 6. Argus confirms and opens VisionAid
+    assert.equal(spokenTexts[spokenTexts.length - 1], 'Opening VisionAid AI.');
+    assert.equal(mockWindow.location.href, './Visual%20Explanation/index.html');
+  });
+
+  test('All six core module commands navigate correctly from command listening', () => {
+    const testCases = [
+      { cmd: 'Open PathGuide', expectedUrl: './Night-Vision/index.html', confirm: 'Starting PathGuide Pro navigation.' },
+      { cmd: 'Open Object Detection', expectedUrl: './object-detection-pro/index.html', confirm: 'Opening Object Detection Pro.' },
+      { cmd: 'Open VisionAid', expectedUrl: './Visual%20Explanation/index.html', confirm: 'Opening VisionAid AI.' },
+      { cmd: 'Open Queue Detector', expectedUrl: './queue-detection/index.html', confirm: 'Opening Queue Detector.' },
+      { cmd: 'Open Optima Vision', expectedUrl: './Camera%20Check/index.html', confirm: 'Opening Optima Vision camera check.' },
+      { cmd: 'Turn on Night Vision', expectedUrl: './Night-Vision/index.html?mode=ON', confirm: 'Turning on Night Vision mode.' }
+    ];
+
+    for (const tc of testCases) {
+      const { mockWindow } = setupMockEnvironment();
+      const controller = loadController(mockWindow);
+
+      let spoken = '';
+      controller.speechService = {
+        isSupported: () => true,
+        speak: (text, cb) => {
+          spoken = text;
+          if (cb) cb();
+        },
+        startListening: () => {},
+        stopListening: () => {}
+      };
+
+      controller.processVoiceCommand(tc.cmd);
+
+      assert.equal(spoken, tc.confirm, `Confirmation must match for ${tc.cmd}`);
+      assert.equal(mockWindow.location.href, tc.expectedUrl, `Target URL must match for ${tc.cmd}`);
+    }
+  });
+
+  test('Tap to Speak works independently of Hands-Free mode', () => {
+    const { mockWindow } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    let startListeningOpts = null;
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => { if (cb) cb(); },
+      startListening: (cb, opts) => { startListeningOpts = opts; },
+      stopListening: () => {}
+    };
+
+    // Case 1: Hands-Free is OFF -> Tap to Speak directly activates command listening
+    assert.equal(controller.wakeWordEnabled, false);
+    controller.handleTapToSpeak();
+    assert.equal(controller.isListeningCommand, true);
+    assert.equal(startListeningOpts?.isWakeWord, false);
+    assert.equal(controller.currentState, 'listening');
+
+    // Case 2: Tapping again stops command listening
+    controller.handleTapToSpeak();
+    assert.equal(controller.isListeningCommand, false);
+    assert.equal(controller.currentState, 'idle');
+  });
+
 });
+

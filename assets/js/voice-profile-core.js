@@ -1116,27 +1116,51 @@
       utterance.volume = this.volume;
       utterance.lang = this.lang;
 
+      // Retain utterance reference on window to prevent Chrome GC discarding it mid-speech
       this.activeUtterance = utterance;
+      if (typeof window !== 'undefined') {
+        window._argusUtterance = utterance;
+      }
+
       this.isSpeaking = true;
       this.onSpeakingChange(true);
 
-      utterance.onend = () => {
+      let finished = false;
+      const finishSpeech = () => {
+        if (finished) return;
+        finished = true;
+        if (this._ttsWatchdog) {
+          clearTimeout(this._ttsWatchdog);
+          this._ttsWatchdog = null;
+        }
         this.isSpeaking = false;
         this.activeUtterance = null;
         this.onSpeakingChange(false);
-        // Guard delay (250ms) so speaker resonance finishes before mic starts
+        // Guard delay (200ms) so speaker resonance finishes before mic starts
         setTimeout(() => {
           if (onEnd) onEnd();
-        }, 250);
+        }, 200);
       };
 
+      utterance.onend = finishSpeech;
       utterance.onerror = (err) => {
         console.warn('[ArgusSpeech] TTS utterance error:', err);
-        this.isSpeaking = false;
-        this.activeUtterance = null;
-        this.onSpeakingChange(false);
-        if (onEnd) onEnd();
+        finishSpeech();
       };
+
+      // Watchdog timer: safety cleanup in case browser loses onend event
+      const estimatedMs = Math.max(3500, Math.min(12000, cleanText.length * 85));
+      this._ttsWatchdog = setTimeout(() => {
+        if (this.isSpeaking && this.activeUtterance === utterance) {
+          console.warn('[ArgusSpeech] TTS watchdog timeout triggered.');
+          finishSpeech();
+        }
+      }, estimatedMs);
+
+      // Workaround for Chrome paused speech synthesis bug
+      if (window.speechSynthesis.paused) {
+        try { window.speechSynthesis.resume(); } catch (e) {}
+      }
 
       window.speechSynthesis.speak(utterance);
     }
@@ -1146,7 +1170,7 @@
       this.speak(sample);
     }
 
-    startListening(onResultCallback) {
+    startListening(onResultCallback, options = {}) {
       if (!this.recognition) {
         this.onError('Speech recognition is not supported in this browser.');
         return;
@@ -1158,13 +1182,34 @@
       }
 
       this.onResultCallback = onResultCallback;
+      const isWakeWord = Boolean(options && options.isWakeWord);
+      this.isWakeWordMode = isWakeWord;
 
+      // If already listening or starting, handle mode switch smoothly
       if (this.isListening || this._isStartingRecognition) {
-        return; // Already listening or in process of starting
+        if (this._currentModeIsWake === isWakeWord) {
+          return; // Already in requested mode
+        }
+        // Mode changed: stop current and switch
+        this.stopListening();
+        setTimeout(() => {
+          this.startListening(onResultCallback, options);
+        }, 100);
+        return;
       }
 
+      this._currentModeIsWake = isWakeWord;
       this._isStartingRecognition = true;
-      this._resetSilenceTimer();
+      if (!isWakeWord) {
+        this._resetSilenceTimer();
+      } else {
+        this._clearSilenceTimer();
+      }
+
+      // Set continuous mode for wake word listening
+      try {
+        this.recognition.continuous = isWakeWord;
+      } catch (e) {}
 
       this.recognition.onstart = () => {
         this._isStartingRecognition = false;
@@ -1173,7 +1218,9 @@
       };
 
       this.recognition.onresult = (event) => {
-        this._clearSilenceTimer();
+        if (!isWakeWord) {
+          this._clearSilenceTimer();
+        }
         let interimTranscript = '';
         let finalTranscript = '';
 
@@ -1186,7 +1233,9 @@
         }
 
         if (finalTranscript.trim()) {
-          this.stopListening();
+          if (!isWakeWord) {
+            this.stopListening();
+          }
           if (this.onResultCallback) {
             this.onResultCallback(finalTranscript.trim(), true);
           }
@@ -1198,22 +1247,29 @@
       };
 
       this.recognition.onerror = (event) => {
-        this._clearSilenceTimer();
+        if (!isWakeWord) {
+          this._clearSilenceTimer();
+        }
         this._isStartingRecognition = false;
         this.isListening = false;
         this.onListeningChange(false);
 
         if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-          this.onError('Microphone permission was denied. You can continue using manual setup.');
+          this.onError('Microphone permission was denied. Please allow microphone access in your browser settings.');
         } else if (event.error === 'no-speech') {
-          this.onError('No speech was detected. Please try again or tap Repeat.');
+          // In wake-word mode, silence is normal and expected; do not trigger error notice
+          if (!isWakeWord) {
+            this.onError('No speech was detected. Please try again or tap Repeat.');
+          }
         } else if (event.error !== 'aborted') {
           console.warn('[ArgusSpeech] Recognition error:', event.error);
         }
       };
 
       this.recognition.onend = () => {
-        this._clearSilenceTimer();
+        if (!isWakeWord) {
+          this._clearSilenceTimer();
+        }
         this._isStartingRecognition = false;
         this.isListening = false;
         this.onListeningChange(false);
@@ -1223,11 +1279,14 @@
         this.recognition.start();
       } catch (err) {
         this._isStartingRecognition = false;
-        if (err.name !== 'InvalidStateError') {
+        if (err.name === 'InvalidStateError') {
+          this.isListening = true;
+          this.onListeningChange(true);
+        } else {
           console.warn('[ArgusSpeech] Recognition start error:', err);
+          this.isListening = false;
+          this.onListeningChange(false);
         }
-        this.isListening = false;
-        this.onListeningChange(false);
       }
     }
 
@@ -1243,6 +1302,10 @@
     }
 
     cancel() {
+      if (this._ttsWatchdog) {
+        clearTimeout(this._ttsWatchdog);
+        this._ttsWatchdog = null;
+      }
       this._clearSilenceTimer();
       if (this.recognition) {
         try { this.recognition.abort(); } catch (e) {}
@@ -1251,7 +1314,7 @@
       this.onListeningChange(false);
 
       if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
+        try { window.speechSynthesis.cancel(); } catch (e) {}
       }
       this.isSpeaking = false;
       this.activeUtterance = null;

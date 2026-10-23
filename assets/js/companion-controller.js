@@ -272,12 +272,15 @@
     /**
      * Toggles Hands-Free "Hey Argus" listening mode
      */
-    toggleWakeWord(forceState, announce = true) {
+    toggleWakeWord(forceState) {
       if (this.isModalActive()) return;
 
       if (!this.speechService || !this.speechService.isSupported()) {
         this.setRobotState('error', 'Speech not supported in browser');
-        this.setTranscript('Hands-free mode requires browser Speech Recognition support.');
+        this.setTranscript('Hands-free mode requires Speech Recognition support (Google Chrome or Microsoft Edge).');
+        if (this.wakeToggleLabel) {
+          this.wakeToggleLabel.textContent = 'Speech Not Supported';
+        }
         return;
       }
 
@@ -294,24 +297,21 @@
         this.wakeToggleBtn.setAttribute('aria-pressed', nextState ? 'true' : 'false');
       }
 
-      if (this.wakeToggleLabel) {
-        this.wakeToggleLabel.textContent = nextState
-          ? 'Hands-Free: "Hey Argus" Active'
-          : 'Hands-Free: Tap to Enable "Hey Argus"';
-      }
-
       if (nextState) {
-        this.setTranscript('Hands-Free Mode Active. Say "Hey Argus" to speak.');
-        if (announce && this.speechService) {
-          this.speechService.speak('Hands-free mode active. You can say "Hey Argus" anytime.', () => {
-            setTimeout(() => this.startWakeWordListening(), 300);
-          });
-        } else {
-          this.startWakeWordListening();
+        if (this.wakeToggleLabel) {
+          this.wakeToggleLabel.textContent = 'Hands-Free: Starting Microphone...';
         }
+        this.setRobotState('processing', 'Starting microphone...');
+        this.setTranscript('Requesting microphone access for Hands-Free mode...');
+
+        // Start listening directly without blocking speech delay
+        this.startWakeWordListening();
       } else {
         // Disabled
         this._stopAllListening();
+        if (this.wakeToggleLabel) {
+          this.wakeToggleLabel.textContent = 'Hands-Free: Tap to Enable "Hey Argus"';
+        }
         this.setRobotState('idle', 'Ready');
         this.setTranscript('Hands-Free Mode disabled. Tap to Speak is always available.');
       }
@@ -329,11 +329,18 @@
 
       this.isListeningWakeWord = true;
       this.isListeningCommand = false;
-      this.setRobotState('listening-wake', 'Listening for "Hey Argus"...');
+
+      // Clearly indicate microphone starting state until onstart confirms listening
+      if (this.currentState !== 'listening-wake') {
+        this.setRobotState('processing', 'Starting microphone...');
+        if (this.wakeToggleLabel) {
+          this.wakeToggleLabel.textContent = 'Hands-Free: Starting Microphone...';
+        }
+      }
 
       this.speechService.startListening((transcript, isFinal) => {
         this.handleWakeSpeechResult(transcript, isFinal);
-      });
+      }, { isWakeWord: true });
     }
 
     /**
@@ -344,21 +351,20 @@
 
       const normalized = this._normalizeCommand(transcript);
 
-      // Check if user spoke the wake word
-      if (this._detectWakeWord(normalized)) {
-        // WAKE WORD DETECTED!
-        this._triggerWakeWordReaction();
+      // Check if user directly spoke a full command with wake prefix (e.g. "Hey Argus open VisionAid")
+      const matched = this._resolveCommand(normalized);
+      if (matched) {
+        this._stopAllListening();
+        this.setRobotState('processing', 'Processing command...');
+        this.processVoiceCommand(transcript);
         return;
       }
 
-      // Check if user directly spoke a full command with wake prefix (e.g. "Hey Argus open VisionAid")
-      for (const route of this.routes) {
-        if (route.regex.test(normalized)) {
-          this._stopAllListening();
-          this.setRobotState('processing', 'Processing command...');
-          this.processVoiceCommand(transcript);
-          return;
-        }
+      // Check if user spoke the wake word
+      if (this._detectWakeWord(transcript) || this._detectWakeWord(normalized)) {
+        // WAKE WORD DETECTED!
+        this._triggerWakeWordReaction();
+        return;
       }
 
       if (isFinal) {
@@ -369,7 +375,7 @@
 
     _detectWakeWord(normalizedText) {
       if (!normalizedText) return false;
-      return /\b(hey\s+argus|argus)\b/i.test(normalizedText);
+      return /\b(hey\s+argus|hi\s+argus|hello\s+argus|ok\s+argus|okay\s+argus|argus|argos|august|argo)\b/i.test(normalizedText);
     }
 
     /**
@@ -390,10 +396,10 @@
 
       if (this.speechService) {
         this.speechService.speak(greeting, () => {
-          // Acoustic guard delay (300ms) to ensure speaker audio resonance finishes completely
+          // Acoustic guard delay (200ms) so speaker resonance finishes completely
           setTimeout(() => {
             this.startCommandListening();
-          }, 300);
+          }, 200);
         });
       } else {
         this.startCommandListening();
@@ -411,7 +417,7 @@
       this._isStartingListening = false;
 
       this.setRobotState('listening', "I'm listening...");
-      this.setTranscript('Listening for your command...');
+      this.setTranscript('Listening for your command (e.g. "Open VisionAid")...');
 
       if (this.voiceHintText) {
         this.voiceHintText.innerHTML = '<strong>Listening now...</strong> Speak your command.';
@@ -432,7 +438,7 @@
 
       this.speechService.startListening((transcript, isFinal) => {
         this.handleCommandSpeechResult(transcript, isFinal);
-      });
+      }, { isWakeWord: false });
     }
 
     handleCommandSpeechResult(transcript, isFinal) {
@@ -479,7 +485,7 @@
     _returnToStandby() {
       this.setRobotState('idle', 'Ready');
       if (this.wakeWordEnabled && !this.isModalActive()) {
-        setTimeout(() => this.startWakeWordListening(), 400);
+        setTimeout(() => this.startWakeWordListening(), 300);
       }
     }
 
@@ -508,10 +514,10 @@
         return;
       }
 
-      // If currently listening, toggle off
-      if (this.isListening || this.isListeningCommand || this.isListeningWakeWord) {
+      // If currently listening for a command, toggle off
+      if (this.isListeningCommand) {
         this._stopAllListening();
-        this.setRobotState('idle', 'Ready');
+        this._returnToStandby();
         return;
       }
 
@@ -519,7 +525,16 @@
       if (this.isSpeaking) {
         this._stopAllListening();
         this.speechService.cancel();
-        this.setRobotState('idle', 'Ready');
+        this._returnToStandby();
+        return;
+      }
+
+      // If in wake-word listening mode, tapping Tap to Speak directly activates command listening!
+      if (this.isListeningWakeWord) {
+        this.speechService.stopListening();
+        setTimeout(() => {
+          this.startCommandListening();
+        }, 120);
         return;
       }
 
@@ -698,7 +713,17 @@
     _onListeningChange(listening) {
       this.isListening = listening;
 
-      if (!listening) {
+      if (listening) {
+        this._isStartingListening = false;
+        if (this.wakeWordEnabled && this.isListeningWakeWord) {
+          this.setRobotState('listening-wake', 'Listening for "Hey Argus"...');
+          if (this.wakeToggleLabel) {
+            this.wakeToggleLabel.textContent = 'Hands-Free: Listening for "Hey Argus"';
+          }
+        } else if (this.isListeningCommand) {
+          this.setRobotState('listening', "I'm listening...");
+        }
+      } else {
         this._isStartingListening = false;
 
         // If in wake-listening mode and browser session timed out due to silence, safely restart
@@ -708,7 +733,7 @@
             if (this.wakeWordEnabled && this.isListeningWakeWord && !this.isModalActive() && !this.isSpeaking) {
               this.startWakeWordListening();
             }
-          }, 300);
+          }, 200);
         } else if (this.currentState === 'listening' || this.currentState === 'listening-wake') {
           if (!this.isListeningCommand) {
             this.setRobotState('idle', 'Ready');
@@ -728,8 +753,36 @@
 
     _onError(errMsg) {
       this._isStartingListening = false;
-      this.isListeningWakeWord = false;
       this.isListeningCommand = false;
+
+      const isPermissionDenied = Boolean(
+        errMsg && (errMsg.includes('denied') || errMsg.includes('permission') || errMsg.includes('not-allowed'))
+      );
+
+      if (isPermissionDenied) {
+        // Fatal permission error: disable hands-free mode
+        this.wakeWordEnabled = false;
+        this.isListeningWakeWord = false;
+        try {
+          localStorage.setItem('argus_wake_word_enabled', 'false');
+        } catch (e) {}
+
+        if (this.wakeToggleBtn) {
+          this.wakeToggleBtn.classList.remove('is-active');
+          this.wakeToggleBtn.setAttribute('aria-pressed', 'false');
+        }
+        if (this.wakeToggleLabel) {
+          this.wakeToggleLabel.textContent = 'Hands-Free: Microphone Access Denied';
+        }
+        this.setRobotState('error', 'Microphone blocked');
+        this.setTranscript(errMsg || 'Microphone access denied. Please allow microphone in browser settings.');
+        return;
+      }
+
+      // If in wake mode, non-fatal errors should not permanently abort wake listening
+      if (this.wakeWordEnabled && this.isListeningWakeWord) {
+        return;
+      }
 
       this.setRobotState('error', 'Microphone notice');
       this.setTranscript(errMsg || 'Audio notice. You can tap any feature directly.');
@@ -738,7 +791,7 @@
         if (this.currentState === 'error') {
           this._returnToStandby();
         }
-      }, 3500);
+      }, 3000);
     }
 
     _escapeHTML(str) {
