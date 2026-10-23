@@ -1,12 +1,12 @@
 /**
- * Argus.AI — Companion Controller
+ * Argus.AI — Companion Controller (Phase C: Voice-Command Integration)
  * Manages homepage single-page interaction:
  * - Animated 3D robot state transitions (IDLE, LISTENING, PROCESSING, SPEAKING, ERROR)
  * - Tap to Speak button binding with ArgusProfile.ArgusSpeechService
- * - Live transcript visualization
- * - Natural voice command routing to core feature modules
- * - Profile greeting & header badge reflection
- * - Clean lifecycle coordination with profile modal and Emergency SOS
+ * - Normalized text matching for all core feature commands and natural spoken aliases
+ * - Spoken confirmation before navigation
+ * - Emergency SOS and Profile voice commands with modal safety
+ * - Live transcript visualization and honest listening state indicators
  */
 
 (function (root) {
@@ -17,6 +17,7 @@
       this.speechService = null;
       this.isListening = false;
       this.isSpeaking = false;
+      this._isStartingListening = false;
       this.currentState = 'idle'; // idle | listening | processing | speaking | error
 
       // DOM Elements
@@ -26,6 +27,7 @@
       this.robotGreeting = null;
       this.tapButton = null;
       this.tapButtonLabel = null;
+      this.voiceHintText = null;
       this.transcriptCard = null;
       this.transcriptText = null;
       this.profileHeaderBtn = null;
@@ -34,46 +36,46 @@
       // Command Definitions & Routes
       this.routes = [
         {
-          id: 'object-detection',
-          name: 'Object Detection Pro',
-          url: './object-detection-pro/index.html',
-          regex: /(object detection|object detector|detect objects?|detection mode|identify objects?|find objects?)/i,
-          spokenConfirm: 'Opening Object Detection Pro.'
-        },
-        {
           id: 'pathguide',
           name: 'PathGuide Pro',
           url: './Night-Vision/index.html',
-          regex: /(pathguide|path guide|navigation|obstacle awareness|spatial steering|walking guidance|start navigation)/i,
+          regex: /(open pathguide|start pathguide|activate navigation mode|pathguide|path guide|navigation mode|walking guidance|start navigation)/i,
           spokenConfirm: 'Starting PathGuide Pro navigation.'
+        },
+        {
+          id: 'object-detection',
+          name: 'Object Detection Pro',
+          url: './object-detection-pro/index.html',
+          regex: /(open object detection|activate detection mode|detect objects?|object detection|object detector|identify objects?|find objects?)/i,
+          spokenConfirm: 'Opening Object Detection Pro.'
         },
         {
           id: 'visionaid',
           name: 'VisionAid AI',
           url: './Visual Explanation/index.html',
-          regex: /(visionaid|vision aid|multimodal|read document|medicine scanner|explain scene|describe scene|read text)/i,
+          regex: /(open visionaid|explain my surroundings|read this document|visionaid|vision aid|explain surroundings|describe scene|read text|medicine scanner|multimodal)/i,
           spokenConfirm: 'Activating VisionAid AI.'
         },
         {
           id: 'queue-detector',
           name: 'Queue Detector',
           url: './queue-detection/index.html',
-          regex: /(queue detector|queue detection|people tracker|distance tracker|track queue|check line|queue movement)/i,
+          regex: /(open queue detector|check the queue|detect people in line|queue detector|queue detection|people tracker|distance tracker|track queue|check line)/i,
           spokenConfirm: 'Launching Queue Detector.'
         },
         {
           id: 'optima-vision',
           name: 'Optima Vision',
           url: './Camera Check/index.html',
-          regex: /(optima vision|optima|camera check|camera quality|check visibility|check lens|blur check)/i,
+          regex: /(open optima vision|check camera quality|optima vision|optima|camera check|check visibility|check lens|blur check)/i,
           spokenConfirm: 'Opening Optima Vision camera check.'
         },
         {
           id: 'night-vision',
           name: 'Night Vision',
-          url: './Night-Vision/index.html?mode=night',
-          regex: /(night vision|night mode|dark mode|low light|photon enhancement|dim image)/i,
-          spokenConfirm: 'Turning on Night Vision enhancement.'
+          url: './Night-Vision/index.html?mode=ON',
+          regex: /(turn on night vision|activate night vision|night vision|night mode|dark mode|low light mode|photon enhancement)/i,
+          spokenConfirm: 'Turning on Night Vision mode.'
         },
         {
           id: 'emergency-sos',
@@ -83,18 +85,20 @@
               root.triggerEmergencySOS();
             }
           },
-          regex: /(emergency sos|emergency|trigger sos|help me|call 112|send help|danger)/i,
-          spokenConfirm: 'Activating Emergency SOS.'
+          regex: /(emergency sos|call my emergency contact|trigger emergency sos|trigger sos|help me|call 112|send help|danger)/i,
+          spokenConfirm: 'Opening Emergency SOS. You have 5 seconds to cancel.'
         },
         {
           id: 'profile-setup',
           name: 'Profile Setup',
           action: () => {
-            if (root.argusProfileUI && typeof root.argusProfileUI.openModal === 'function') {
+            if (typeof root.openProfileModalSafe === 'function') {
+              root.openProfileModalSafe();
+            } else if (root.argusProfileUI && typeof root.argusProfileUI.openModal === 'function') {
               root.argusProfileUI.openModal();
             }
           },
-          regex: /(set up profile|edit profile|change my name|profile settings|my profile|open profile)/i,
+          regex: /(open my profile|edit my details|set up profile|edit profile|change my name|profile settings|my profile|open profile)/i,
           spokenConfirm: 'Opening your profile settings.'
         }
       ];
@@ -118,6 +122,7 @@
       this.robotGreeting = document.getElementById('companion-greeting-text');
       this.tapButton = document.getElementById('btn-tap-to-speak');
       this.tapButtonLabel = document.getElementById('tap-to-speak-label');
+      this.voiceHintText = document.getElementById('voice-hint-text');
       this.transcriptCard = document.getElementById('voice-transcript-card');
       this.transcriptText = document.getElementById('voice-transcript-text');
       this.profileHeaderBtn = document.getElementById('btn-header-profile');
@@ -145,11 +150,13 @@
       this.syncUserProfile();
 
       // Listen for profile save events
-      window.addEventListener('storage', (e) => {
-        if (e.key === 'argus_user_profile') {
-          this.syncUserProfile();
-        }
-      });
+      if (typeof window !== 'undefined') {
+        window.addEventListener('storage', (e) => {
+          if (e.key === 'argus_user_profile') {
+            this.syncUserProfile();
+          }
+        });
+      }
 
       // Periodic check if profile was saved in the same window
       if (typeof root !== 'undefined' && typeof root.setInterval === 'function') {
@@ -203,6 +210,31 @@
       }
     }
 
+    /**
+     * Normalizes spoken input text:
+     * - Converts to lowercase and trims
+     * - Replaces curly apostrophes
+     * - Removes punctuation
+     * - Strips conversational prefixes (e.g. "hey argus", "please", "can you")
+     * - Collapses multiple spaces
+     */
+    _normalizeCommand(rawText) {
+      if (!rawText || typeof rawText !== 'string') return '';
+      let str = rawText.toLowerCase().trim();
+      str = str.replace(/[’`]/g, "'");
+      str = str.replace(/[.,\/#!$%\^&\*;:{}=\-_~()?"`]/g, ' ');
+      str = str.replace(/\s+/g, ' ').trim();
+      
+      // Iteratively strip conversational prefixes (e.g. "Argus, please can you...")
+      let prev;
+      do {
+        prev = str;
+        str = str.replace(/^(hey argus|argus|can you please|could you please|please can you|can you|could you|please|i want to|i need to)\s+/i, '');
+      } while (str !== prev);
+
+      return str.trim();
+    }
+
     handleTapToSpeak() {
       // If profile modal is open, let it retain speech focus
       const profileModal = document.getElementById('argus-profile-modal-overlay');
@@ -222,8 +254,9 @@
         return;
       }
 
-      // If currently listening, stop
+      // If currently listening, toggle off
       if (this.isListening) {
+        this._isStartingListening = false;
         this.speechService.stopListening();
         this.setRobotState('idle', 'Ready');
         return;
@@ -231,22 +264,39 @@
 
       // If currently speaking, stop speech
       if (this.isSpeaking) {
+        this._isStartingListening = false;
         this.speechService.cancel();
         this.setRobotState('idle', 'Ready');
         return;
       }
 
-      // Start listening
+      // Debounce rapid clicks while starting
+      if (this._isStartingListening) {
+        return;
+      }
+
+      this._isStartingListening = true;
       this.setRobotState('listening', "I'm listening...");
       this.setTranscript('Listening for your command...');
 
+      if (this.voiceHintText) {
+        this.voiceHintText.innerHTML = '<strong>Listening now...</strong> Speak your command.';
+      }
+
       this.speechService.startListening((transcript, isFinal) => {
+        this._isStartingListening = false;
         this.handleSpeechResult(transcript, isFinal);
       });
     }
 
     handleSpeechResult(transcript, isFinal) {
-      if (!transcript) return;
+      if (!transcript || !transcript.trim()) {
+        if (isFinal) {
+          this.setRobotState('idle', 'Ready');
+          this.setTranscript('No speech detected. Tap to try again.');
+        }
+        return;
+      }
 
       this.setTranscript(transcript, !isFinal);
 
@@ -257,8 +307,13 @@
     }
 
     processVoiceCommand(rawTranscript) {
-      const clean = rawTranscript.trim();
-      const matched = this._resolveCommand(clean);
+      const normalized = this._normalizeCommand(rawTranscript);
+      if (!normalized) {
+        this.setRobotState('idle', 'Ready');
+        return;
+      }
+
+      const matched = this._resolveCommand(normalized);
 
       if (matched) {
         this.setRobotState('speaking', `Launching ${matched.name}...`);
@@ -275,11 +330,11 @@
       } else {
         // Unrecognized command
         this.setRobotState('error', 'Command not recognized');
-        this.setTranscript(`Could not match "${clean}". Try saying "Open Object Detection" or "Start PathGuide".`);
+        this.setTranscript(`Could not match "${rawTranscript.trim()}". Try saying "Open PathGuide" or "Open Object Detection".`);
 
         if (this.speechService) {
           this.speechService.speak(
-            "I didn't recognize that command. You can say 'Open Object Detection', 'Start PathGuide', or tap any feature below.",
+            "I didn't recognize that command. You can say 'Open PathGuide', 'Open Object Detection', or tap any feature below.",
             () => {
               setTimeout(() => {
                 this.setRobotState('idle', 'Ready');
@@ -294,9 +349,10 @@
       }
     }
 
-    _resolveCommand(text) {
+    _resolveCommand(normalizedText) {
+      if (!normalizedText) return null;
       for (const route of this.routes) {
-        if (route.regex.test(text)) {
+        if (route.regex.test(normalizedText)) {
           return route;
         }
       }
@@ -324,7 +380,7 @@
         this.robotStatusText.textContent = statusText;
       }
 
-      // Update button label
+      // Update button visual state
       if (this.tapButton) {
         this.tapButton.classList.toggle('is-listening', state === 'listening');
         this.tapButton.classList.toggle('is-speaking', state === 'speaking');
@@ -350,6 +406,11 @@
             break;
         }
       }
+
+      // Update hint text when idle
+      if (state === 'idle' && this.voiceHintText) {
+        this.voiceHintText.innerHTML = 'Tap to speak a command (e.g. <strong>"Open PathGuide"</strong> or <strong>"Detect Objects"</strong>).';
+      }
     }
 
     setTranscript(text, isInterim = false) {
@@ -362,9 +423,11 @@
 
     _onListeningChange(listening) {
       this.isListening = listening;
-      if (!listening && this.currentState === 'listening') {
-        // Finished listening without final result
-        this.setRobotState('idle', 'Ready');
+      if (!listening) {
+        this._isStartingListening = false;
+        if (this.currentState === 'listening') {
+          this.setRobotState('idle', 'Ready');
+        }
       }
     }
 
@@ -376,6 +439,7 @@
     }
 
     _onError(errMsg) {
+      this._isStartingListening = false;
       this.setRobotState('error', 'Microphone notice');
       this.setTranscript(errMsg || 'Audio error. You can tap any feature directly.');
       setTimeout(() => {

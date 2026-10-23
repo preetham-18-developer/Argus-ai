@@ -647,5 +647,20 @@ nvModeBtns.forEach(btn => {
     });
 });
 
+// Check URL mode parameter on initial load (e.g. ?mode=ON or ?mode=night)
+try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modeParam = urlParams.get('mode');
+    if (modeParam) {
+        const targetMode = modeParam.toUpperCase() === 'NIGHT' ? 'ON' : modeParam.toUpperCase();
+        const modeBtn = document.querySelector(`.nv-mode-btn[data-mode="${targetMode}"]`);
+        if (modeBtn) {
+            modeBtn.click();
+        }
+    }
+} catch (e) {
+    console.warn('[NightVision] Failed to parse URL mode parameter:', e);
+}
+
 // Initialize Vision Engine on Load
 window.addEventListener('DOMContentLoaded', initVisionEngine);
