@@ -322,3 +322,185 @@ footer {
     opacity: 0;
     pointer-events: none;
 }
+
+/* Scene Intelligence & Multimodal Vision Card */
+.ai-inspect-card {
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.08), rgba(0, 230, 118, 0.06));
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.ai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ai-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    background: rgba(0, 242, 254, 0.15);
+    color: #00F2FE;
+    border: 1px solid rgba(0, 242, 254, 0.35);
+    padding: 3px 8px;
+    border-radius: 100px;
+}
+
+.inspect-btn {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid #00F2FE;
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(0, 230, 118, 0.2));
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.2);
+}
+
+.inspect-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.35), rgba(0, 230, 118, 0.35));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 242, 254, 0.35);
+}
+
+.inspect-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.inspect-btn.loading {
+    animation: btnPulse 1.5s infinite;
+}
+
+@keyframes btnPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+/* Multimodal Scene Explanation Floating Drawer */
+.ai-scene-panel {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    background: rgba(10, 15, 29, 0.94);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(0, 242, 254, 0.4);
+    border-radius: 14px;
+    padding: 16px 20px;
+    z-index: 25;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    max-height: 55%;
+    overflow-y: auto;
+}
+
+.ai-scene-panel.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+.ai-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 8px;
+}
+
+.ai-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #00F2FE;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00F2FE;
+    box-shadow: 0 0 10px #00F2FE;
+    animation: pulseGlow 1.8s infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.close-panel-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.close-panel-btn:hover {
+    color: #ffffff;
+}
+
+.ai-scene-content {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #f1f5f9;
+}
+
+.ai-panel-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 10px;
+}
+
+.model-tag {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.speak-btn {
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.4);
+    color: var(--primary);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.speak-btn:hover {
+    background: rgba(0, 230, 118, 0.3);
+}
+
+.object-tag.unverified {
+    background: rgba(255, 179, 0, 0.12);
+    border-color: rgba(255, 179, 0, 0.4);
+    color: #FFB300;
+}

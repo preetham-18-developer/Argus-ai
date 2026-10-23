@@ -4,22 +4,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optima Vision | AI Monitor</title>
+    <title>Optima Vision | AI Optical Monitor</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 
 <body>
+    <!-- Fullscreen Video Background -->
     <video id="webcam" autoplay playsinline class="fullscreen-video"></video>
     <canvas id="proc-canvas" style="display:none;"></canvas>
 
+    <!-- Glassmorphism Container -->
     <div class="glass-container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">👁️</span>
+                <h1>OPTIMA VISION</h1>
+            </div>
+            <div id="status-badge" class="status-badge warning">INITIALIZING</div>
+        </header>
+
+        <main>
+            <div class="camera-monitor">
+                <div id="monitor-ring" class="monitor-ring">
+                    <div class="inner-circle">
+                        <div class="stats-display">
+                            <div class="stat-item">
+                                <span class="label">OPTICAL CLARITY</span>
+                                <span id="quality-val" class="value">98%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">VISION STATUS</span>
+                                <span id="status-text" class="value" style="font-size:15px; letter-spacing: 1px;">CLEAR</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="glow-effect" class="glow-effect"></div>
+            </div>
+
+            <div class="alert-box">
+                <div id="alert-icon-box" class="alert-icon">⚡</div>
+                <div class="alert-content">
+                    <h3 id="alert-title">Optima Vision Active</h3>
+                    <p id="alert-desc">Real-time camera lens quality and optical clarity monitor for blind navigation safety.</p>
+                </div>
+            </div>
+        </main>
     </div>
 
+    <!-- Voice Overlay Indicator -->
     <div id="voice-overlay" class="voice-overlay hidden">
         <div class="pulse"></div>
-        <p id="voice-text"></p>
+        <p id="voice-text">Vision Engine Active</p>
     </div>
 
     <script src="script.js"></script>

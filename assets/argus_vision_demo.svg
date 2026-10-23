@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="100%" height="100%" style="background:#0b0f19; border-radius: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <linearGradient id="laserGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0" />
+      <stop offset="50%" stop-color="#00F2FE" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#00FF87" stop-opacity="0" />
+    </linearGradient>
+
+    <linearGradient id="nightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064E3B" />
+      <stop offset="100%" stop-color="#022C22" />
+    </linearGradient>
+
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes laserSweep {
+      0% { transform: translateY(0px); opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { transform: translateY(320px); opacity: 0.3; }
+    }
+    @keyframes bboxPulse {
+      0%, 100% { stroke-opacity: 0.6; stroke-width: 2px; }
+      50% { stroke-opacity: 1; stroke-width: 3.5px; filter: drop-shadow(0 0 8px #00F2FE); }
+    }
+    @keyframes textBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    @keyframes soundWave {
+      0% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1.2); }
+      100% { transform: scaleY(0.4); }
+    }
+    .laser-line { animation: laserSweep 3s ease-in-out infinite; }
+    .bbox-active { animation: bboxPulse 2s ease-in-out infinite; }
+    .live-dot { animation: textBlink 1s infinite; }
+    .wave-bar-1 { animation: soundWave 0.8s ease-in-out infinite 0.1s; transform-origin: bottom; }
+    .wave-bar-2 { animation: soundWave 0.8s ease-in-out infinite 0.3s; transform-origin: bottom; }
+    .wave-bar-3 { animation: soundWave 0.8s ease-in-out infinite 0.5s; transform-origin: bottom; }
+  </style>
+
+  <!-- Container Grid -->
+  <rect width="1000" height="480" fill="#090d16" rx="16"/>
+
+  <!-- Header Banner -->
+  <g transform="translate(30, 25)">
+    <text x="0" y="24" fill="#FFFFFF" font-size="20" font-weight="800" letter-spacing="1">ARGUS AI — REAL-TIME INTELLIGENCE DASHBOARD</text>
+    <rect x="580" y="4" width="110" height="26" rx="13" fill="#00FF87" fill-opacity="0.15" stroke="#00FF87"/>
+    <circle cx="595" cy="17" r="4" fill="#00FF87" class="live-dot"/>
+    <text x="607" y="21" fill="#00FF87" font-size="11" font-weight="800">LIVE FEED</text>
+
+    <!-- FPS Counter Badge -->
+    <rect x="705" y="4" width="110" height="26" rx="13" fill="#00F2FE" fill-opacity="0.15" stroke="#00F2FE"/>
+    <text x="720" y="21" fill="#00F2FE" font-size="11" font-weight="800">60 FPS | 18ms</text>
+  </g>
+
+  <!-- MAIN HUD SCREEN SIMULATION -->
+  <g transform="translate(30, 75)">
+    <!-- Video Stream Box -->
+    <rect width="600" height="370" fill="#0f172a" rx="12" stroke="#1e293b" stroke-width="2"/>
+    
+    <!-- Grid Overlay inside Viewport -->
+    <g opacity="0.1" stroke="#00F2FE" stroke-width="1">
+      <line x1="0" y1="92" x2="600" y2="92"/>
+      <line x1="0" y1="185" x2="600" y2="185"/>
+      <line x1="0" y1="277" x2="600" y2="277"/>
+      <line x1="150" y1="0" x2="150" y2="370"/>
+      <line x1="300" y1="0" x2="300" y2="370"/>
+      <line x1="450" y1="0" x2="450" y2="370"/>
+    </g>
+
+    <!-- Scanning Laser Line Motion -->
+    <g class="laser-line">
+      <rect x="0" y="0" width="600" height="25" fill="url(#laserGrad)"/>
+      <line x1="0" y1="25" x2="600" y2="25" stroke="#00FF87" stroke-width="2" filter="url(#neonGlow)"/>
+    </g>
+
+    <!-- Bounding Box 1: Obstacle / Chair -->
+    <g transform="translate(60, 110)" class="bbox-active">
+      <rect width="160" height="190" fill="#00F2FE" fill-opacity="0.08" stroke="#00F2FE" stroke-width="2" rx="6"/>
+      <!-- Corner Markers -->
+      <path d="M 0 20 L 0 0 L 20 0 M 140 0 L 160 0 L 160 20 M 160 170 L 160 190 L 140 190 M 20 190 L 0 190 L 0 170" stroke="#00F2FE" stroke-width="3" fill="none"/>
+      <!-- Label -->
+      <rect x="0" y="-24" width="140" height="24" fill="#00F2FE" rx="4"/>
+      <text x="8" y="-7" fill="#090d16" font-size="11" font-weight="900">CHAIR / OBSTACLE 98%</text>
+      <!-- Distance tag -->
+      <text x="8" y="180" fill="#00FF87" font-size="11" font-weight="700">DIST: 1.2 Meters</text>
+    </g>
+
+    <!-- Bounding Box 2: Pedestrian / Person -->
+    <g transform="translate(320, 60)">
+      <rect width="210" height="270" fill="#FF0844" fill-opacity="0.08" stroke="#FF0844" stroke-width="2" rx="6" class="bbox-active"/>
+      <rect x="0" y="-24" width="130" height="24" fill="#FF0844" rx="4"/>
+      <text x="8" y="-7" fill="#FFFFFF" font-size="11" font-weight="900">PERSON AHEAD 99%</text>
+      <text x="8" y="260" fill="#FFB199" font-size="11" font-weight="700">PATH: CLEAR LEFT</text>
+    </g>
+
+    <!-- Bottom Audio Announcement Banner in Viewport -->
+    <g transform="translate(20, 310)">
+      <rect width="560" height="42" rx="8" fill="#090d16" fill-opacity="0.85" stroke="#00F2FE" stroke-opacity="0.5"/>
+      <text x="16" y="26" fill="#00FF87" font-size="13" font-weight="700">🔊 AUDIO ALERT:</text>
+      <text x="125" y="26" fill="#FFFFFF" font-size="13" font-weight="500">"Person ahead at 2 meters. Chair on your left."</text>
+    </g>
+  </g>
+
+  <!-- RIGHT SIDE: 5 MODULES STAT CARD STACK -->
+  <g transform="translate(655, 75)">
+
+    <!-- Module 1: Object Detection Pro -->
+    <g transform="translate(0, 0)">
+      <rect width="315" height="65" rx="10" fill="#1E293B" stroke="#00F2FE" stroke-width="1.5"/>
+      <circle cx="32" cy="32.5" r="16" fill="#00F2FE" fill-opacity="0.2"/>
+      <text x="26" y="38" fill="#00F2FE" font-size="16">🎯</text>
+      <text x="60" y="28" fill="#FFFFFF" font-size="13" font-weight="800">Object Detection Pro</text>
+      <text x="60" y="46" fill="#94A3B8" font-size="11">COCO-SSD / 10x Frame Skip</text>
+      <rect x="235" y="20" width="65" height="24" rx="12" fill="#00FF87" fill-opacity="0.2"/>
+      <text x="247" y="36" fill="#00FF87" font-size="10" font-weight="800">ACTIVE</text>
+    </g>
+
+    <!-- Module 2: Night Vision Boost -->
+    <g transform="translate(0, 75)">
+      <rect width="315" height="65" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="32.5" r="16" fill="#FFB199" fill-opacity="0.2"/>
+      <text x="26" y="38" fill="#FFB199" font-size="16">🌙</text>
+      <text x="60" y="28" fill="#FFFFFF" font-size="13" font-weight="800">Night-Vision Enhancer</text>
+      <text x="60" y="46" fill="#94A3B8" font-size="11">WebGL Real-time Low Light Gain</text>
+      <rect x="235" y="20" width="65" height="24" rx="12" fill="#00F2FE" fill-opacity="0.2"/>
+      <text x="247" y="36" fill="#00F2FE" font-size="10" font-weight="800">READY</text>
+    </g>
+
+    <!-- Module 3: Queue & Line Tracker -->
+    <g transform="translate(0, 150)">
+      <rect width="315" height="65" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="32.5" r="16" fill="#A78BFA" fill-opacity="0.2"/>
+      <text x="26" y="38" fill="#A78BFA" font-size="16">👥</text>
+      <text x="60" y="28" fill="#FFFFFF" font-size="13" font-weight="800">Queue & Line Detection</text>
+      <text x="60" y="46" fill="#94A3B8" font-size="11">Density & Person Counter</text>
+      <rect x="235" y="20" width="65" height="24" rx="12" fill="#00F2FE" fill-opacity="0.2"/>
+      <text x="247" y="36" fill="#00F2FE" font-size="10" font-weight="800">READY</text>
+    </g>
+
+    <!-- Module 4: Multimodal Scene AI -->
+    <g transform="translate(0, 225)">
+      <rect width="315" height="65" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="32.5" r="16" fill="#FBBF24" fill-opacity="0.2"/>
+      <text x="26" y="38" fill="#FBBF24" font-size="16">🖼️</text>
+      <text x="60" y="28" fill="#FFFFFF" font-size="13" font-weight="800">Visual AI Explanation</text>
+      <text x="60" y="46" fill="#94A3B8" font-size="11">Gemini / NVIDIA Multimodal</text>
+      <rect x="235" y="20" width="65" height="24" rx="12" fill="#00F2FE" fill-opacity="0.2"/>
+      <text x="247" y="36" fill="#00F2FE" font-size="10" font-weight="800">READY</text>
+    </g>
+
+    <!-- Module 5: Hardware Camera Diagnostic -->
+    <g transform="translate(0, 300)">
+      <rect width="315" height="65" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1"/>
+      <circle cx="32" cy="32.5" r="16" fill="#EC4899" fill-opacity="0.2"/>
+      <text x="26" y="38" fill="#EC4899" font-size="16">📷</text>
+      <text x="60" y="28" fill="#FFFFFF" font-size="13" font-weight="800">Camera Diagnostic Hub</text>
+      <text x="60" y="46" fill="#94A3B8" font-size="11">FOV, Switcher & Permissions</text>
+      <rect x="235" y="20" width="65" height="24" rx="12" fill="#00FF87" fill-opacity="0.2"/>
+      <text x="247" y="36" fill="#00FF87" font-size="10" font-weight="800">PASS</text>
+    </g>
+
+  </g>
+</svg>

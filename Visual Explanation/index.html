@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VisionAid AI | Scene & Medicine Explanation for Visually Impaired</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Real-Time Client-Side Fallback Engines (TensorFlow.js COCO-SSD & Tesseract.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #00E676;
+            --primary-bg: #0b1120;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-sub: #94a3b8;
+            --accent-cyan: #00F2FE;
+            --accent-purple: #A78BFA;
+            --accent-warning: #FFD600;
+            --accent-danger: #FF1744;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(10, 15, 25, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-hub {
+            color: white;
+            text-decoration: none;
+            background: rgba(0, 242, 254, 0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--accent-cyan);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-hub:hover {
+            background: rgba(0, 242, 254, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .nav-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 300;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+        }
+
+        h1 span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .ai-status-indicator {
+            font-size: 0.72rem;
+            color: #00FF87;
+            letter-spacing: 1px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 2px;
+        }
+
+        .ai-status-dot {
+            width: 6px;
+            height: 6px;
+            background: #00FF87;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00FF87;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+        }
+
+        .toggle-label input {
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .main-container {
+            width: 92%;
+            max-width: 820px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            padding: 16px 0 50px 0;
+        }
+
+        /* Source Switcher (Camera vs Upload) */
+        .source-switcher {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .source-btn {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .source-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .source-btn.active {
+            background: rgba(0, 242, 254, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Camera / Preview Section */
+        .camera-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 20px;
+            border: 2px solid var(--card-border);
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+            background: #000;
+        }
+
+        #canvas, #ocr-canvas {
+            display: none;
+        }
+
+        .scanning-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 2s infinite linear;
+            z-index: 5;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        .overlay-status {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            background: rgba(0, 0, 0, 0.78);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 6;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        @media (min-width: 600px) {
+            .controls {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .mode-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 14px 10px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: rgba(0, 230, 118, 0.1);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.15);
+        }
+
+        .mode-btn .icon {
+            font-size: 1.6rem;
+        }
+
+        .mode-btn .label {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .mode-btn .sublabel {
+            font-size: 0.68rem;
+            color: var(--text-sub);
+        }
+
+        /* Question & Interactive Prompt Area */
+        .question-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .question-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .question-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.25);
+        }
+
+        .chip-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .suggestion-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-sub);
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 0.76rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-chip:hover {
+            color: #fff;
+            border-color: var(--primary);
+            background: rgba(0, 230, 118, 0.1);
+        }
+
+        /* Scan Button */
+        .scan-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00E676, #00B0FF);
+            color: #000;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 230, 118, 0.3);
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .scan-btn:hover {
+            transform: scale(1.015);
+            box-shadow: 0 15px 40px rgba(0, 230, 118, 0.5);
+        }
+
+        .scan-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Response Card */
+        .response-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 12px;
+        }
+
+        .response-title {
+            font-size: 0.95rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-engine-tag {
+            font-size: 0.72rem;
+            background: rgba(0, 242, 254, 0.15);
+            color: #00F2FE;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .response-text {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #f1f5f9;
+            margin: 0;
+            white-space: pre-line;
+        }
+
+        .action-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .confidence-indicator {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .speak-btn {
+            background: rgba(0, 230, 118, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .speak-btn:hover {
+            background: rgba(0, 230, 118, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">
+        <a href="../index.html" class="btn-hub" id="hub-link">← ARGUS HUB</a>
+        <div class="nav-center">
+            <h1>VISIONAID <span>AI</span></h1>
+            <div class="ai-status-indicator">
+                <span class="ai-status-dot"></span>
+                <span id="engine-status">NVIDIA MULTIMODAL AI READY</span>
+            </div>
+        </div>
+        <div class="nav-controls">
+            <label class="toggle-label" title="Automatically speak answers aloud">
+                <input type="checkbox" id="voice-toggle" checked>
+                <span>Voice</span>
+            </label>
+        </div>
+    </div>
+
+    <div class="main-container">
+
+        <!-- Input Source Selector -->
+        <div class="source-switcher">
+            <button class="source-btn active" id="btn-source-camera">
+                <span>📷 Live Camera</span>
+            </button>
+            <button class="source-btn" id="btn-source-upload">
+                <span>📁 Upload Image</span>
+            </button>
+            <input type="file" id="file-input" accept="image/jpeg, image/png, image/webp" style="display:none;">
+        </div>
+
+        <!-- Camera / Image Preview Section -->
+        <div class="camera-wrapper">
+            <video id="video" autoplay playsinline muted></video>
+            <img id="image-preview" alt="Uploaded Image Preview">
+            <canvas id="canvas"></canvas>
+            <canvas id="ocr-canvas"></canvas>
+            <div id="scanner" class="scanning-animation"></div>
+            <div class="overlay-status">
+                <div class="pulse-dot"></div>
+                <span id="camera-status">Camera Feed Active</span>
+            </div>
+        </div>
+
+        <!-- Mode Selectors -->
+        <div class="controls">
+            <button class="mode-btn active" data-mode="scene">
+                <span class="icon">🔍</span>
+                <span class="label">Scene & Objects</span>
+                <span class="sublabel">Spatial Vision & Positions</span>
+            </button>
+            <button class="mode-btn" data-mode="medicine">
+                <span class="icon">💊</span>
+                <span class="label">Medicine</span>
+                <span class="sublabel">Labels, Dosage & Expiry</span>
+            </button>
+            <button class="mode-btn" data-mode="document">
+                <span class="icon">📄</span>
+                <span class="label">Document Read</span>
+                <span class="sublabel">Verbatim Text Transcription</span>
+            </button>
+            <button class="mode-btn" data-mode="navigation">
+                <span class="icon">🚶</span>
+                <span class="label">Path Guidance</span>
+                <span class="sublabel">Clearance & Hazards</span>
+            </button>
+        </div>
+
+        <!-- Interactive Question Bar -->
+        <div class="question-box">
+            <div class="question-input-row">
+                <input type="text" id="custom-question" class="question-input" 
+                       placeholder="Ask a question about this image (e.g. 'Is this an AC remote or a phone?')...">
+            </div>
+            <div class="chip-container">
+                <span class="suggestion-chip" data-query="Is this an AC remote or a phone? Distinguish carefully.">AC remote vs Phone?</span>
+                <span class="suggestion-chip" data-query="Describe all visible objects and their relative positions.">Relative Positions</span>
+                <span class="suggestion-chip" data-query="Transcribe all readable text verbatim.">Read Text Verbatim</span>
+                <span class="suggestion-chip" data-query="What is the exact medicine name and dosage strength?">Medicine Details</span>
+                <span class="suggestion-chip" data-query="Are there any walking hazards or obstacles directly ahead?">Obstacles Ahead?</span>
+            </div>
+        </div>
+
+        <!-- Action Button -->
+        <button id="scan-btn" class="scan-btn">
+            <span>⚡ SCAN FOR AI ANALYSIS</span>
+        </button>
+
+        <!-- Response Output -->
+        <div class="response-card" role="region" aria-live="polite">
+            <div class="response-header">
+                <div class="response-title">
+                    <span>AI Perception Result</span>
+                    <span id="ai-engine-tag" class="ai-engine-tag">meta/llama-3.2-11b-vision-instruct</span>
+                </div>
+                <button id="speak-btn" class="speak-btn" style="display:none;">🔊 Replay Speech</button>
+            </div>
+            <p id="result-text" class="response-text">
+                Point your camera or upload an image, then press "SCAN FOR AI ANALYSIS" (or ask any specific question above). VisionAid AI provides grounded visual scene descriptions, medicine label reading, document transcription, and object identification.
+            </p>
+            <div class="action-row">
+                <span id="confidence-info" class="confidence-indicator">Ready for scan</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const imagePreview = document.getElementById('image-preview');
+        const canvas = document.getElementById('canvas');
+        const scanBtn = document.getElementById('scan-btn');
+        const scanner = document.getElementById('scanner');
+        const resultText = document.getElementById('result-text');
+        const speakBtn = document.getElementById('speak-btn');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        const engineStatus = document.getElementById('engine-status');
+        const aiEngineTag = document.getElementById('ai-engine-tag');
+        const confidenceInfo = document.getElementById('confidence-info');
+        const voiceToggle = document.getElementById('voice-toggle');
+        const customQuestionInput = document.getElementById('custom-question');
+        const suggestionChips = document.querySelectorAll('.suggestion-chip');
+        const btnSourceCamera = document.getElementById('btn-source-camera');
+        const btnSourceUpload = document.getElementById('btn-source-upload');
+        const fileInput = document.getElementById('file-input');
+        const cameraStatus = document.getElementById('camera-status');
+
+        let currentMode = 'scene';
+        let currentSource = 'camera'; // 'camera' or 'upload'
+        let uploadedImageBase64 = null;
+        let activeStream = null;
+        let isAnalyzing = false;
+        let cocoModel = null;
+        let isCocoLoading = false;
+
+        // 1. Initialize Camera
+        async function initCamera() {
+            try {
+                if (activeStream) {
+                    activeStream.getTracks().forEach(track => track.stop());
+                }
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' }
+                });
+
+                activeStream = stream;
+                video.srcObject = stream;
+                video.style.display = 'block';
+                imagePreview.style.display = 'none';
+                cameraStatus.innerText = "Camera Feed Active";
+            } catch (err) {
+                try {
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                    activeStream = fallbackStream;
+                    video.srcObject = fallbackStream;
+                    video.style.display = 'block';
+                    imagePreview.style.display = 'none';
+                    cameraStatus.innerText = "Webcam Active";
+                } catch (e) {
+                    cameraStatus.innerText = "Camera Permission Required";
+                    resultText.innerText = "Camera permission not granted. You can still use 'Upload Image' above to analyze photos.";
+                }
+            }
+        }
+
+        function stopCamera() {
+            if (activeStream) {
+                activeStream.getTracks().forEach(track => track.stop());
+                activeStream = null;
+            }
+            video.pause();
+            video.srcObject = null;
+        }
+
+        // Source Switcher Handlers
+        btnSourceCamera.addEventListener('click', () => {
+            currentSource = 'camera';
+            btnSourceCamera.classList.add('active');
+            btnSourceUpload.classList.remove('active');
+            imagePreview.style.display = 'none';
+            video.style.display = 'block';
+            cameraStatus.innerText = "Camera Feed Active";
+            initCamera();
+        });
+
+        btnSourceUpload.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+
+            // Validate MIME type
+            if (!file.type.match(/^image\/(jpeg|png|webp|gif)$/i)) {
+                alert("Please select a valid image file (JPEG, PNG, or WebP).");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                uploadedImageBase64 = event.target.result;
+                imagePreview.src = uploadedImageBase64;
+                imagePreview.style.display = 'block';
+                video.style.display = 'none';
+                stopCamera();
+
+                currentSource = 'upload';
+                btnSourceUpload.classList.add('active');
+                btnSourceCamera.classList.remove('active');
+                cameraStatus.innerText = `Uploaded: ${file.name.substring(0, 20)}`;
+                confidenceInfo.innerText = "Image loaded. Ready for AI Analysis.";
+                speak("Image loaded successfully. Ready for scan.");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Mode Switching
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = btn.dataset.mode;
+                speak(`Switched to ${currentMode} mode`);
+                confidenceInfo.innerText = `Mode: ${currentMode.toUpperCase()}`;
+            });
+        });
+
+        // Quick Suggestion Chips
+        suggestionChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                customQuestionInput.value = chip.dataset.query;
+                customQuestionInput.focus();
+            });
+        });
+
+        // Speech Output
+        function speak(text) {
+            if (!window.speechSynthesis || !voiceToggle.checked) return;
+            window.speechSynthesis.cancel();
+            const cleanText = text.replace(/[*#_~`]/g, '');
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.05;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Capture Frame or Uploaded Image into Resized Base64 Data URL
+        function getValidatedImageBase64() {
+            const ctx = canvas.getContext('2d');
+
+            if (currentSource === 'upload' && uploadedImageBase64) {
+                // Uploaded Image Source
+                const img = imagePreview;
+                let nw = img.naturalWidth || 640;
+                let nh = img.naturalHeight || 480;
+
+                // Dimension bounds: max 1024px, min 40px
+                const maxDim = 1024;
+                if (nw > maxDim || nh > maxDim) {
+                    const ratio = maxDim / Math.max(nw, nh);
+                    nw = Math.round(nw * ratio);
+                    nh = Math.round(nh * ratio);
+                }
+                nw = Math.max(nw, 48);
+                nh = Math.max(nh, 48);
+
+                canvas.width = nw;
+                canvas.height = nh;
+                ctx.drawImage(img, 0, 0, nw, nh);
+                return canvas.toDataURL('image/jpeg', 0.88);
+            } else {
+                // Live Camera Source
+                const vw = video.videoWidth || 640;
+                const vh = video.videoHeight || 480;
+
+                const maxDim = 1024;
+                let targetW = vw;
+                let targetH = vh;
+                if (vw > maxDim || vh > maxDim) {
+                    const ratio = maxDim / Math.max(vw, vh);
+                    targetW = Math.round(vw * ratio);
+                    targetH = Math.round(vh * ratio);
+                }
+                targetW = Math.max(targetW, 48);
+                targetH = Math.max(targetH, 48);
+
+                canvas.width = targetW;
+                canvas.height = targetH;
+                ctx.drawImage(video, 0, 0, targetW, targetH);
+                return canvas.toDataURL('image/jpeg', 0.88);
+            }
+        }
+
+        // On-Device Fallback: COCO-SSD Object Detection
+        async function runLocalDetectionFallback() {
+            if (!cocoModel && window.cocoSsd && !isCocoLoading) {
+                isCocoLoading = true;
+                try {
+                    cocoModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+                } catch (e) {
+                    console.warn("Local COCO model load error:", e);
+                }
+                isCocoLoading = false;
+            }
+
+            if (!cocoModel) {
+                return "AI Vision service is temporarily unreachable, and on-device neural detector could not be loaded. Please verify internet connection.";
+            }
+
+            try {
+                const predictions = await cocoModel.detect(canvas);
+                if (!predictions || predictions.length === 0) {
+                    return "[Local Fallback] No prominent foreground objects detected in this view.";
+                }
+
+                const labels = predictions.map(p => `${p.class} (${Math.round(p.score * 100)}%)`).join(', ');
+                return `[Local Neural Fallback] Detected objects: ${labels}. Connect to internet for detailed multimodal descriptions.`;
+            } catch (err) {
+                return `[Local Fallback Error] ${err.message}`;
+            }
+        }
+
+        // Main Multimodal AI Analysis Pipeline
+        async function performMultimodalAnalysis(imageBase64, customQuestion) {
+            confidenceInfo.innerText = "Connecting to Vision AI Gateway...";
+
+            try {
+                const response = await fetch('/api/vision', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: imageBase64,
+                        mode: currentMode,
+                        customPrompt: customQuestion || ""
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.success && data.description) {
+                        aiEngineTag.innerText = data.model || "meta/llama-3.2-11b-vision-instruct";
+                        confidenceInfo.innerText = "Grounded Multimodal Response Received";
+                        return data.description.trim();
+                    }
+                }
+
+                // If server returned non-200 status
+                let errMsg = `Vision AI server returned error ${response.status}.`;
+                try {
+                    const errData = await response.json();
+                    if (errData && errData.error) errMsg = errData.error;
+                } catch (e) {}
+
+                console.warn("Gateway error, attempting local fallback:", errMsg);
+
+                // Run local fallback if offline or server-side key missing
+                aiEngineTag.innerText = "Local Fallback";
+                const localFallback = await runLocalDetectionFallback();
+                return `${errMsg}\n\n${localFallback}`;
+
+            } catch (networkErr) {
+                console.error("Network request failed:", networkErr);
+                aiEngineTag.innerText = "Offline Mode";
+                const localFallback = await runLocalDetectionFallback();
+                return `Network error contacting Vision AI: ${networkErr.message}.\n\n${localFallback}`;
+            }
+        }
+
+        // Scan Action Handler
+        scanBtn.addEventListener('click', async () => {
+            if (isAnalyzing) return;
+
+            isAnalyzing = true;
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = "<span>⚙️ ANALYZING SCENE...</span>";
+            scanner.style.display = "block";
+            resultText.innerText = "VisionAid AI is analyzing the image with NVIDIA NIM... Please hold.";
+            speak("Analyzing image. Please wait.");
+
+            const imageBase64 = getValidatedImageBase64();
+            const customQuestion = (customQuestionInput.value || '').trim();
+
+            try {
+                const answer = await performMultimodalAnalysis(imageBase64, customQuestion);
+                resultText.innerText = answer;
+                speak(answer);
+                speakBtn.style.display = 'inline-flex';
+            } catch (err) {
+                console.error("Analysis exception:", err);
+                const msg = `Unable to complete analysis: ${err.message}. Please check connection and try again.`;
+                resultText.innerText = msg;
+                speak(msg);
+                confidenceInfo.innerText = "Analysis failed";
+            } finally {
+                isAnalyzing = false;
+                scanBtn.disabled = false;
+                scanBtn.innerHTML = "<span>⚡ SCAN FOR AI ANALYSIS</span>";
+                scanner.style.display = "none";
+            }
+        });
+
+        // Replay Speech Button
+        speakBtn.addEventListener('click', () => speak(resultText.innerText));
+
+        // Start camera on page load
+        window.addEventListener('load', () => {
+            initCamera();
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (currentSource === 'camera') stopCamera();
+            } else {
+                if (currentSource === 'camera') initCamera();
+            }
+        });
+    </script>
+</body>
+
+</html>

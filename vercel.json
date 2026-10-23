@@ -1,0 +1,53 @@
+{
+  "cleanUrls": false,
+  "rewrites": [
+    {
+      "source": "/visual-explanation",
+      "destination": "/Visual Explanation/index.html"
+    },
+    {
+      "source": "/visual-explanation/",
+      "destination": "/Visual Explanation/index.html"
+    },
+    {
+      "source": "/camera-check",
+      "destination": "/Camera Check/index.html"
+    },
+    {
+      "source": "/camera-check/",
+      "destination": "/Camera Check/index.html"
+    },
+    {
+      "source": "/night-vision",
+      "destination": "/Night-Vision/index.html"
+    },
+    {
+      "source": "/night-vision/",
+      "destination": "/Night-Vision/index.html"
+    },
+    {
+      "source": "/queue-detection",
+      "destination": "/queue-detection/index.html"
+    },
+    {
+      "source": "/queue-detection/",
+      "destination": "/queue-detection/index.html"
+    },
+    {
+      "source": "/object-detection",
+      "destination": "/object-detection-pro/index.html"
+    },
+    {
+      "source": "/object-detection/",
+      "destination": "/object-detection-pro/index.html"
+    },
+    {
+      "source": "/object-detection-pro",
+      "destination": "/object-detection-pro/index.html"
+    },
+    {
+      "source": "/object-detection-pro/",
+      "destination": "/object-detection-pro/index.html"
+    }
+  ]
+}

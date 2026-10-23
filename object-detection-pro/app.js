@@ -1,6 +1,7 @@
 /**
- * Object Detection Pro - AI Neural Engine
- * Powered by TensorFlow.js & COCO-SSD
+ * Object Detection Pro - High Performance AI Neural Engine
+ * Powered by TensorFlow.js, COCO-SSD & NVIDIA NIM Multimodal Vision AI
+ * 100% Live Computer Vision Stream with IoU Temporal Stabilization
  */
 
 // DOM Elements
@@ -13,123 +14,138 @@ const objectList = document.getElementById('object-list');
 const voiceToggle = document.getElementById('voice-toggle');
 const threshRange = document.getElementById('threshold-range');
 const threshVal = document.getElementById('threshold-val');
+const detectionInfo = document.getElementById('detection-info');
 
-// Global Vars
+// Multimodal AI Scene Intelligence DOM Elements
+const inspectSceneBtn = document.getElementById('inspect-scene-btn');
+const aiScenePanel = document.getElementById('ai-scene-panel');
+const aiSceneContent = document.getElementById('ai-scene-content');
+const closeSceneBtn = document.getElementById('close-scene-btn');
+const speakSceneBtn = document.getElementById('speak-scene-btn');
+
+// Global State
 let model = null;
-let lastSpokenObjects = new Set();
-let speechCooldown = 0;
-let minConfidence = 0.6;
 let currentStream = null;
 let isPageVisible = true;
 let isCameraRunning = false;
-let isInitializing = false;
+let isDetecting = false;
+let isInspectingScene = false;
+let minConfidence = 0.50; // 50% default base threshold
+let lastSpokenSummary = "";
+let lastSceneExplanation = "";
+let speechCooldown = 0;
 
-// Color mapping for classes
+// Temporal IoU Tracking State
+let activeTracks = [];
+let nextTrackId = 1;
+const IOU_MATCH_THRESHOLD = 0.32;
+const MAX_MISSES = 4; // Purge tracks after 4 consecutive missed inferences (~200ms)
+
+// High False-Positive Ambiguous Classes (require higher confidence & persistence)
+const AMBIGUOUS_SMALL_CLASSES = new Set([
+    'cup', 'cell phone', 'remote', 'mouse', 'fork', 'spoon', 'knife', 'toothbrush'
+]);
+
+// High-Contrast Assistive Colors for Detection Classes
 const classColors = {
-    'person': '#FF00FF',    // Pink
-    'car': '#00FF00',       // Green
-    'dog': '#00FFFF',       // Cyan
-    'cat': '#00FFFF',
-    'traffic light': '#FFFF00', // Yellow
-    'stop sign': '#0000FF',  // Blue
-    'street sign': '#0000FF',
-    'sign': '#0000FF',
-    'bottle': '#FFA500',
-    'backpack': '#800080',
-    'laptop': '#C0C0C0',
-    'bus': '#00FF00',
-    'truck': '#00FF00',
-    'bicycle': '#00FF00',
-    'motorcycle': '#00FF00',
-    'chair': '#FFA500',     // Orange
-    'default': '#00E676'    // Greenish
+    'person': '#00E676',       // Vibrant Green
+    'car': '#00E5FF',          // Cyan
+    'dog': '#FFD600',          // Yellow
+    'cat': '#FFD600',
+    'traffic light': '#FF1744',// Red
+    'stop sign': '#FF1744',
+    'bottle': '#FF9100',       // Orange
+    'cup': '#FF9100',
+    'chair': '#E040FB',        // Purple
+    'couch': '#E040FB',
+    'bed': '#E040FB',
+    'laptop': '#2979FF',       // Blue
+    'cell phone': '#2979FF',
+    'book': '#00B0FF',
+    'backpack': '#AA00FF',
+    'default': '#00F2FE'       // Electric Cyan
 };
 
-function getColor(className) {
+function getColor(className, isReliable = true) {
+    if (!isReliable) return '#FFB300'; // Amber/Yellow for unverified / low confidence
     return classColors[className] || classColors['default'];
 }
 
-// TTS Setup
+// Text-to-Speech
 const synth = window.speechSynthesis;
 
-// 1. Initialize System
+function speak(text, priority = false) {
+    if (!synth || !voiceToggle || !voiceToggle.checked) return;
+    if (priority && synth.speaking) synth.cancel();
+    if (!priority && synth.speaking) return;
+
+    const cleanText = text.replace(/[*#_~`]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    synth.speak(utterance);
+}
+
+// 1. Initialize Neural AI & Camera
 async function init() {
     try {
-        console.log("Loading AI Model...");
-        modelStatus.innerText = "LOADING COCO-SSD...";
+        console.log("Initializing TensorFlow COCO-SSD Model...");
+        if (modelStatus) {
+            modelStatus.innerText = "LOADING AI MODEL...";
+            modelStatus.style.color = "#FFD600";
+        }
 
-        model = await cocoSsd.load({
-            base: 'lite_mobilenet_v2'
-        });
+        // Load COCO-SSD
+        if (typeof cocoSsd !== 'undefined') {
+            model = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+            console.log("✓ COCO-SSD Neural Model Ready");
+            if (modelStatus) {
+                modelStatus.innerText = "MODEL READY";
+                modelStatus.style.color = "#00E676";
+            }
+        } else {
+            throw new Error("COCO-SSD library not loaded");
+        }
 
-        console.log("Model Loaded.");
-        modelStatus.innerText = "MODEL READY";
-        modelStatus.style.color = "#00E676";
+        // Setup Live Camera
+        const camOk = await setupCamera();
 
-        // Setup Camera with longer delay to avoid hardware contention
-        let retryCount = 0;
-        const maxRetries = 3;
-        
-        async function tryCamera() {
-            try {
-                // 2 second delay is safer for browser hardware release
-                await new Promise(r => setTimeout(r, 2000));
-                const success = await setupCamera();
-                if (!success && retryCount < maxRetries) {
-                    retryCount++;
-                    console.warn(`Camera failed, retrying (${retryCount}/${maxRetries})...`);
-                    modelStatus.innerText = `RETRYING CAMERA (${retryCount})...`;
-                    return await tryCamera();
-                }
-                return success;
-            } catch (err) {
-                if (retryCount < maxRetries) {
-                    retryCount++;
-                    return await tryCamera();
-                }
-                throw err;
+        // Dismiss loading screen
+        if (loadingScreen) {
+            loadingScreen.classList.add('hide');
+        }
+
+        if (camOk) {
+            speak("Object detection online. Scanning your surroundings.");
+            requestAnimationFrame(renderLoop);
+        } else {
+            if (modelStatus) {
+                modelStatus.innerText = "CAMERA OFF";
+                modelStatus.style.color = "#FF1744";
             }
         }
 
-        const isCamOk = await tryCamera();
-        
-        loadingScreen.classList.add('hide');
-        if (isCamOk) {
-            detectFrame();
-        } else {
-            modelStatus.innerText = "CAMERA OFF";
-        }
-
     } catch (err) {
-        console.error("Initialization failed:", err);
-        modelStatus.innerText = "CAMERA BUSY";
-        modelStatus.style.color = "#ff3c3c";
-        
-        // Remove the alert as requested, use a UI message instead
-        const errorMsg = document.createElement('div');
-        errorMsg.style = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(0,0,0,0.9); padding:20px; border-radius:10px; color:white; z-index:10000; text-align:center; border:2px solid #ff3c3c;";
-        errorMsg.innerHTML = `<h3>Camera Access Error</h3><p>Could not start video. Please ensure no other apps are using the camera and refresh.</p><button onclick="location.reload()" style="background:#00E676; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;">Retry Now</button>`;
-        document.body.appendChild(errorMsg);
+        console.error("Initialization error:", err);
+        if (loadingScreen) loadingScreen.classList.add('hide');
+        if (modelStatus) {
+            modelStatus.innerText = "LOAD ERROR";
+            modelStatus.style.color = "#FF1744";
+        }
     }
 }
 
-/// 2. Camera Setup (Standardized Robust Pattern)
+// 2. Camera Setup with Resolution Fallbacks
 async function setupCamera() {
-    if (isInitializing) return;
-    isInitializing = true;
-    
     try {
-        if (isCameraRunning && currentStream) {
-            console.log("Camera already running");
-            isInitializing = false;
-            return;
-        }
+        if (isCameraRunning && currentStream) return true;
 
         const constraints = {
             video: {
                 width: { ideal: 1280 },
                 height: { ideal: 720 },
-                facingMode: "environment" // Optimized for vision aid
+                facingMode: "environment"
             },
             audio: false
         };
@@ -139,235 +155,481 @@ async function setupCamera() {
         try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
         } catch (e) {
-            console.warn("High quality failed, using fallback...");
+            console.warn("High-res camera unavailable, using fallback:", e);
             currentStream = await navigator.mediaDevices.getUserMedia(fallback);
         }
 
         video.srcObject = currentStream;
-        await video.play();
-        isCameraRunning = true;
 
-        console.log("Camera started");
-        monitorStream(currentStream);
-
-        isInitializing = false;
-        return true; // Success
-
-    } catch (err) {
-        isInitializing = false;
-        handleCameraError(err);
-        return false; // Failed
-    }
-}
-
-function monitorStream(stream) {
-    const track = stream.getVideoTracks()[0];
-    if (!track) return;
-
-    track.onended = () => {
-        console.log("Camera track ended. Restarting...");
-        restartCamera();
-    };
-
-    track.onmute = () => {
-        console.log("Camera muted. Restarting...");
-        restartCamera();
-    };
-
-    track.oninactive = () => {
-        console.log("Camera inactive. Restarting...");
-        restartCamera();
-    };
-}
-
-async function restartCamera() {
-    if (!isCameraRunning) return;
-    stopCamera();
-    setTimeout(() => {
-        if (isPageVisible) setupCamera();
-    }, 1000);
-}
-
-function handleCameraError(err) {
-    console.error("Camera error:", err);
-    let msg = "Camera Access Error";
-    if (err.name === 'NotAllowedError') msg = "Permission Denied. Please allow camera.";
-    else if (err.name === 'NotFoundError') msg = "No camera found.";
-    
-    // Security alert removed as requested.
-    
-    modelStatus.innerText = "CAMERA BUSY";
-    modelStatus.style.color = "#FF3D00";
-}
-
-function stopCamera() {
-    if (!currentStream) return;
-    currentStream.getTracks().forEach(track => {
-        track.onended = null;
-        track.onmute = null;
-        track.oninactive = null;
-        track.stop();
-    });
-    video.pause();
-    video.srcObject = null;
-    currentStream = null;
-    isCameraRunning = false;
-    console.log("Camera stopped");
-}
-let frameCount = 0;
-// 3. Detection Loop
-async function detectFrame() {
-    if (!model || !isPageVisible) {
-        requestAnimationFrame(detectFrame);
-        return;
-    }
-
-    // Step 5: Frame Skipping Optimization (Step 5)
-    frameCount++;
-    if (frameCount % 10 !== 0) {
-        requestAnimationFrame(detectFrame);
-        return;
-    }
-
-    try {
-        if (video.readyState >= 2) { // HAVE_CURRENT_DATA
-            if (video.videoWidth > 0 && (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)) {
+        await new Promise((resolve) => {
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
+                return resolve();
             }
+            video.onloadedmetadata = () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                resolve();
+            };
+            setTimeout(() => {
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                resolve();
+            }, 800);
+        });
 
-            const predictions = await model.detect(video);
+        await video.play();
+        isCameraRunning = true;
+        return true;
 
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Process results
-            const currentObjects = new Set();
-
-            predictions.forEach(prediction => {
-                const score = prediction.score;
-                if (score < minConfidence) return;
-
-                const className = prediction.class;
-                currentObjects.add(className);
-                const boxColor = getColor(className);
-
-                // Draw Box
-                const [x, y, width, height] = prediction.bbox;
-
-                // Simple Clean Box Style from Image
-                ctx.strokeStyle = boxColor;
-                ctx.lineWidth = 3;
-                ctx.strokeRect(x, y, width, height);
-
-                // Label Background (on top of the box)
-                ctx.fillStyle = boxColor;
-                const text = className; // Just the name, similar to image
-                ctx.font = 'bold 16px Roboto, Arial';
-                const textWidth = ctx.measureText(text).width;
-                
-                // Position label above the box
-                const labelHeight = 25;
-                const labelY = y - labelHeight > 0 ? y - labelHeight : y;
-                ctx.fillRect(x, labelY, textWidth + 15, labelHeight);
-
-                // Label Text
-                ctx.fillStyle = '#000000';
-                ctx.fillText(text, x + 7, labelY + 18);
-            });
-
-            updateObjectUI(currentObjects);
-            handleVoiceFeedback(currentObjects);
-        }
     } catch (err) {
-        console.warn("Detection skipped this frame:", err);
+        console.error("Camera setup error:", err);
+        return false;
     }
-
-    requestAnimationFrame(detectFrame);
 }
 
-// 4. UI Update
-function updateObjectUI(objects) {
-    if (objects.size === 0) {
-        objectList.innerHTML = '<span class="object-tag" style="background:transparent; border-style:dashed;">Scanning...</span>';
+// 3. Continuous 60 FPS Render & Inference Loop
+let frameCount = 0;
+async function renderLoop() {
+    if (!isPageVisible) {
+        requestAnimationFrame(renderLoop);
+        return;
+    }
+
+    // Keep canvas dimensions synced with live stream
+    if (video.videoWidth > 0 && (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+    }
+
+    // Run neural inference every 3 frames (~20 FPS)
+    frameCount++;
+    if (model && video.readyState >= 2 && !isDetecting && frameCount % 3 === 0) {
+        runLiveInference();
+    }
+
+    // Draw stabilized bounding boxes and spatial tags
+    drawOverlays();
+
+    requestAnimationFrame(renderLoop);
+}
+
+// 4. Compute Intersection over Union (IoU)
+function computeIoU(boxA, boxB) {
+    const [ax, ay, aw, ah] = boxA;
+    const [bx, by, bw, bh] = boxB;
+
+    const xLeft = Math.max(ax, bx);
+    const yTop = Math.max(ay, by);
+    const xRight = Math.min(ax + aw, bx + bw);
+    const yBottom = Math.min(ay + ah, by + bh);
+
+    if (xRight <= xLeft || yBottom <= yTop) return 0.0;
+
+    const intersectionArea = (xRight - xLeft) * (yBottom - yTop);
+    const areaA = aw * ah;
+    const areaB = bw * bh;
+    const unionArea = areaA + areaB - intersectionArea;
+
+    return unionArea > 0 ? (intersectionArea / unionArea) : 0.0;
+}
+
+// 5. Execute Neural Classification & Temporal IoU Stabilization
+async function runLiveInference() {
+    isDetecting = true;
+    try {
+        const rawDetections = await model.detect(video);
+        updateTemporalTracker(rawDetections || []);
+
+        // Filter active confirmed/visible tracks
+        const visibleTracks = activeTracks.filter(t => t.hits >= 2 && t.misses === 0);
+
+        // Update UI Tags and Spoken Announcements
+        updateUIBadges(visibleTracks);
+        generateSpatialVoiceGuidance(visibleTracks);
+
+    } catch (err) {
+        console.warn("Inference frame skip:", err);
+    } finally {
+        isDetecting = false;
+    }
+}
+
+// 6. Temporal Multi-Frame IoU Tracker Algorithm
+function updateTemporalTracker(rawDetections) {
+    const matchedTrackIndices = new Set();
+    const matchedDetectionIndices = new Set();
+
+    // Step A: Find best IoU matches between incoming detections and existing tracks
+    for (let dIdx = 0; dIdx < rawDetections.length; dIdx++) {
+        const det = rawDetections[dIdx];
+        const detClass = det.class.toLowerCase();
+        const detScore = det.score;
+        const detBbox = det.bbox;
+
+        // Class-specific threshold guard: require higher baseline for ambiguous small items
+        const isAmbiguous = AMBIGUOUS_SMALL_CLASSES.has(detClass);
+        const threshold = isAmbiguous ? Math.max(minConfidence, 0.60) : minConfidence;
+
+        if (detScore < threshold * 0.85) {
+            // Discard severely under-threshold predictions immediately
+            continue;
+        }
+
+        let bestIoU = 0;
+        let bestTrackIdx = -1;
+
+        for (let tIdx = 0; tIdx < activeTracks.length; tIdx++) {
+            if (matchedTrackIndices.has(tIdx)) continue;
+
+            const track = activeTracks[tIdx];
+            const iou = computeIoU(detBbox, track.bbox);
+
+            if (iou > bestIoU) {
+                bestIoU = iou;
+                bestTrackIdx = tIdx;
+            }
+        }
+
+        if (bestIoU >= IOU_MATCH_THRESHOLD && bestTrackIdx !== -1) {
+            // Matched with existing track: Smooth coordinates with Exponential Moving Average (EMA)
+            const track = activeTracks[bestTrackIdx];
+            const alpha = 0.65; // Smoothing factor
+
+            track.bbox = [
+                alpha * detBbox[0] + (1 - alpha) * track.bbox[0],
+                alpha * detBbox[1] + (1 - alpha) * track.bbox[1],
+                alpha * detBbox[2] + (1 - alpha) * track.bbox[2],
+                alpha * detBbox[3] + (1 - alpha) * track.bbox[3]
+            ];
+
+            // Update smoothed confidence score
+            track.score = alpha * detScore + (1 - alpha) * track.score;
+            track.class = detClass;
+            track.hits++;
+            track.misses = 0;
+
+            // Determine reliability
+            const hitsNeeded = isAmbiguous ? 3 : 2;
+            const confNeeded = isAmbiguous ? 0.62 : minConfidence;
+            track.isReliable = (track.hits >= hitsNeeded) && (track.score >= confNeeded);
+            track.confirmed = track.hits >= hitsNeeded;
+
+            matchedTrackIndices.add(bestTrackIdx);
+            matchedDetectionIndices.add(dIdx);
+        }
+    }
+
+    // Step B: Spawn new tracks for unmatched confident detections
+    for (let dIdx = 0; dIdx < rawDetections.length; dIdx++) {
+        if (matchedDetectionIndices.has(dIdx)) continue;
+
+        const det = rawDetections[dIdx];
+        const detClass = det.class.toLowerCase();
+        const detScore = det.score;
+        const isAmbiguous = AMBIGUOUS_SMALL_CLASSES.has(detClass);
+        const threshold = isAmbiguous ? Math.max(minConfidence, 0.60) : minConfidence;
+
+        if (detScore >= threshold) {
+            activeTracks.push({
+                id: nextTrackId++,
+                class: detClass,
+                bbox: [...det.bbox],
+                score: detScore,
+                hits: 1,
+                misses: 0,
+                confirmed: false,
+                isReliable: false,
+                isAmbiguous
+            });
+        }
+    }
+
+    // Step C: Age unmatched existing tracks and purge expired ones
+    for (let tIdx = 0; tIdx < activeTracks.length; tIdx++) {
+        if (!matchedTrackIndices.has(tIdx)) {
+            activeTracks[tIdx].misses++;
+        }
+    }
+
+    activeTracks = activeTracks.filter(track => track.misses <= MAX_MISSES);
+}
+
+// 7. Render Stabilized Overlays & Uncertainty Indicators
+function drawOverlays() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const visibleTracks = activeTracks.filter(t => t.hits >= 2 && t.misses === 0);
+    if (visibleTracks.length === 0) return;
+
+    visibleTracks.forEach(track => {
+        const className = track.class;
+        const score = Math.round(track.score * 100);
+        const [x, y, width, height] = track.bbox;
+        const isReliable = track.isReliable;
+        const color = getColor(className, isReliable);
+
+        // Spatial position calculation
+        const centerX = x + width / 2;
+        const normX = centerX / (canvas.width || 640);
+        let posTag = "CENTER";
+        if (normX < 0.35) posTag = "LEFT";
+        else if (normX > 0.65) posTag = "RIGHT";
+
+        // Draw Bounding Box: Dashed for unverified/uncertain, solid for verified
+        ctx.strokeStyle = color;
+        ctx.lineWidth = isReliable ? 3 : 2;
+        if (!isReliable) {
+            ctx.setLineDash([6, 4]); // Dashed line for uncertain detections
+        } else {
+            ctx.setLineDash([]);
+        }
+
+        ctx.strokeRect(x, y, width, height);
+
+        // Reset line dash for solid corner brackets
+        ctx.setLineDash([]);
+        const cornerLen = Math.min(18, width / 4, height / 4);
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        // Top-left
+        ctx.moveTo(x, y + cornerLen); ctx.lineTo(x, y); ctx.lineTo(x + cornerLen, y);
+        // Top-right
+        ctx.moveTo(x + width - cornerLen, y); ctx.lineTo(x + width, y); ctx.lineTo(x + width, y + cornerLen);
+        // Bottom-left
+        ctx.moveTo(x, y + height - cornerLen); ctx.lineTo(x, y + height); ctx.lineTo(x + cornerLen, y + height);
+        // Bottom-right
+        ctx.moveTo(x + width - cornerLen, y + height); ctx.lineTo(x + width, y + height); ctx.lineTo(x + width, y + height - cornerLen);
+        ctx.stroke();
+
+        // Label Tag with Uncertainty Indicator
+        const statusBadge = isReliable ? "[VERIFIED]" : "[UNVERIFIED]";
+        const labelText = `${className.toUpperCase()} ${score}% [${posTag}] ${statusBadge}`;
+
+        ctx.font = 'bold 13px "Inter", Arial, sans-serif';
+        const textWidth = ctx.measureText(labelText).width;
+        const labelHeight = 24;
+        const labelY = (y - labelHeight > 0) ? y - labelHeight : y;
+
+        ctx.fillStyle = isReliable ? "rgba(10, 15, 25, 0.88)" : "rgba(25, 20, 10, 0.90)";
+        ctx.fillRect(x, labelY, textWidth + 14, labelHeight);
+
+        ctx.fillStyle = color;
+        ctx.fillText(labelText, x + 7, labelY + 16);
+    });
+}
+
+// 8. Update UI Badges with Stabilized Live Data
+function updateUIBadges(tracks) {
+    if (!objectList) return;
+
+    if (tracks.length === 0) {
+        objectList.innerHTML = '<span class="object-tag" style="background:transparent; border:1px dashed rgba(255,255,255,0.3);">Scanning scene...</span>';
+        if (detectionInfo) {
+            detectionInfo.innerHTML = '<div class="label">SCANNING FOR OBJECTS...</div>';
+        }
         return;
     }
 
     objectList.innerHTML = '';
-    objects.forEach(obj => {
+    tracks.forEach(t => {
         const span = document.createElement('span');
-        span.className = 'object-tag';
-        span.innerText = obj.toUpperCase();
+        const pct = Math.round(t.score * 100);
+        if (!t.isReliable) {
+            span.className = 'object-tag unverified';
+            span.innerText = `${t.class.toUpperCase()}? (${pct}%) [UNVERIFIED]`;
+        } else {
+            span.className = 'object-tag';
+            span.innerText = `${t.class.toUpperCase()} (${pct}%)`;
+        }
         objectList.appendChild(span);
+    });
+
+    if (detectionInfo) {
+        const verifiedCount = tracks.filter(t => t.isReliable).length;
+        const topTrack = tracks[0];
+        detectionInfo.innerHTML = `<div class="label">${tracks.length} OBJECT${tracks.length > 1 ? 'S' : ''} DETECTED (${verifiedCount} VERIFIED, TOP: ${topTrack.class.toUpperCase()})</div>`;
+    }
+}
+
+// 9. Intelligent Spatial Voice Guidance (Only Speaks Verified Stable Objects)
+function generateSpatialVoiceGuidance(tracks) {
+    if (!voiceToggle || !voiceToggle.checked) return;
+
+    const now = Date.now();
+    if (now < speechCooldown) return;
+
+    // Only speak verified objects to avoid misinforming blind users
+    const verifiedTracks = tracks.filter(t => t.isReliable);
+    if (verifiedTracks.length === 0) {
+        return;
+    }
+
+    // Group items by spatial sector
+    const leftItems = [];
+    const centerItems = [];
+    const rightItems = [];
+
+    verifiedTracks.forEach(t => {
+        const centerX = t.bbox[0] + t.bbox[2] / 2;
+        const normX = centerX / (canvas.width || 640);
+        if (normX < 0.35) leftItems.push(t.class);
+        else if (normX > 0.65) rightItems.push(t.class);
+        else centerItems.push(t.class);
+    });
+
+    const parts = [];
+    if (centerItems.length > 0) {
+        parts.push(`${[...new Set(centerItems)].join(' and ')} ahead in center`);
+    }
+    if (leftItems.length > 0) {
+        parts.push(`${[...new Set(leftItems)].join(' and ')} on your left`);
+    }
+    if (rightItems.length > 0) {
+        parts.push(`${[...new Set(rightItems)].join(' and ')} on your right`);
+    }
+
+    const summaryKey = parts.join('; ');
+    if (summaryKey && summaryKey !== lastSpokenSummary) {
+        const phrase = "I see " + parts.join(', and ') + ".";
+        speak(phrase);
+        lastSpokenSummary = summaryKey;
+        speechCooldown = now + 4500; // 4.5 second cooldown between spatial announcements
+    }
+}
+
+// 10. Capture Snapshot for Multimodal Vision AI
+function captureCameraSnapshot() {
+    if (!video || video.videoWidth === 0) {
+        throw new Error("Camera feed is not ready.");
+    }
+
+    const offscreen = document.createElement('canvas');
+    const maxDim = 800; // Optimized size for vision tokenization & fast network transfer
+    let w = video.videoWidth;
+    let h = video.videoHeight;
+
+    if (w > maxDim || h > maxDim) {
+        if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+        } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+        }
+    }
+
+    offscreen.width = w;
+    offscreen.height = h;
+    const offCtx = offscreen.getContext('2d');
+    offCtx.drawImage(video, 0, 0, w, h);
+
+    return offscreen.toDataURL('image/jpeg', 0.85);
+}
+
+// 11. Multimodal Scene Intelligence via Secure /api/vision Proxy
+async function inspectSceneWithVisionAI() {
+    if (isInspectingScene) return;
+
+    try {
+        isInspectingScene = true;
+        if (inspectSceneBtn) {
+            inspectSceneBtn.disabled = true;
+            inspectSceneBtn.classList.add('loading');
+            inspectSceneBtn.querySelector('.btn-text').innerText = "ANALYZING SCENE...";
+        }
+
+        // Open AI scene panel in loading state
+        if (aiScenePanel) {
+            aiScenePanel.classList.remove('hidden');
+        }
+        if (aiSceneContent) {
+            aiSceneContent.innerHTML = `<span style="color: #00F2FE;">🔍 Capturing camera snapshot and analyzing scene with NVIDIA Vision AI...</span>`;
+        }
+
+        speak("Analyzing scene with Vision AI.", true);
+
+        // 1. Capture current video frame
+        const snapshotBase64 = captureCameraSnapshot();
+
+        // 2. Query secure backend endpoint
+        const response = await fetch('/api/vision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image: snapshotBase64,
+                mode: 'scene'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            const errorMsg = data.error || `Server returned error (${response.status})`;
+            throw new Error(errorMsg);
+        }
+
+        // 3. Display Result
+        lastSceneExplanation = data.description;
+        if (aiSceneContent) {
+            aiSceneContent.innerText = data.description;
+        }
+
+        // 4. Voice announcement
+        speak(data.description, true);
+
+    } catch (err) {
+        console.error("Multimodal scene inspection error:", err);
+        const userNotice = `⚠️ Could not complete scene analysis: ${err.message}. Please check lighting and try again.`;
+        if (aiSceneContent) {
+            aiSceneContent.innerText = userNotice;
+        }
+        speak("Scene analysis unavailable. Please try again.");
+    } finally {
+        isInspectingScene = false;
+        if (inspectSceneBtn) {
+            inspectSceneBtn.disabled = false;
+            inspectSceneBtn.classList.remove('loading');
+            inspectSceneBtn.querySelector('.btn-text').innerText = "INSPECT SCENE";
+        }
+    }
+}
+
+// 12. Wire UI Event Listeners
+if (inspectSceneBtn) {
+    inspectSceneBtn.addEventListener('click', inspectSceneWithVisionAI);
+}
+
+if (closeSceneBtn) {
+    closeSceneBtn.addEventListener('click', () => {
+        if (aiScenePanel) aiScenePanel.classList.add('hidden');
+        if (synth && synth.speaking) synth.cancel();
     });
 }
 
-// 5. Voice Feedback
-function handleVoiceFeedback(objects) {
-    if (!voiceToggle.checked) return;
-
-    // Check if anything NEW appeared
-    const newItems = [...objects].filter(x => !lastSpokenObjects.has(x));
-    const now = Date.now();
-
-    if (newItems.length > 0 && now > speechCooldown) {
-        const text = "I see " + newItems.join(", ");
-        speak(text);
-        lastSpokenObjects = new Set(objects);
-        speechCooldown = now + 4000; // 4 second gap between announcements
-    } else if (objects.size === 0) {
-        lastSpokenObjects = new Set();
-    }
+if (speakSceneBtn) {
+    speakSceneBtn.addEventListener('click', () => {
+        if (lastSceneExplanation) {
+            speak(lastSceneExplanation, true);
+        }
+    });
 }
 
-function speak(text) {
-    if (synth.speaking) synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 1.0;
-    utter.pitch = 1.0;
-    synth.speak(utter);
+// Confidence Slider
+if (threshRange) {
+    threshRange.value = 50;
+    if (threshVal) threshVal.innerText = "50%";
+    threshRange.addEventListener('input', (e) => {
+        minConfidence = e.target.value / 100;
+        if (threshVal) threshVal.innerText = e.target.value + "%";
+    });
 }
 
-// Event Listeners
-threshRange.addEventListener('input', (e) => {
-    minConfidence = e.target.value / 100;
-    threshVal.innerText = e.target.value + "%";
-});
-
-// 6. Resource Management
-function stopCamera() {
-    if (currentStream) {
-        console.log("Shutting down camera tracks...");
-        currentStream.getTracks().forEach(track => {
-            track.onended = null;
-            track.onmute = null;
-            track.oninactive = null;
-            track.stop();
-        });
-        currentStream = null;
-    }
-    video.pause();
-    video.srcObject = null;
-}
-
+// Handle Visibility & Lifecycle
 document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        console.log("Tab hidden, releasing camera...");
-        isPageVisible = false;
-        stopCamera();
-    } else {
-        console.log("Tab visible, checking camera recovery...");
-        isPageVisible = true;
-        // Don't auto-restart instantly, use a delay to avoid contention
-        setTimeout(() => {
-            if (isPageVisible && !isCameraRunning) {
-                setupCamera();
-            }
-        }, 2000);
-    }
+    isPageVisible = !document.hidden;
 });
 
-window.addEventListener('beforeunload', stopCamera);
-
-// Start
-window.onload = init;
+// Start Engine
+window.addEventListener('DOMContentLoaded', init);

@@ -12,10 +12,11 @@
     <!-- CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Correct TensorFlow.js Core (Full build) -->
+    <!-- Correct TensorFlow.js Core & COCO-SSD for Robust Multi-Person Detection -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
-    <!-- MoveNet & Pose Detection Dependencies -->
+    <!-- MoveNet & Pose Detection Dependencies (Fallback support) -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
 </head>
@@ -29,10 +30,49 @@
         <!-- AI drawing layer -->
         <canvas id="output"></canvas>
 
+        <!-- Top Metrics HUD -->
+        <div id="hud-panel" class="hud-panel" role="region" aria-label="Queue Metrics">
+            <div class="hud-badges">
+                <div class="hud-pill queue-count-pill">
+                    <span class="hud-label">IN QUEUE</span>
+                    <span id="queue-count-val" class="hud-value">0</span>
+                </div>
+                <div class="hud-pill total-count-pill">
+                    <span class="hud-label">TOTAL VISIBLE</span>
+                    <span id="total-count-val" class="hud-value">0</span>
+                </div>
+                <div class="hud-pill status-pill">
+                    <span class="hud-label">QUEUE FLOW</span>
+                    <span id="flow-status-val" class="hud-value">SCANNING</span>
+                </div>
+                <div class="hud-pill distance-pill" id="distance-pill">
+                    <span class="hud-label">DISTANCE</span>
+                    <span id="distance-status-val" class="hud-value">CLEAR</span>
+                </div>
+            </div>
+
+            <div class="hud-controls">
+                <button id="roi-toggle-btn" class="hud-btn" title="Toggle Queue Region">Corridor: Center</button>
+                <label class="voice-switch-label" title="Toggle Audio Guidance">
+                    <span>Voice</span>
+                    <input type="checkbox" id="voice-toggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
         <!-- Status Overlay -->
-        <div id="status-overlay">
+        <div id="status-overlay" role="status" aria-live="polite">
+            <!-- Dedicated Personal Distance Guidance Directive -->
+            <div id="guidance-banner" class="guidance-banner state-clear">
+                <span id="guidance-action-icon">🎯</span>
+                <span id="guidance-action-text">Path clear — No person ahead</span>
+            </div>
+
+            <!-- Queue Metrics & Spatial Status -->
             <p id="status-text">Waiting for camera…</p>
-            <p id="debug-info"></p>
+            <p id="debug-info">Initializing multi-person queue engine...</p>
+            <div id="service-notice" class="service-notice">⏱️ Waiting time: Unavailable (requires measured service rate)</div>
         </div>
 
         <!-- Start Screen -->
@@ -83,13 +123,6 @@
                 console.warn("Speech recognition failed to start.");
             }
         })();
-    </script>
-
-    <!-- START BUTTON HANDLER -->
-    <script>
-        document.getElementById("start-btn").addEventListener("click", () => {
-            document.getElementById("start-screen").style.display = "none";
-        });
     </script>
 
 </body>

@@ -64,23 +64,71 @@ canvas {
     width: 100%;
     padding: 20px;
     text-align: center;
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.75);
     z-index: 3;
     pointer-events: none;
-    backdrop-filter: blur(6px);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dedicated Personal Distance Guidance Directive Banner */
+.guidance-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 26px;
+    border-radius: 40px;
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    backdrop-filter: blur(14px);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+}
+
+.guidance-banner.state-close {
+    background: rgba(255, 23, 68, 0.25);
+    border: 2px solid #FF1744;
+    color: #FF1744;
+    box-shadow: 0 0 25px rgba(255, 23, 68, 0.45);
+}
+
+.guidance-banner.state-optimal {
+    background: rgba(0, 230, 118, 0.25);
+    border: 2px solid #00E676;
+    color: #00E676;
+    box-shadow: 0 0 25px rgba(0, 230, 118, 0.4);
+}
+
+.guidance-banner.state-far {
+    background: rgba(0, 229, 255, 0.25);
+    border: 2px solid #00E5FF;
+    color: #00E5FF;
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+}
+
+.guidance-banner.state-clear {
+    background: rgba(148, 163, 184, 0.15);
+    border: 2px solid rgba(148, 163, 184, 0.45);
+    color: #e2e8f0;
 }
 
 #status-text {
-    font-size: 26px;
-    font-weight: bold;
+    font-size: 20px;
+    font-weight: 600;
     color: #ffffff;
     text-shadow: 1px 1px 3px black;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 #debug-info {
-    font-size: 15px;
-    color: #ccc;
+    font-size: 13px;
+    color: #cbd5e1;
     font-family: monospace;
 }
 
@@ -157,9 +205,220 @@ canvas {
 }
 
 /* ===========================================================
+   TOP METRICS HUD PANEL
+=========================================================== */
+.hud-panel {
+    position: absolute;
+    top: 20px;
+    left: 100px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    z-index: 50;
+    pointer-events: auto;
+}
+
+.hud-badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hud-pill {
+    background: rgba(10, 15, 25, 0.82);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 30px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.queue-count-pill {
+    border-color: rgba(0, 230, 118, 0.45);
+}
+
+.queue-count-pill .hud-value {
+    color: #00E676;
+}
+
+.total-count-pill {
+    border-color: rgba(0, 242, 254, 0.4);
+}
+
+.total-count-pill .hud-value {
+    color: #00F2FE;
+}
+
+.status-pill {
+    border-color: rgba(255, 214, 0, 0.4);
+}
+
+.status-pill .hud-value {
+    color: #FFD600;
+}
+
+.distance-pill {
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+.distance-pill.state-close {
+    border-color: rgba(255, 23, 68, 0.6);
+}
+
+.distance-pill.state-close .hud-value {
+    color: #FF1744;
+}
+
+.distance-pill.state-optimal {
+    border-color: rgba(0, 230, 118, 0.6);
+}
+
+.distance-pill.state-optimal .hud-value {
+    color: #00E676;
+}
+
+.distance-pill.state-far {
+    border-color: rgba(0, 229, 255, 0.6);
+}
+
+.distance-pill.state-far .hud-value {
+    color: #00E5FF;
+}
+
+.distance-pill.state-clear .hud-value {
+    color: #94a3b8;
+}
+
+.hud-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #94a3b8;
+}
+
+.hud-value {
+    font-size: 15px;
+    font-weight: 800;
+    font-family: monospace;
+}
+
+.hud-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hud-btn {
+    background: rgba(10, 15, 25, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 242, 254, 0.4);
+    color: #00F2FE;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hud-btn:hover {
+    background: rgba(0, 242, 254, 0.2);
+    transform: translateY(-1px);
+}
+
+.voice-switch-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e2e8f0;
+    background: rgba(10, 15, 25, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    position: relative;
+}
+
+.voice-switch-label input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.voice-switch-label .slider {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+    background-color: #334155;
+    border-radius: 18px;
+    transition: .3s;
+}
+
+.voice-switch-label .slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .3s;
+}
+
+.voice-switch-label input:checked + .slider {
+    background-color: #00E676;
+}
+
+.voice-switch-label input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+.service-notice {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+    font-style: italic;
+    letter-spacing: 0.3px;
+}
+
+/* ===========================================================
    RESPONSIVE FIXES FOR MOBILE DEVICES
 =========================================================== */
 @media (max-width: 768px) {
+    .hud-panel {
+        top: 15px;
+        left: 80px;
+        right: 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .hud-badges {
+        gap: 6px;
+    }
+
+    .hud-pill {
+        padding: 4px 10px;
+        font-size: 12px;
+    }
+
+    .hud-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
 
     #status-text {
         font-size: 20px;
@@ -175,8 +434,8 @@ canvas {
     }
 
     #returnBtn {
-        width: 55px;
-        height: 55px;
-        font-size: 12px;
+        width: 50px;
+        height: 50px;
+        font-size: 11px;
     }
 }
