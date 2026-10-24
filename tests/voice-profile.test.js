@@ -602,6 +602,141 @@ describe('5. FIX 2: Voice Quality, Selection, and Natural Pacing', () => {
     assert.equal(service.pitch, 1.0, 'Pitch must be comfortable (1.0)');
     assert.equal(service.volume, 1.0, 'Volume must be clear (1.0)');
   });
+
+  test('ArgusSpeechService.getSharedInstance returns shared singleton and attaches listeners', () => {
+    const origWindow = global.window;
+    global.window = { localStorage: { getItem: () => 'en' } };
+
+    const instance1 = ArgusProfile.ArgusSpeechService.getSharedInstance({ lang: 'en-IN' });
+    const instance2 = ArgusProfile.ArgusSpeechService.getSharedInstance();
+
+    assert.equal(instance1, instance2, 'getSharedInstance must return the exact same instance');
+    global.window = origWindow;
+  });
+
+  test('speak does not unconditionally call cancel when speech is idle', () => {
+    let cancelCalled = false;
+    let spokenUtterance = null;
+
+    const mockSynth = {
+      speaking: false,
+      pending: false,
+      paused: false,
+      getVoices: () => [{ name: 'Samantha', lang: 'en-US' }],
+      cancel: () => { cancelCalled = true; },
+      speak: (u) => { spokenUtterance = u; },
+      resume: () => {}
+    };
+
+    const origWindow = global.window;
+    global.window = {
+      speechSynthesis: mockSynth,
+      SpeechSynthesisUtterance: function(text) { this.text = text; }
+    };
+
+    const service = new ArgusProfile.ArgusSpeechService();
+    service.speak('Person in front of you.');
+
+    assert.equal(cancelCalled, false, 'Cancel must NOT be called when synthesis is idle');
+    assert.ok(spokenUtterance, 'Utterance must be dispatched directly to speak()');
+    assert.equal(spokenUtterance.text, 'Person in front of you.');
+
+    service.cancel();
+    global.window = origWindow;
+  });
+
+  test('cancel deliberately cancels active utterance and clears watchdog', () => {
+    let cancelCalled = false;
+    const mockSynth = {
+      speaking: true,
+      pending: false,
+      paused: false,
+      cancel: () => { cancelCalled = true; }
+    };
+
+    const origWindow = global.window;
+    global.window = { speechSynthesis: mockSynth };
+
+    let speakingState = true;
+    const service = new ArgusProfile.ArgusSpeechService({
+      onSpeakingChange: (s) => { speakingState = s; }
+    });
+    service.isSpeaking = true;
+    service._ttsWatchdog = setTimeout(() => {}, 10000);
+
+    service.cancel();
+
+    assert.equal(cancelCalled, true, 'cancel must invoke speechSynthesis.cancel()');
+    assert.equal(service.isSpeaking, false, 'isSpeaking must be false');
+    assert.equal(service._ttsWatchdog, null, 'Watchdog timer must be cleared');
+    assert.equal(speakingState, false, 'Speaking state must be broadcast as false');
+
+    global.window = origWindow;
+  });
+
+  test('resumes paused speech synthesis before speaking', () => {
+    let resumeCalled = false;
+    const mockSynth = {
+      speaking: false,
+      pending: false,
+      paused: true,
+      getVoices: () => [{ name: 'Alex', lang: 'en-US' }],
+      cancel: () => {},
+      speak: () => {},
+      resume: () => { resumeCalled = true; }
+    };
+
+    const origWindow = global.window;
+    global.window = {
+      speechSynthesis: mockSynth,
+      SpeechSynthesisUtterance: function(text) { this.text = text; }
+    };
+
+    const service = new ArgusProfile.ArgusSpeechService();
+    service.speak('Navigation starting.');
+
+    assert.equal(resumeCalled, true, 'Paused speech synthesis must be resumed');
+
+    service.cancel();
+    global.window = origWindow;
+  });
+
+  test('speech dispatch suspends active recognition to avoid microphone feedback', () => {
+    let aborted = false;
+    const mockRecognition = {
+      abort: () => { aborted = true; },
+      start: () => {},
+      stop: () => {}
+    };
+
+    const mockSynth = {
+      speaking: false,
+      pending: false,
+      paused: false,
+      getVoices: () => [{ name: 'Alex', lang: 'en-US' }],
+      cancel: () => {},
+      speak: () => {},
+      resume: () => {}
+    };
+
+    const origWindow = global.window;
+    global.window = {
+      speechSynthesis: mockSynth,
+      SpeechSynthesisUtterance: function(text) { this.text = text; }
+    };
+
+    const service = new ArgusProfile.ArgusSpeechService();
+    service.recognition = mockRecognition;
+    service.isListening = true;
+
+    service.speak('Obstacle detected. Move left.');
+
+    assert.equal(aborted, true, 'SpeechRecognition must be suspended during speech dispatch');
+    assert.equal(service.isListening, false, 'Listening state must be cleared');
+
+    service.cancel();
+    global.window = origWindow;
+  });
 });
 
 

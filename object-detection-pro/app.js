@@ -76,26 +76,36 @@ const synth = window.speechSynthesis;
 
 function speak(text, priority = false) {
     if (!synth || !voiceToggle || !voiceToggle.checked) return;
-    if (priority && synth.speaking) synth.cancel();
-    if (!priority && synth.speaking) return;
-
     const cleanText = text.replace(/[*#_~`]/g, '');
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
 
-    utterance.onend = () => { window._objDetectUtterance = null; };
-    utterance.onerror = () => { window._objDetectUtterance = null; };
-    window._objDetectUtterance = utterance;
+    const doSpeak = () => {
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
 
-    try {
-        if (synth.paused) {
-            synth.resume();
+        utterance.onend = () => { window._objDetectUtterance = null; };
+        utterance.onerror = () => { window._objDetectUtterance = null; };
+        window._objDetectUtterance = utterance;
+
+        try {
+            if (synth.paused) {
+                synth.resume();
+            }
+        } catch (e) {}
+
+        synth.speak(utterance);
+    };
+
+    if (synth.speaking) {
+        if (priority) {
+            synth.cancel();
+            setTimeout(doSpeak, 50);
         }
-    } catch (e) {}
+        return;
+    }
 
-    synth.speak(utterance);
+    doSpeak();
 }
 
 // 1. Initialize Neural AI & Camera

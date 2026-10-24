@@ -85,23 +85,40 @@ function speak(text, priority = false) {
         return;
     }
 
-    if (synth.speaking) {
-        if (priority) synth.cancel();
-        else return;
-    }
-
     const cleanText = text.replace(/[*#_~`]/g, '');
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    const doSpeak = () => {
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
 
-    utterance.onend = () => {
-        lastSpokenTime = Date.now();
+        utterance.onend = () => {
+            lastSpokenTime = Date.now();
+            window._queueUtterance = null;
+        };
+        utterance.onerror = () => {
+            lastSpokenTime = Date.now();
+            window._queueUtterance = null;
+        };
+        window._queueUtterance = utterance;
+
+        try {
+            if (synth.paused) synth.resume();
+        } catch (e) {}
+
+        synth.speak(utterance);
+        lastSpokenTime = now;
     };
 
-    synth.speak(utterance);
-    lastSpokenTime = now;
+    if (synth.speaking) {
+        if (priority) {
+            synth.cancel();
+            setTimeout(doSpeak, 50);
+        }
+        return;
+    }
+
+    doSpeak();
 }
 
 // 1. System Initialization

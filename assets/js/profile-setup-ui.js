@@ -55,16 +55,26 @@
       // Inject Modal Markup and Banner if not already in DOM
       this._injectDOM();
 
-      // Initialize Speech Service with calm, natural pacing
-      this.speechService = new ArgusSpeechService({
-        lang: 'en-US',
-        voiceRate: 0.95,
-        pitch: 1.0,
-        volume: 1.0,
-        onListeningChange: (isListening) => this._onListeningChange(isListening),
-        onSpeakingChange: (isSpeaking) => this._onSpeakingChange(isSpeaking),
-        onError: (errMsg) => this._onSpeechError(errMsg)
-      });
+      // Initialize Speech Service with calm, natural pacing (shared singleton)
+      this.speechService = (typeof ArgusSpeechService.getSharedInstance === 'function')
+        ? ArgusSpeechService.getSharedInstance({
+            lang: 'en-US',
+            voiceRate: 0.95,
+            pitch: 1.0,
+            volume: 1.0,
+            onListeningChange: (isListening) => this._onListeningChange(isListening),
+            onSpeakingChange: (isSpeaking) => this._onSpeakingChange(isSpeaking),
+            onError: (errMsg) => this._onSpeechError(errMsg)
+          })
+        : new ArgusSpeechService({
+            lang: 'en-US',
+            voiceRate: 0.95,
+            pitch: 1.0,
+            volume: 1.0,
+            onListeningChange: (isListening) => this._onListeningChange(isListening),
+            onSpeakingChange: (isSpeaking) => this._onSpeakingChange(isSpeaking),
+            onError: (errMsg) => this._onSpeechError(errMsg)
+          });
 
       // Initialize State Machine
       this.machine = new VoiceProfileStateMachine({
@@ -738,7 +748,7 @@
         // First visit or incomplete without session skip -> auto present modal
         setTimeout(() => {
           this.openModal();
-          this._speakWelcomeGreeting();
+          // Do not autoplay welcome speech without user click to respect browser autoplay policies
         }, 350);
       } else if (!isCompleted && sessionSkipped) {
         // Show subtle top banner
@@ -778,8 +788,12 @@
     }
 
     closeModal() {
-      if (this.speechService) {
-        this.speechService.cancel();
+      // Only cancel speech if the onboarding state machine itself was in an active voice question
+      // Avoid cancelling companion assistant speech or navigation announcements
+      if (this.machine && this.machine.state !== 'IDLE' && this.machine.state !== 'MANUAL_MODE' && this.machine.state !== 'WELCOME') {
+        if (this.speechService) {
+          this.speechService.cancel();
+        }
       }
 
       if (this.overlay) {

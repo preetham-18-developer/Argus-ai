@@ -331,16 +331,19 @@
         return;
       }
 
-      // Reuse existing speech service instance if already present
-      if (root.argusProfileUI && root.argusProfileUI.speechService) {
-        this.speechService = root.argusProfileUI.speechService;
-      } else {
-        this.speechService = new ArgusProfile.ArgusSpeechService({
-          onListeningChange: (listening) => this._onListeningChange(listening),
-          onSpeakingChange: (speaking) => this._onSpeakingChange(speaking),
-          onError: (errMsg) => this._onError(errMsg)
-        });
-      }
+      this.speechService = (typeof ArgusProfile.ArgusSpeechService.getSharedInstance === 'function')
+        ? ArgusProfile.ArgusSpeechService.getSharedInstance({
+            onListeningChange: (listening) => this._onListeningChange(listening),
+            onSpeakingChange: (speaking) => this._onSpeakingChange(speaking),
+            onError: (errMsg) => this._onError(errMsg)
+          })
+        : (root.argusProfileUI && root.argusProfileUI.speechService)
+          ? root.argusProfileUI.speechService
+          : new ArgusProfile.ArgusSpeechService({
+              onListeningChange: (listening) => this._onListeningChange(listening),
+              onSpeakingChange: (speaking) => this._onSpeakingChange(speaking),
+              onError: (errMsg) => this._onError(errMsg)
+            });
     }
 
     syncUserProfile() {

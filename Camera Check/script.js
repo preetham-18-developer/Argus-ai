@@ -257,7 +257,6 @@ function startAnalysisLoop() {
 
 function speak(text, type) {
     if (!synth) return;
-    synth.cancel();
 
     if (voiceText) voiceText.innerText = text;
     if (voiceOverlay) voiceOverlay.classList.remove('hidden', 'danger');
@@ -267,15 +266,34 @@ function speak(text, type) {
     const colors = { success: '#00ff88', danger: '#ff4444', warning: '#ffcc00' };
     if (pulse) pulse.style.backgroundColor = colors[type] || colors['warning'];
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    const doSpeak = () => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
 
-    utterance.onend = () => {
-        if (type === 'success' && voiceOverlay) {
-            setTimeout(() => voiceOverlay.classList.add('hidden'), 2000);
-        }
+        utterance.onend = () => {
+            window._camCheckUtterance = null;
+            if (type === 'success' && voiceOverlay) {
+                setTimeout(() => voiceOverlay.classList.add('hidden'), 2000);
+            }
+        };
+        utterance.onerror = () => {
+            window._camCheckUtterance = null;
+        };
+        window._camCheckUtterance = utterance;
+
+        try {
+            if (synth.paused) synth.resume();
+        } catch (e) {}
+
+        synth.speak(utterance);
     };
 
-    synth.speak(utterance);
+    if (synth.speaking) {
+        synth.cancel();
+        setTimeout(doSpeak, 50);
+        return;
+    }
+
+    doSpeak();
 }

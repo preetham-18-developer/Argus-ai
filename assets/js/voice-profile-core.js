@@ -1092,6 +1092,15 @@
       this.onSpeakingChange = options.onSpeakingChange || (() => {});
       this.onError = options.onError || (() => {});
 
+      this._listeners = new Set();
+      if (options.onListeningChange || options.onSpeakingChange || options.onError) {
+        this._listeners.add({
+          onListeningChange: options.onListeningChange,
+          onSpeakingChange: options.onSpeakingChange,
+          onError: options.onError
+        });
+      }
+
       this.recognition = null;
       this.isListening = false;
       this.isSpeaking = false;
@@ -1101,9 +1110,69 @@
       this.selectedVoice = null;
       this.onResultCallback = null;
       this._isStartingRecognition = false;
+      this._lastSpokenText = '';
+      this._lastSpokenTime = 0;
+      this._isDeliberateCancel = false;
+      this._ttsWatchdog = null;
+      this._resumePulseTimer = null;
+      this._pendingCancelTimer = null;
 
       this._initVoices();
       this._initRecognition();
+    }
+
+    static getSharedInstance(options = {}) {
+      if (typeof window !== 'undefined') {
+        if (!window._argusSharedSpeechService) {
+          window._argusSharedSpeechService = new ArgusSpeechService(options);
+        } else if (options) {
+          if (options.onListeningChange || options.onSpeakingChange || options.onError) {
+            window._argusSharedSpeechService.addListener(options);
+          }
+          if (options.lang) {
+            window._argusSharedSpeechService.setLanguage(options.lang);
+          }
+        }
+        return window._argusSharedSpeechService;
+      }
+      return new ArgusSpeechService(options);
+    }
+
+    addListener(listener) {
+      if (!listener) return;
+      this._listeners.add(listener);
+    }
+
+    removeListener(listener) {
+      if (!listener) return;
+      this._listeners.delete(listener);
+    }
+
+    _broadcastListening(isListening) {
+      try { this.onListeningChange(isListening); } catch (e) {}
+      this._listeners.forEach(l => {
+        try {
+          if (typeof l.onListeningChange === 'function') l.onListeningChange(isListening);
+        } catch (e) {}
+      });
+    }
+
+    _broadcastSpeaking(isSpeaking) {
+      try { this.onSpeakingChange(isSpeaking); } catch (e) {}
+      this._listeners.forEach(l => {
+        try {
+          if (typeof l.onSpeakingChange === 'function') l.onSpeakingChange(isSpeaking);
+        } catch (e) {}
+      });
+    }
+
+    _broadcastError(errMsg) {
+      try { this.onError(errMsg); } catch (e) {}
+      this._listeners.forEach(l => {
+        try {
+          if (typeof l.onError === 'function') l.onError(errMsg);
+        } catch (e) {}
+      });
     }
 
     setLanguage(langCode) {
@@ -1208,106 +1277,227 @@
     }
 
     speak(text, onEnd) {
-      if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+      const UtteranceClass = (typeof window !== 'undefined' && window.SpeechSynthesisUtterance) ||
+                             (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
+
+      if (typeof window === 'undefined' || !window.speechSynthesis || !UtteranceClass) {
         if (onEnd) onEnd();
         return;
       }
 
-      // Safety: resume paused synthesis if browser was suspended
+      const cleanText = String(text || '').replace(/[*#_~`]/g, '').trim();
+      if (!cleanText) {
+        if (onEnd) onEnd();
+        return;
+      }
+
+      // Rapid deduplication guard (e.g. repeated greetings within 450ms)
+      const now = Date.now();
+      if (this._lastSpokenText === cleanText && (now - this._lastSpokenTime < 450) && this.isSpeaking) {
+        return;
+      }
+      this._lastSpokenText = cleanText;
+      this._lastSpokenTime = now;
+
+      // Determine voice and language alignment
+      const voice = this.getSelectedVoice();
+      let utteranceLang = 'en-US';
+      if (voice) {
+        if (this.lang.startsWith('te')) {
+          utteranceLang = (voice.lang && voice.lang.startsWith('te')) ? 'te-IN' : (voice.lang || 'en-US');
+        } else if (this.lang.startsWith('hi')) {
+          utteranceLang = (voice.lang && voice.lang.startsWith('hi')) ? 'hi-IN' : (voice.lang || 'en-US');
+        } else {
+          utteranceLang = voice.lang || 'en-US';
+        }
+      } else {
+        utteranceLang = this.lang.startsWith('te') ? 'te-IN' : this.lang.startsWith('hi') ? 'hi-IN' : 'en-US';
+      }
+
+      // If speech is already active, settle older utterance cleanly before submitting new one
+      const isCurrentlyActive = this.isSpeaking || window.speechSynthesis.speaking || window.speechSynthesis.pending;
+
+      if (isCurrentlyActive) {
+        this._isDeliberateCancel = true;
+        if (this._ttsWatchdog) {
+          clearTimeout(this._ttsWatchdog);
+          this._ttsWatchdog = null;
+        }
+        if (this._pendingCancelTimer) {
+          clearTimeout(this._pendingCancelTimer);
+          this._pendingCancelTimer = null;
+        }
+        this._stopChromeResumePulse();
+
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {}
+
+        this.isSpeaking = false;
+        this.activeUtterance = null;
+
+        // Allow Chromium cancellation IPC to settle to prevent new utterance from being silently cancelled
+        this._pendingCancelTimer = setTimeout(() => {
+          this._isDeliberateCancel = false;
+          this._pendingCancelTimer = null;
+          this._dispatchUtterance(cleanText, onEnd, voice, utteranceLang, UtteranceClass);
+        }, 65);
+      } else {
+        // No prior speech active; dispatch immediately WITHOUT calling cancel()
+        this._dispatchUtterance(cleanText, onEnd, voice, utteranceLang, UtteranceClass);
+      }
+    }
+
+    _dispatchUtterance(cleanText, onEnd, voice, utteranceLang, UtteranceClass) {
+      if (typeof window === 'undefined' || !window.speechSynthesis) {
+        if (onEnd) onEnd();
+        return;
+      }
+
+      const Cls = UtteranceClass || (typeof window !== 'undefined' && window.SpeechSynthesisUtterance) ||
+                  (typeof SpeechSynthesisUtterance !== 'undefined' ? SpeechSynthesisUtterance : null);
+      if (!Cls) {
+        if (onEnd) onEnd();
+        return;
+      }
+
+      // Resume AudioContext if suspended
+      try {
+        if (window.AudioContext || window.webkitAudioContext) {
+          const ctx = window._argusAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          window._argusAudioCtx = ctx;
+          if (ctx.state === 'suspended') {
+            ctx.resume();
+          }
+        }
+      } catch (e) {}
+
+      // Resume paused speech synthesis engine
       try {
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
       } catch (e) {}
 
-      // Cancel only if currently speaking or pending to avoid Chromium silent-drop bug
-      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-        try { window.speechSynthesis.cancel(); } catch (e) {}
-      }
-      this.isSpeaking = false;
-      this.activeUtterance = null;
-
-      // Abort speech recognition during assistant speech to prevent audio feedback loops
+      // Temporarily pause recognition during assistant speech to prevent audio feedback loop
       if (this.recognition && this.isListening) {
         try { this.recognition.abort(); } catch (e) {}
         this.isListening = false;
-        this.onListeningChange(false);
+        this._broadcastListening(false);
       }
 
-      const cleanText = text.replace(/[*#_~`]/g, '');
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      const voice = this.getSelectedVoice();
+      const utterance = new Cls(cleanText);
       if (voice) {
         utterance.voice = voice;
-        // Pair utterance language with actual voice capabilities to avoid browser silence
-        if (this.lang.startsWith('te')) {
-          utterance.lang = (voice.lang && voice.lang.startsWith('te')) ? 'te-IN' : (voice.lang || 'en-US');
-        } else if (this.lang.startsWith('hi')) {
-          utterance.lang = (voice.lang && voice.lang.startsWith('hi')) ? 'hi-IN' : (voice.lang || 'en-US');
-        } else {
-          utterance.lang = voice.lang || 'en-US';
-        }
-      } else {
-        utterance.lang = this.lang.startsWith('te') ? 'te-IN' : this.lang.startsWith('hi') ? 'hi-IN' : 'en-US';
       }
-
+      utterance.lang = utteranceLang;
       utterance.rate = this.voiceRate;
       utterance.pitch = this.pitch;
       utterance.volume = this.volume;
 
-      // Retain utterance reference on window to prevent Chrome GC discarding it mid-speech
       this.activeUtterance = utterance;
       if (typeof window !== 'undefined') {
         window._argusUtterance = utterance;
       }
 
       this.isSpeaking = true;
-      this.onSpeakingChange(true);
+      this._broadcastSpeaking(true);
 
       let finished = false;
-      const finishSpeech = () => {
+      const finishSpeech = (wasCancelled = false) => {
         if (finished) return;
         finished = true;
+
         if (this._ttsWatchdog) {
           clearTimeout(this._ttsWatchdog);
           this._ttsWatchdog = null;
         }
+        this._stopChromeResumePulse();
+
         this.isSpeaking = false;
         this.activeUtterance = null;
-        this.onSpeakingChange(false);
-        // Guard delay (150ms) so speaker resonance finishes before mic opens
+        if (typeof window !== 'undefined' && window._argusUtterance === utterance) {
+          window._argusUtterance = null;
+        }
+        this._broadcastSpeaking(false);
+
+        // Guard delay (150ms) so speaker acoustic resonance finishes before mic opens
         setTimeout(() => {
-          if (onEnd) onEnd();
+          if (onEnd && !wasCancelled) {
+            try { onEnd(); } catch (e) { console.warn('[ArgusSpeech] onEnd callback error:', e); }
+          }
         }, 150);
       };
 
-      utterance.onend = finishSpeech;
+      utterance.onstart = () => {
+        this._startChromeResumePulse();
+      };
+
+      utterance.onend = () => {
+        this._stopChromeResumePulse();
+        finishSpeech(false);
+      };
+
       utterance.onerror = (err) => {
+        this._stopChromeResumePulse();
+        if (err && (err.error === 'canceled' || err.error === 'interrupted')) {
+          // Expected when deliberate cancellation occurs; do not log warning or treat as failure
+          finishSpeech(true);
+          return;
+        }
         console.warn('[ArgusSpeech] TTS utterance error:', err);
-        finishSpeech();
+        finishSpeech(false);
       };
 
       // Watchdog timer: safety cleanup in case browser loses onend event
-      const estimatedMs = Math.max(3500, Math.min(12000, cleanText.length * 85));
+      const estimatedMs = Math.max(5000, Math.min(22000, cleanText.length * 110));
+      if (this._ttsWatchdog) {
+        clearTimeout(this._ttsWatchdog);
+      }
       this._ttsWatchdog = setTimeout(() => {
         if (this.isSpeaking && this.activeUtterance === utterance) {
+          const synth = (typeof window !== 'undefined') ? window.speechSynthesis : null;
+          // If browser is actively speaking and not paused, give it more time rather than killing it
+          if (synth && synth.speaking && !synth.paused) {
+            return;
+          }
+          if (synth && synth.paused) {
+            try { synth.resume(); } catch (e) {}
+            return;
+          }
           console.warn('[ArgusSpeech] TTS watchdog timeout triggered.');
-          finishSpeech();
+          finishSpeech(false);
         }
       }, estimatedMs);
-
-      // Workaround for Chrome paused speech synthesis bug
-      try {
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-      } catch (e) {}
 
       try {
         window.speechSynthesis.speak(utterance);
       } catch (err) {
         console.warn('[ArgusSpeech] speak() exception:', err);
-        finishSpeech();
+        finishSpeech(false);
+      }
+    }
+
+    _startChromeResumePulse() {
+      this._stopChromeResumePulse();
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        this._resumePulseTimer = setInterval(() => {
+          if (this.isSpeaking && window.speechSynthesis && window.speechSynthesis.speaking) {
+            try {
+              window.speechSynthesis.pause();
+              window.speechSynthesis.resume();
+            } catch (e) {}
+          } else {
+            this._stopChromeResumePulse();
+          }
+        }, 8000);
+      }
+    }
+
+    _stopChromeResumePulse() {
+      if (this._resumePulseTimer) {
+        clearInterval(this._resumePulseTimer);
+        this._resumePulseTimer = null;
       }
     }
 
@@ -1318,7 +1508,7 @@
 
     startListening(onResultCallback, options = {}) {
       if (!this.recognition) {
-        this.onError('Speech recognition is not supported in this browser.');
+        this._broadcastError('Speech recognition is not supported in this browser.');
         return;
       }
 
@@ -1340,7 +1530,7 @@
         try { this.recognition.abort(); } catch (e) {}
         this.isListening = false;
         this._isStartingRecognition = false;
-        this.onListeningChange(false);
+        this._broadcastListening(false);
         setTimeout(() => {
           this.startListening(onResultCallback, options);
         }, 80);
@@ -1363,7 +1553,7 @@
       this.recognition.onstart = () => {
         this._isStartingRecognition = false;
         this.isListening = true;
-        this.onListeningChange(true);
+        this._broadcastListening(true);
       };
 
       this.recognition.onresult = (event) => {
@@ -1401,14 +1591,14 @@
         }
         this._isStartingRecognition = false;
         this.isListening = false;
-        this.onListeningChange(false);
+        this._broadcastListening(false);
 
         if (event.error === 'not-allowed' || event.error === 'permission-denied') {
-          this.onError('Microphone permission was denied. Please allow microphone access in your browser settings.');
+          this._broadcastError('Microphone permission was denied. Please allow microphone access in your browser settings.');
         } else if (event.error === 'no-speech') {
           // In wake-word mode, silence is normal and expected; do not trigger error notice
           if (!isWakeWord) {
-            this.onError('No speech was detected. Please try again or tap Repeat.');
+            this._broadcastError('No speech was detected. Please try again or tap Repeat.');
           }
         } else if (event.error !== 'aborted') {
           console.warn('[ArgusSpeech] Recognition error:', event.error);
@@ -1421,7 +1611,7 @@
         }
         this._isStartingRecognition = false;
         this.isListening = false;
-        this.onListeningChange(false);
+        this._broadcastListening(false);
       };
 
       try {
@@ -1436,7 +1626,7 @@
         } else {
           console.warn('[ArgusSpeech] Recognition start error:', err);
           this.isListening = false;
-          this.onListeningChange(false);
+          this._broadcastListening(false);
         }
       }
     }
@@ -1450,27 +1640,39 @@
       }
       this.isListening = false;
       this._isStartingRecognition = false;
-      this.onListeningChange(false);
+      this._broadcastListening(false);
     }
 
     cancel() {
+      this._isDeliberateCancel = true;
       if (this._ttsWatchdog) {
         clearTimeout(this._ttsWatchdog);
         this._ttsWatchdog = null;
       }
+      if (this._pendingCancelTimer) {
+        clearTimeout(this._pendingCancelTimer);
+        this._pendingCancelTimer = null;
+      }
+      this._stopChromeResumePulse();
       this._clearSilenceTimer();
       if (this.recognition) {
         try { this.recognition.abort(); } catch (e) {}
       }
       this.isListening = false;
-      this.onListeningChange(false);
+      this._broadcastListening(false);
 
       if (typeof window !== 'undefined' && window.speechSynthesis) {
         try { window.speechSynthesis.cancel(); } catch (e) {}
       }
       this.isSpeaking = false;
       this.activeUtterance = null;
-      this.onSpeakingChange(false);
+      if (typeof window !== 'undefined' && window._argusUtterance) {
+        window._argusUtterance = null;
+      }
+      this._broadcastSpeaking(false);
+      setTimeout(() => {
+        this._isDeliberateCancel = false;
+      }, 100);
     }
 
     _resetSilenceTimer(onResultCallback) {

@@ -111,37 +111,44 @@ function speakGuidance(command, priority = false) {
         return;
     }
 
+    const cleanText = command.replace(/[*#_~`]/g, '');
+    const doSpeak = () => {
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+
+        utterance.onend = () => {
+            lastSpokenTime = Date.now();
+            window._pathGuideUtterance = null;
+        };
+        utterance.onerror = () => {
+            lastSpokenTime = Date.now();
+            window._pathGuideUtterance = null;
+        };
+
+        window._pathGuideUtterance = utterance;
+
+        try {
+            if (synth.paused) {
+                synth.resume();
+            }
+        } catch (e) {}
+
+        synth.speak(utterance);
+        lastSpokenTime = now;
+        lastSpokenCommand = command;
+    };
+
     if (synth.speaking) {
-        if (priority) synth.cancel();
-        else return;
+        if (priority) {
+            synth.cancel();
+            setTimeout(doSpeak, 50);
+        }
+        return;
     }
 
-    const cleanText = command.replace(/[*#_~`]/g, '');
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    utterance.onend = () => {
-        lastSpokenTime = Date.now();
-        window._pathGuideUtterance = null;
-    };
-    utterance.onerror = () => {
-        lastSpokenTime = Date.now();
-        window._pathGuideUtterance = null;
-    };
-
-    window._pathGuideUtterance = utterance;
-
-    try {
-        if (synth.paused) {
-            synth.resume();
-        }
-    } catch (e) {}
-
-    synth.speak(utterance);
-    lastSpokenTime = now;
-    lastSpokenCommand = command;
+    doSpeak();
 }
 
 // 3. Camera Setup & Lifecycle

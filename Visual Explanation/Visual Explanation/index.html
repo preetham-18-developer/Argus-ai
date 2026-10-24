@@ -738,12 +738,22 @@
         // Speech Output
         function speak(text) {
             if (!window.speechSynthesis || !voiceToggle.checked) return;
-            window.speechSynthesis.cancel();
             const cleanText = text.replace(/[*#_~`]/g, '');
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 1.05;
-            utterance.pitch = 1.0;
-            window.speechSynthesis.speak(utterance);
+
+            const doSpeak = () => {
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                utterance.rate = 1.05;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            };
+
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                setTimeout(doSpeak, 50);
+                return;
+            }
+
+            doSpeak();
         }
 
         // Capture Frame or Uploaded Image into Resized Base64 Data URL
