@@ -312,4 +312,56 @@ describe('4. DOM Integration & UI Controller', () => {
     const banner = env.documentMock.getElementById('argus-profile-banner');
     assert.equal(banner.classList.contains('active'), false);
   });
+
+  test('opening profile settings with existing profile pre-populates form, saves, and closes modal', () => {
+    // Save existing profile to storage
+    const initialProfile = {
+      profileVersion: 1,
+      displayName: 'Prem Pareesh',
+      phoneNumber: '+919876543210',
+      address: '123 Tech Park',
+      emergencyContacts: [
+        { name: 'Dr. Rao', phone: '+919123456789', relationship: 'Doctor' }
+      ],
+      completed: true
+    };
+    env.mockStorage.setItem('argus_user_profile', JSON.stringify(initialProfile));
+
+    const ui = env.windowMock.argusUI;
+    assert.ok(ui, 'argusUI must be present on window');
+
+    // Open Profile Settings
+    ui.openModal(true);
+
+    const overlay = env.documentMock.getElementById('argus-profile-modal-overlay');
+    assert.equal(overlay.classList.contains('active'), true, 'Modal overlay must be active');
+
+    const manualView = env.documentMock.getElementById('profile-view-manual');
+    assert.equal(manualView.style.display, 'block', 'Manual form view must be visible');
+
+    // Verify fields are pre-populated with existing profile data
+    const nameInput = env.documentMock.getElementById('manual-input-name');
+    const phoneInput = env.documentMock.getElementById('manual-input-phone');
+    const addressInput = env.documentMock.getElementById('manual-input-address');
+    const c1NameInput = env.documentMock.getElementById('manual-input-contact1-name');
+
+    assert.equal(nameInput.value, 'Prem Pareesh');
+    assert.equal(phoneInput.value, '+919876543210');
+    assert.equal(addressInput.value, '123 Tech Park');
+    assert.equal(c1NameInput.value, 'Dr. Rao');
+
+    // Modify name and save
+    nameInput.value = 'Dr. Prem Pareesh';
+    const saveBtn = env.documentMock.getElementById('btn-save-manual');
+    saveBtn.click();
+
+    // Verify modal closed
+    assert.equal(overlay.classList.contains('active'), false, 'Modal overlay must close after save');
+
+    // Verify localStorage was updated
+    const saved = JSON.parse(env.mockStorage.getItem('argus_user_profile'));
+    assert.equal(saved.displayName, 'Dr. Prem Pareesh');
+    assert.equal(saved.completed, true);
+  });
 });
+

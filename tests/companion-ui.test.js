@@ -987,5 +987,100 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
     assert.ok(footerHtml.includes('Settings'), 'Footer must contain Settings button');
   });
 
+  test('natural-language intent routing across complex phrasing for English, Telugu, and Hindi', () => {
+    const naturalTestCases = [
+      // English natural intents
+      { cmd: 'Who is in front of me? Please identify them.', lang: 'en', expectedUrl: './object-detection-pro/index.html', confirm: 'Opening Object Detection Pro.' },
+      { cmd: "Who is standing in front of me?", lang: 'en', expectedUrl: './object-detection-pro/index.html', confirm: 'Opening Object Detection Pro.' },
+      { cmd: "Can you read what's written here?", lang: 'en', expectedUrl: './Visual%20Explanation/index.html', confirm: 'Opening VisionAid AI.' },
+      { cmd: 'Please read this document.', lang: 'en', expectedUrl: './Visual%20Explanation/index.html', confirm: 'Opening VisionAid AI.' },
+      { cmd: 'Help me walk safely.', lang: 'en', expectedUrl: './Night-Vision/index.html', confirm: 'Starting PathGuide Pro navigation.' },
+      { cmd: 'Help me navigate.', lang: 'en', expectedUrl: './Night-Vision/index.html', confirm: 'Starting PathGuide Pro navigation.' },
+      { cmd: 'How many people are in line?', lang: 'en', expectedUrl: './queue-detection/index.html', confirm: 'Opening Queue Detector.' },
+      { cmd: 'Is it too dark to see clearly?', lang: 'en', expectedUrl: './Night-Vision/index.html?mode=ON', confirm: 'Turning on Night Vision mode.' },
+
+      // Telugu natural intents
+      { cmd: 'నా ముందు ఎవరు ఉన్నారు?', lang: 'te', expectedUrl: './object-detection-pro/index.html', confirm: 'ఆబ్జెక్ట్ డిటెక్షన్ ప్రో తెరుస్తున్నాను.' },
+      { cmd: 'ఈ పత్రాన్ని చదువు', lang: 'te', expectedUrl: './Visual%20Explanation/index.html', confirm: 'ఇప్పుడే విజన్ ఎయిడ్ తెరుస్తున్నాను.' },
+      { cmd: 'నాకు దారి చూపించు', lang: 'te', expectedUrl: './Night-Vision/index.html', confirm: 'పాత్గైడ్ ప్రో నావిగేషన్ ప్రారంభిస్తున్నాను.' },
+      { cmd: 'లైన్లో ఎంతమంది ఉన్నారు?', lang: 'te', expectedUrl: './queue-detection/index.html', confirm: 'క్యూ డిటెక్టర్ తెరుస్తున్నాను.' },
+      { cmd: 'చాలా చీకటిగా ఉంది', lang: 'te', expectedUrl: './Night-Vision/index.html?mode=ON', confirm: 'నైట్ విజన్ మోడ్ ఆన్ చేస్తున్నాను.' },
+
+      // Hindi natural intents
+      { cmd: 'मेरे सामने कौन है? कृपया पहचानें।', lang: 'hi', expectedUrl: './object-detection-pro/index.html', confirm: 'ऑब्जेक्ट डिटेक्शन प्रो खोल रहा हूँ।' },
+      { cmd: 'यह दस्तावेज़ पढ़ो।', lang: 'hi', expectedUrl: './Visual%20Explanation/index.html', confirm: 'अब विज़नएड खोल रहा हूँ।' },
+      { cmd: 'मुझे रास्ता बताओ।', lang: 'hi', expectedUrl: './Night-Vision/index.html', confirm: 'पाथगाइड प्रो नेविगेशन शुरू कर रहा हूँ।' },
+      { cmd: 'कतार में कितने लोग हैं?', lang: 'hi', expectedUrl: './queue-detection/index.html', confirm: 'कतार डिटेक्टर खोल रहा हूँ।' },
+      { cmd: 'क्या साफ देखने के लिए बहुत अंधेरा है?', lang: 'hi', expectedUrl: './Night-Vision/index.html?mode=ON', confirm: 'नाइट विज़न मोड चालू कर रहा हूँ।' }
+    ];
+
+    for (const tc of naturalTestCases) {
+      const { mockWindow } = setupMockEnvironment();
+      const controller = loadController(mockWindow);
+      controller.setLanguage(tc.lang, false);
+
+      let spoken = '';
+      controller.speechService = {
+        isSupported: () => true,
+        speak: (text, cb) => { spoken = text; if (cb) cb(); },
+        startListening: () => {},
+        stopListening: () => {}
+      };
+
+      controller.processVoiceCommand(tc.cmd);
+
+      assert.equal(spoken, tc.confirm, `Spoken confirmation mismatch for "${tc.cmd}"`);
+      assert.equal(mockWindow.location.href, tc.expectedUrl, `Navigation route mismatch for "${tc.cmd}"`);
+    }
+  });
+
+  test('profile save persists changes, updates header and spoken greeting without reload', () => {
+    const { mockWindow, mockStorage, elements } = setupMockEnvironment();
+    const initialProfile = ArgusProfile.createEmptyProfile();
+    initialProfile.displayName = 'Prem';
+    initialProfile.completed = true;
+    ArgusProfile.ProfileStorage.saveProfile(initialProfile, mockStorage);
+
+    const controller = loadController(mockWindow);
+
+    // Initial state: profile name is Prem
+    assert.equal(elements.get('header-profile-name').textContent, 'Prem');
+
+    // Simulate saving a new profile name
+    const updatedProfile = ArgusProfile.ProfileStorage.loadProfile(mockStorage);
+    updatedProfile.displayName = 'Aarav Sharma';
+    updatedProfile.phoneNumber = '+91 98765 11223';
+    updatedProfile.completed = true;
+    ArgusProfile.ProfileStorage.saveProfile(updatedProfile, mockStorage);
+
+    // Trigger runtime synchronization
+    controller.syncUserProfile();
+
+    // Verify DOM was immediately updated
+    assert.equal(elements.get('header-profile-name').textContent, 'Aarav Sharma');
+    assert.ok(elements.get('companion-greeting-text').innerHTML.includes('Aarav Sharma'));
+
+    // Verify next spoken greeting uses new name
+    let spoken = '';
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => { spoken = text; if (cb) cb(); },
+      startListening: () => {},
+      stopListening: () => {}
+    };
+
+    controller._triggerWakeWordReaction();
+    assert.ok(spoken.includes('Aarav Sharma'), `Greeting must address user as Aarav Sharma, got: ${spoken}`);
+  });
+
+  test('interactive 3D robot script exists and exports Interactive3DRobot class', () => {
+    const robotScriptPath = path.join(__dirname, '../assets/js/interactive-3d-robot.js');
+    assert.ok(fs.existsSync(robotScriptPath), 'assets/js/interactive-3d-robot.js must exist on disk');
+
+    const robotModule = require(robotScriptPath);
+    assert.ok(typeof robotModule.Interactive3DRobot === 'function', 'Interactive3DRobot class must be exported');
+  });
+
 });
+
 

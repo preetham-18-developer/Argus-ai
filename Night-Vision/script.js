@@ -124,7 +124,20 @@ function speakGuidance(command, priority = false) {
 
     utterance.onend = () => {
         lastSpokenTime = Date.now();
+        window._pathGuideUtterance = null;
     };
+    utterance.onerror = () => {
+        lastSpokenTime = Date.now();
+        window._pathGuideUtterance = null;
+    };
+
+    window._pathGuideUtterance = utterance;
+
+    try {
+        if (synth.paused) {
+            synth.resume();
+        }
+    } catch (e) {}
 
     synth.speak(utterance);
     lastSpokenTime = now;

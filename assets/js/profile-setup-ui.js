@@ -448,8 +448,8 @@
 
             <!-- Manual Form Action Buttons -->
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
-              <button type="button" class="btn-profile-primary" id="btn-save-manual">
-                💾 Save Profile & Review
+              <button type="button" class="btn-profile-primary" id="btn-save-manual" aria-label="Save Changes">
+                💾 Save Changes
               </button>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <button type="button" class="btn-profile-secondary" id="btn-back-to-voice" style="width: auto; padding: 10px 18px;">
@@ -659,7 +659,11 @@
       if (finishBtn) {
         finishBtn.addEventListener('click', () => {
           this.machine.finishSetup();
-          setTimeout(() => this.closeModal(), 1200);
+          this.closeModal();
+          this._checkInitialProfileStatus();
+          if (typeof window !== 'undefined' && window.argusCompanion && typeof window.argusCompanion.syncUserProfile === 'function') {
+            window.argusCompanion.syncUserProfile();
+          }
         });
       }
 
@@ -753,28 +757,23 @@
     // MODAL OPEN / CLOSE
     // -----------------------------------------------------------------------
 
-    openModal() {
+    openModal(forceEditMode = false) {
       if (this.overlay) {
         this.overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
       }
 
       const isCompleted = ProfileStorage.isCompleted();
-      if (isCompleted) {
-        // Completed profile -> show review/summary view
-        this._renderReview();
+      const hasStarted = ProfileStorage.hasStarted();
+
+      // If opening profile settings for existing user, show manual form pre-populated
+      if (isCompleted || hasStarted || forceEditMode) {
+        this.machine.switchToManualMode();
+        this._populateManualForm();
+        const welcomeTitle = document.getElementById('profile-modal-title');
+        if (welcomeTitle) welcomeTitle.innerText = "Profile Settings";
       } else {
-        const hasStarted = ProfileStorage.hasStarted();
-        if (hasStarted) {
-          // Incomplete profile -> resume where left off or show welcome with continue option
-          this._showView(this.viewWelcome);
-          const welcomeTitle = document.getElementById('profile-modal-title');
-          if (welcomeTitle) welcomeTitle.innerText = "Continue Profile Setup";
-          const startBtn = document.getElementById('btn-start-voice');
-          if (startBtn) startBtn.innerHTML = `<span style="font-size: 1.25rem;">🎙️</span> Continue Voice Setup`;
-        } else {
-          this._showView(this.viewWelcome);
-        }
+        this._showView(this.viewWelcome);
       }
     }
 
@@ -1090,13 +1089,26 @@
           isTestMode: true
         });
       }
-      profile.emergencyContacts = contacts;
-
-      ProfileStorage.saveProfile(profile);
+      const saved = ProfileStorage.saveProfile(profile);
       ProfileStorage.setLanguagePreference(selectedLang);
 
-      // Transition to review
+      if (!saved) {
+        errorDiv.innerText = "Unable to save profile. Please check browser storage settings.";
+        errorDiv.style.display = 'block';
+        return;
+      }
+
+      // Transition and update review view
       this._renderReview();
+
+      // Synchronize in runtime
+      this._checkInitialProfileStatus();
+      if (typeof window !== 'undefined' && window.argusCompanion && typeof window.argusCompanion.syncUserProfile === 'function') {
+        window.argusCompanion.syncUserProfile();
+      }
+
+      // Close modal on successful save
+      this.closeModal();
     }
 
     _handleClearProfile() {

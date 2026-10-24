@@ -1213,18 +1213,47 @@
         return;
       }
 
-      this.cancel(); // Stop existing speech and recognition to prevent collisions
+      // Safety: resume paused synthesis if browser was suspended
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      } catch (e) {}
+
+      // Cancel only if currently speaking or pending to avoid Chromium silent-drop bug
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+      this.isSpeaking = false;
+      this.activeUtterance = null;
+
+      // Abort speech recognition during assistant speech to prevent audio feedback loops
+      if (this.recognition && this.isListening) {
+        try { this.recognition.abort(); } catch (e) {}
+        this.isListening = false;
+        this.onListeningChange(false);
+      }
 
       const cleanText = text.replace(/[*#_~`]/g, '');
       const utterance = new SpeechSynthesisUtterance(cleanText);
       const voice = this.getSelectedVoice();
       if (voice) {
         utterance.voice = voice;
+        // Pair utterance language with actual voice capabilities to avoid browser silence
+        if (this.lang.startsWith('te')) {
+          utterance.lang = (voice.lang && voice.lang.startsWith('te')) ? 'te-IN' : (voice.lang || 'en-US');
+        } else if (this.lang.startsWith('hi')) {
+          utterance.lang = (voice.lang && voice.lang.startsWith('hi')) ? 'hi-IN' : (voice.lang || 'en-US');
+        } else {
+          utterance.lang = voice.lang || 'en-US';
+        }
+      } else {
+        utterance.lang = this.lang.startsWith('te') ? 'te-IN' : this.lang.startsWith('hi') ? 'hi-IN' : 'en-US';
       }
+
       utterance.rate = this.voiceRate;
       utterance.pitch = this.pitch;
       utterance.volume = this.volume;
-      utterance.lang = this.lang;
 
       // Retain utterance reference on window to prevent Chrome GC discarding it mid-speech
       this.activeUtterance = utterance;
@@ -1246,10 +1275,10 @@
         this.isSpeaking = false;
         this.activeUtterance = null;
         this.onSpeakingChange(false);
-        // Guard delay (200ms) so speaker resonance finishes before mic starts
+        // Guard delay (150ms) so speaker resonance finishes before mic opens
         setTimeout(() => {
           if (onEnd) onEnd();
-        }, 200);
+        }, 150);
       };
 
       utterance.onend = finishSpeech;
@@ -1268,11 +1297,18 @@
       }, estimatedMs);
 
       // Workaround for Chrome paused speech synthesis bug
-      if (window.speechSynthesis.paused) {
-        try { window.speechSynthesis.resume(); } catch (e) {}
-      }
+      try {
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      } catch (e) {}
 
-      window.speechSynthesis.speak(utterance);
+      try {
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('[ArgusSpeech] speak() exception:', err);
+        finishSpeech();
+      }
     }
 
     previewVoice(customText) {
@@ -1295,16 +1331,19 @@
       const isWakeWord = Boolean(options && options.isWakeWord);
       this.isWakeWordMode = isWakeWord;
 
-      // If already listening or starting, handle mode switch smoothly
+      // If already listening or starting, handle mode switch smoothly without lingering
       if (this.isListening || this._isStartingRecognition) {
-        if (this._currentModeIsWake === isWakeWord) {
+        if (this._currentModeIsWake === isWakeWord && !options.forceRestart) {
           return; // Already in requested mode
         }
-        // Mode changed: stop current and switch
-        this.stopListening();
+        // Force immediate abort to clear state
+        try { this.recognition.abort(); } catch (e) {}
+        this.isListening = false;
+        this._isStartingRecognition = false;
+        this.onListeningChange(false);
         setTimeout(() => {
           this.startListening(onResultCallback, options);
-        }, 100);
+        }, 80);
         return;
       }
 
@@ -1390,8 +1429,10 @@
       } catch (err) {
         this._isStartingRecognition = false;
         if (err.name === 'InvalidStateError') {
-          this.isListening = true;
-          this.onListeningChange(true);
+          try { this.recognition.abort(); } catch (e) {}
+          setTimeout(() => {
+            try { this.recognition.start(); } catch (e2) {}
+          }, 80);
         } else {
           console.warn('[ArgusSpeech] Recognition start error:', err);
           this.isListening = false;
@@ -1402,12 +1443,13 @@
 
     stopListening() {
       this._clearSilenceTimer();
-      if (this.recognition && this.isListening) {
+      if (this.recognition) {
         try {
           this.recognition.stop();
         } catch (e) {}
       }
       this.isListening = false;
+      this._isStartingRecognition = false;
       this.onListeningChange(false);
     }
 

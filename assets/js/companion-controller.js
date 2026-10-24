@@ -133,7 +133,7 @@
               root.triggerEmergencySOS();
             }
           },
-          regex: /(emergency sos|call my emergency contact|call emergency contact|trigger emergency sos|trigger sos|help me|call 112|send help|danger|emergency|ఎమర్జెన్సీ ఎస్ఓఎస్|నా అత్యవసర కాంటాక్ట్‌కు కాల్ చేయి|సహాయం కావాలి|నాకు సహాయం చేయండి|అత్యవసరం|ఎమర్జెన్సీ|इमरजेंसी एसओएस|मेरे आपातकालीन संपर्क को कॉल करो|मदद चाहिए|मेरी मदद करो|आपातकाल|इमरजेंसी)/i,
+          regex: /(emergency sos|call my emergency contact|call emergency contact|trigger emergency sos|trigger sos|help me\b(?!\s*(walk|navigate|read|see|find|identify|guide|with|understand|look|check))|call 112|send help|danger|emergency|ఎమర్జెన్సీ ఎస్ఓఎస్|నా అత్యవసర కాంటాక్ట్‌కు కాల్ చేయి|సహాయం కావాలి|నాకు సహాయం చేయండి(?!\s*(నడవడానికి|చదవడానికి))|అత్యవసరం|ఎమర్జెన్సీ|इमरजेंसी एसओएस|मेरे आपातकालीन संपर्क को कॉल करो|मदद चाहिए|मेरी मदद करो(?!\s*(चलने|पढ़ने))|आपातकाल|इमरजेंसी)/i,
           spokenConfirm: 'Opening Emergency SOS. You have 5 seconds to cancel.',
           spokenConfirms: {
             en: 'Opening Emergency SOS. You have 5 seconds to cancel.',
@@ -225,6 +225,19 @@
 
       // Sync user profile display name
       this.syncUserProfile();
+
+      // Initialize interactive 3D robot companion if container exists
+      const robotContainer = document.getElementById('interactive-3d-robot-container');
+      if (robotContainer && typeof root.Interactive3DRobot === 'function') {
+        try {
+          this.robot3D = new root.Interactive3DRobot('interactive-3d-robot-container', { width: 260, height: 260 });
+          if (typeof root !== 'undefined') {
+            root.argus3DRobot = this.robot3D;
+          }
+        } catch (e) {
+          console.warn('[ArgusCompanion] 3D robot init notice:', e);
+        }
+      }
 
       // Restore saved Hands-Free preference if previously enabled
       try {
@@ -723,7 +736,7 @@
         return;
       }
 
-      const matched = this._resolveCommand(normalized);
+      const matched = this._resolveCommand(normalized, rawTranscript);
 
       if (matched) {
         this.setRobotState('speaking', `Launching ${matched.name}...`);
@@ -749,18 +762,36 @@
           doNavigate();
         }
       } else {
-        // Unrecognized command
-        this.setRobotState('error', 'Command not recognized');
+        // Check for ambiguous query to ask a helpful clarifying question
+        const isAmbiguous = /\b(help|assist|what can you do|how to use|options)\b/i.test(normalized) ||
+                            /(సహాయం|ఏమి చేయగలవు|ఎలా ఉపయోగించాలి)/i.test(normalized) ||
+                            /(मदद|सहायता|क्या कर सकते हो|कैसे उपयोग करें)/i.test(normalized);
+
         let unrecMsg;
-        if (this.currentLanguage === 'te') {
-          unrecMsg = "ఆ ఆదేశం నాకు అర్థం కాలేదు. మీరు 'విజన్ ఎయిడ్ తెరువు' లేదా 'పాత్గైడ్ తెరువు' అని అనవచ్చు.";
-          this.setTranscript(`"${rawTranscript.trim()}" అర్థం కాలేదు. 'విజన్ ఎయిడ్ తెరువు' లేదా 'పాత్గైడ్ తెరువు' అని ప్రయత్నించండి.`);
-        } else if (this.currentLanguage === 'hi') {
-          unrecMsg = "मुझे यह कमांड समझ नहीं आई। आप 'विज़नएड खोलो' या 'पाथगाइड खोलो' कह सकते हैं।";
-          this.setTranscript(`"${rawTranscript.trim()}" समझ नहीं आई। 'विज़नएड खोलो' या 'पाथगाइड खोलो' बोलें।`);
+        if (isAmbiguous) {
+          this.setRobotState('speaking', 'Clarifying request...');
+          if (this.currentLanguage === 'te') {
+            unrecMsg = "మీకు నావిగేషన్, వస్తువులను గుర్తించడం, లేదా టెక్స్ట్ చదవడంలో సహాయం కావాలా?";
+            this.setTranscript('వస్తువులను గుర్తించాలా, దారి చూపించాలా, లేదా టెక్స్ట్ చదవాలా?');
+          } else if (this.currentLanguage === 'hi') {
+            unrecMsg = "क्या आपको नेविगेशन, वस्तु पहचानने या टेक्स्ट पढ़ने में मदद चाहिए?";
+            this.setTranscript('क्या आपको नेविगेशन, वस्तु पहचानने या टेक्स्ट पढ़ने में मदद चाहिए?');
+          } else {
+            unrecMsg = "Would you like help with navigation, identifying objects, or reading text?";
+            this.setTranscript('Would you like help with navigation, identifying objects, or reading text?');
+          }
         } else {
-          unrecMsg = "I didn't recognize that command. You can say 'Open VisionAid', 'Open PathGuide', or tap any feature below.";
-          this.setTranscript(`Could not match "${rawTranscript.trim()}". Try saying "Open VisionAid", "Open PathGuide", or "Detect Objects".`);
+          this.setRobotState('error', 'Command not recognized');
+          if (this.currentLanguage === 'te') {
+            unrecMsg = "ఆ ఆదేశం నాకు అర్థం కాలేదు. మీరు 'విజన్ ఎయిడ్ తెరువు' లేదా 'పాత్గైడ్ తెరువు' అని అనవచ్చు.";
+            this.setTranscript(`"${rawTranscript.trim()}" అర్థం కాలేదు. 'విజన్ ఎయిడ్ తెరువు' లేదా 'పాత్గైడ్ తెరువు' అని ప్రయత్నించండి.`);
+          } else if (this.currentLanguage === 'hi') {
+            unrecMsg = "मुझे यह कमांड समझ नहीं आई। आप 'विज़नएड खोलो' या 'पाथगाइड खोलो' कह सकते हैं।";
+            this.setTranscript(`"${rawTranscript.trim()}" समझ नहीं आई। 'विज़नएड खोलो' या 'पाथगाइड खोलो' बोलें।`);
+          } else {
+            unrecMsg = "I didn't recognize that command. You can say 'Open VisionAid', 'Open PathGuide', or tap any feature below.";
+            this.setTranscript(`Could not match "${rawTranscript.trim()}". Try saying "Open VisionAid", "Open PathGuide", or "Detect Objects".`);
+          }
         }
 
         if (this.speechService) {
@@ -773,13 +804,123 @@
       }
     }
 
-    _resolveCommand(normalizedText) {
-      if (!normalizedText) return null;
+    _resolveCommand(normalizedText, rawTranscript = '') {
+      if (!normalizedText && !rawTranscript) return null;
+
+      const norm = (normalizedText || '').toLowerCase().trim();
+      const raw = (rawTranscript || '').toLowerCase().trim();
+      const combined = `${norm} ${raw}`.trim();
+
+      // Tier 1: Canonical Regex Match across registered routes
       for (const route of this.routes) {
-        if (route.regex.test(normalizedText)) {
+        if (route.regex.test(norm) || (raw && route.regex.test(raw))) {
           return route;
         }
       }
+
+      // Tier 2: Natural-Language Intent Mapping
+      const findRoute = (id) => this.routes.find(r => r.id === id);
+
+      // Intent A: Person & Object Identification -> Object Detection Pro
+      // "Who is in front of me? Please identify them", "Who is standing in front of me",
+      // "Can you tell me what this object is", "Who is there", "What is ahead",
+      // Telugu: "నా ముందు ఎవరు ఉన్నారు?", "ఈ వస్తువు ఏమిటో చెప్పు", "ఎవరు ఉన్నారు"
+      // Hindi: "मेरे सामने कौन है? कृपया पहचानें", "सामने कौन खड़ा है", "यह कौन सी वस्तु है", "यह वस्तु क्या है"
+      const isPersonOrObjectIntent = 
+        /\b(who\s+is\s+(in\s+front|standing|there|here|ahead)|who\s+are\s+they|identify\s+(them|person|people|who|this|object|face|item)|what\s+is\s+this(\s+object)?|what\s+object|tell\s+me\s+what\s+this\s+is|what('s|\s+is)\s+in\s+front|what\s+do\s+you\s+see|detect\s+objects?|find\s+objects?|look\s+for\s+objects?)\b/i.test(combined) ||
+        /(నా\s+ముందు\s+ఎవరు\s+ఉన్నారు|ఎవరు\s+ఉన్నారు|ఎవరు\s+నిలబడి\s+ఉన్నారు|ఈ\s+వస్తువు\s+ఏమిటి|ఈ\s+వస్తువు\s+ఏమిటో\s+చెప్పు|ఇది\s+ఏ\s+వస్తువో\s+చెప్పు|వస్తువును\s+గుర్తించు|వస్తువులను\s+గుర్తించు|నా\s+ముందు\s+ఏముంది|ఏమి\s+కనిపిస్తోంది)/i.test(combined) ||
+        /(मेरे\s+सामने\s+कौन\s+है|सामने\s+कौन\s+है|सामने\s+कौन\s+खड़ा\s+है|कौन\s+है\s+यहाँ|यह\s+कौन\s+सी\s+वस्तु\s+है|यह\s+वस्तु\s+क्या\s+है|यह\s+क्या\s+है|वस्तु\s+पहचानो|वस्तुओं\s+की\s+पहचान\s+करो|पहचान\s+करो|पहचानें|मेरे\s+सामने\s+क्या\s+है)/i.test(combined);
+
+      if (isPersonOrObjectIntent) {
+        return findRoute('object-detection');
+      }
+
+      // Intent B: Reading / OCR / Text Inspection -> VisionAid AI
+      // "Can you read what's written here?", "Please read this document", "Read this text", "Read label",
+      // Telugu: "ఇక్కడ ఏమి రాసి ఉందో చదువు", "ఈ పత్రాన్ని చదువు", "ఈ టెక్స్ట్ చదువు", "లేబుల్ చదువు", "నాకు చదివి వినిపించు"
+      // Hindi: "यहाँ क्या लिखा है पढ़ो", "यह दस्तावेज़ पढ़ो", "यह टेक्स्ट पढ़ो", "दवा की पर्ची पढ़ो", "मुझे पढ़कर सुनाओ"
+      const isReadingIntent =
+        /\b(read\s+(what('s|\s+is)\s+written|this(\s+text|\s+document|\s+label|\s+page|\s+book|\s+letter|\s+sign)?|text|document|label|prescription|medicine|to\s+me|for\s+me)|can\s+you\s+read|what\s+does\s+it\s+say|ocr|read\s+it)\b/i.test(combined) ||
+        /(ఇక్కడ\s+ఏమి\s+రాసి\s+ఉందో\s+చదువు|ఈ\s+పత్రాన్ని\s+చదువు|ఈ\s+టెక్స్ట్\s+చదువు|టెక్స్ట్\s+చదువు|పత్రం\s+చదువు|లేబుల్\s+చదువు|నాకు\s+చదివి\s+వినిపించు|చదివి\s+చెప్పు|ఏమి\s+రాసి\s+ఉంది)/i.test(combined) ||
+        /(यहाँ\s+क्या\s+लिखा\s+है\s+पढ़ो|यह\s+दस्तावेज़\s+पढ़ो|यह\s+टेक्स्ट\s+पढ़ो|टेक्स्ट\s+पढ़ो|दस्तावेज़\s+पढ़ो|दवा\s+की\s+पर्ची\s+पढ़ो|लेबल\s+पढ़ो|मुझे\s+पढ़कर\s+सुनाओ|पढ़कर\s+बताओ|क्या\s+लिखा\s+है)/i.test(combined);
+
+      if (isReadingIntent) {
+        return findRoute('visionaid');
+      }
+
+      // Intent C: Navigation Guidance / Walking / Obstacles -> PathGuide Pro
+      // "Help me walk safely", "Help me navigate", "Guide me as I walk", "Show me the way",
+      // "Are there obstacles in my way?", "Guide my path",
+      // Telugu: "నాకు దారి చూపించు", "దారి చూపు", "నేను సురక్షితంగా నడవడానికి సహాయం చేయి", "అడ్డంకులు ఏమైనా ఉన్నాయా", "దారి"
+      // Hindi: "मुझे रास्ता बताओ", "रास्ता दिखाओ", "मुझे सुरक्षित चलने में मदद करो", "चलने में मदद करो", "क्या रास्ते में कोई रुकावट है"
+      const isNavigationIntent =
+        /\b(help\s+me\s+(walk|navigate|move)|walk\s+safely|guide\s+(me|my\s+walking|my\s+steps|my\s+path)|show\s+(me\s+the\s+way|direction)|(check|watch|are\s+there)\s+obstacles?|obstacle\s+avoidance|safe\s+walking|walking\s+guidance)\b/i.test(combined) ||
+        /(నాకు\s+దారి\s+చూపించు|దారి\s+చూపు|దారి\s+చూపించు|సురక్షితంగా\s+నడవడానికి\s+సహాయం|నడవడానికి\s+సహాయం|అడ్డంకులు\s+ఏమైనా\s+ఉన్నాయా|అడ్డంకులు\s+తనిఖీ\s+చేయి|దారి)/i.test(combined) ||
+        /(मुझे\s+रास्ता\s+बताओ|रास्ता\s+दिखाओ|रास्ता\s+बताओ|सुरक्षित\s+चलने\s+में\s+मदद|चलने\s+में\s+मदद\s+करो|क्या\s+रास्ते\s+में\s+कोई\s+रुकावट\s+है|रुकावट\s+जांचो|रास्ता)/i.test(combined);
+
+      if (isNavigationIntent) {
+        return findRoute('pathguide');
+      }
+
+      // Intent D: Queue / Waiting Line Analysis -> Queue Detector
+      // "Check the queue", "How many people in line", "Is there a line", "Wait line check",
+      // Telugu: "క్యూ తనిఖీ చేయి", "లైన్లో ఎంతమంది ఉన్నారు", "క్యూలో ఎంతమంది ఉన్నారు", "లైన్ చెక్ చేయి"
+      // Hindi: "कतार जांचो", "लाइन में कितने लोग हैं", "कतार में कितने लोग हैं", "लाइन चेक करो"
+      const isQueueIntent =
+        /\b(how\s+many\s+people\s+(are\s+)?(in\s+line|in\s+the\s+queue|waiting)|(check|track|is\s+there\s+a)\s+(queue|line|waiting\s+line)|queue\s+length|line\s+length)\b/i.test(combined) ||
+        /(క్యూ\s+తనిఖీ\s+చేయి|క్యూ\s+చెక్\s+చేయి|లైన్\s+చెక్\s+చేయి|లైన్లో\s+ఎంతమంది\s+ఉన్నారు|క్యూలో\s+ఎంతమంది\s+ఉన్నారు|క్యూ)/i.test(combined) ||
+        /(कतार\s+जांचो|कतार\s+चेक\s+करो|लाइन\s+चेक\s+करो|लाइन\s+में\s+कितने\s+लोग\s+हैं|कतार\s+में\s+कितने\s+लोग\s+हैं|कतार|क्यू)/i.test(combined);
+
+      if (isQueueIntent) {
+        return findRoute('queue-detector');
+      }
+
+      // Intent E: Darkness / Night Mode / Low Light Visibility -> Night Vision
+      // "Is it too dark to see clearly?", "It's too dark", "Can't see in dark", "Turn on night vision",
+      // Telugu: "చాలా చీకటిగా ఉంది", "స్పష్టంగా కనిపించడం లేదు", "చీకటి", "నైట్ విజన్"
+      // Hindi: "बहुत अंधेरा है", "क्या साफ देखने के लिए बहुत अंधेरा है", "अंधेरा", "कम रोशनी"
+      const isNightVisionIntent =
+        /\b((too\s+dark|very\s+dark|can't\s+see|cannot\s+see|darkness|hard\s+to\s+see)\s+(to\s+see|clearly|here|around|outside)?|night\s+mode|low\s+light(\s+mode)?|night\s+vision)\b/i.test(combined) ||
+        /(చాలా\s+చీకటిగా\s+ఉంది|స్పష్టంగా\s+కనిపించడం\s+లేదు|చీకటిగా\s+ఉంది|చీకటి|నైట్\s+విజన్)/i.test(combined) ||
+        /(बहुत\s+अंधेरा\s+है|साफ\s+देखने\s+के\s+लिए\s+बहुत\s+अंधेरा|अंधेरा\s+है|अंधेरा|नाइट\s+विज़न|कम\s+रोशनी)/i.test(combined);
+
+      if (isNightVisionIntent) {
+        return findRoute('night-vision');
+      }
+
+      // Intent F: Camera Quality / Blur / Lens Clarity -> Optima Vision
+      // "Check camera quality", "Is camera working", "Check lens", "Is camera blurry",
+      // Telugu: "కెమెరా నాణ్యత తనిఖీ చేయి", "లెన్స్ చెక్ చేయి", "కెమెరా సరిగ్గా పనిచేస్తోందా"
+      // Hindi: "कैमरा गुणवत्ता जांचो", "लेंस चेक करो", "क्या कैमरा ठीक काम कर रहा है"
+      const isCameraQualityIntent =
+        /\b((check|test|verify|inspect)\s+(camera(\s+quality)?|lens|visibility)|is\s+(the\s+camera|my\s+camera|lens)\s+(working|blurry|dirty|clean)|camera\s+check|optima)\b/i.test(combined) ||
+        /(కెమెరా\s+నాణ్యత\s+తనిఖీ\s+చేయి|కెమెరా\s+చెక్\s+చేయి|లెన్స్\s+చెక్\s+చేయి|కెమెరా\s+సరిగ్గా\s+పనిచేస్తోందా|ఆప్టిమా)/i.test(combined) ||
+        /(कैमरा\s+गुणवत्ता\s+जांचो|कैमरा\s+चेक\s+करो|लेंस\s+चेक\s+करो|क्या\s+कैमरा\s+ठीक\s+काम\s+कर\s+रहा\s+है|ऑप्टिमा)/i.test(combined);
+
+      if (isCameraQualityIntent) {
+        return findRoute('optima-vision');
+      }
+
+      // Intent G: Emergency SOS
+      const isSosIntent =
+        /\b(help\s+me|i('m|\s+am)\s+in\s+danger|emergency|call\s+112|call\s+(my\s+)?(emergency\s+)?contact|need\s+urgent\s+help|save\s+me)\b/i.test(combined) ||
+        /(సహాయం\s+కావాలి|నాకు\s+సహాయం\s+చేయండి|అత్యవసరం|నేను\s+ప్రమాదంలో\s+ఉన్నాను|కాపాడండి)/i.test(combined) ||
+        /(मदद\s+चाहिए|मेरी\s+मदद\s+करो|आपातकाल|खतरे\s+में\s+हूँ|बचाओ|इमरजेंसी)/i.test(combined);
+
+      if (isSosIntent) {
+        return findRoute('emergency-sos');
+      }
+
+      // Intent H: Profile Settings
+      const isProfileIntent =
+        /\b(profile\s+settings|my\s+profile|edit\s+(my\s+)?(details|profile|name)|change\s+my\s+name|user\s+settings)\b/i.test(combined) ||
+        /(నా\s+ప్రొఫైల్|ప్రొఫైల్\s+సెట్టింగ్స్|నా\s+పేరు\s+మార్చు|నా\s+వివరాలు\s+మార్చు)/i.test(combined) ||
+        /(मेरी\s+प्रोफ़ाइल|प्रोफ़ाइल\s+सेटिंग्स|मेरा\s+नाम\s+बदलो|मेरा\s+विवरण\s+बदलो)/i.test(combined);
+
+      if (isProfileIntent) {
+        return findRoute('profile-setup');
+      }
+
       return null;
     }
 
@@ -815,6 +956,11 @@
 
       if (this.robotStatusText && statusText) {
         this.robotStatusText.textContent = statusText;
+      }
+
+      // Update interactive 3D robot companion actions
+      if (this.robot3D && typeof this.robot3D.setState === 'function') {
+        this.robot3D.setState(state, statusText);
       }
 
       // Update button visual state

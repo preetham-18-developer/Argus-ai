@@ -84,6 +84,17 @@ function speak(text, priority = false) {
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
+
+    utterance.onend = () => { window._objDetectUtterance = null; };
+    utterance.onerror = () => { window._objDetectUtterance = null; };
+    window._objDetectUtterance = utterance;
+
+    try {
+        if (synth.paused) {
+            synth.resume();
+        }
+    } catch (e) {}
+
     synth.speak(utterance);
 }
 
