@@ -228,12 +228,12 @@
       const hasName = profile && profile.displayName && profile.displayName.trim().length > 0;
       const displayName = hasName ? profile.displayName.trim() : '';
 
-      // Update greeting
+      // Update greeting speech bubble
       if (this.robotGreeting) {
         if (hasName) {
-          this.robotGreeting.innerHTML = `Welcome back, <span class="user-name-highlight">${this._escapeHTML(displayName)}</span>`;
+          this.robotGreeting.innerHTML = `<span class="speech-bubble-name">Hi ${this._escapeHTML(displayName)},</span><span class="speech-bubble-sub">What kind of help do you need?</span>`;
         } else {
-          this.robotGreeting.innerHTML = `Hello! How can I help you see today?`;
+          this.robotGreeting.innerHTML = `<span class="speech-bubble-name">Hi there,</span><span class="speech-bubble-sub">What kind of help do you need?</span>`;
         }
       }
 
@@ -690,15 +690,26 @@
             break;
           case 'idle':
           default:
-            this.tapButtonLabel.textContent = 'TAP TO SPEAK';
+            this.tapButtonLabel.textContent = 'Tap to Speak';
             break;
+        }
+      }
+
+      // Sync footer microphone status indicator if present
+      const footerMicText = document.getElementById('footer-mic-status-text');
+      if (footerMicText) {
+        if (state === 'listening' || state === 'listening-wake') {
+          footerMicText.textContent = 'Microphone Active';
+        } else if (state === 'error') {
+          footerMicText.textContent = 'Microphone Notice';
+        } else {
+          footerMicText.textContent = 'Microphone Ready';
         }
       }
 
       // Update hint text when idle
       if (state === 'idle' && this.voiceHintText) {
-        this.voiceHintText.innerHTML =
-          'Say <strong>"Hey Argus"</strong> or tap the button to speak (e.g. <strong>"Open VisionAid"</strong> or <strong>"Detect Objects"</strong>).';
+        this.voiceHintText.innerHTML = 'or say <strong>"Hey Argus"</strong>';
       }
     }
 

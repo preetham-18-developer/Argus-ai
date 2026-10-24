@@ -1,115 +1,91 @@
 /* ==========================================================================
-   ARGUS.AI — SINGLE-PAGE ASSISTIVE COMPANION INTERFACE (PHASE D)
-   Visual Design System: Premium Light Accessibility-First Interface
-   - Warm Ivory / Off-White Background (#FBFBFA / #F5F4F0)
-   - Deep Forest Green (#163324 / #1A382B) & Restrained Teal (#0D7A68 / #0E8370)
-   - High-Contrast Forest Slate Body (#131E18, WCAG AAA > 13:1)
-   - Friendly 3D Robot Presentation with Natural Floor Shadow
-   - Crisp White Cards, Subtle Borders, Natural Depth Shadows
-   - Full Hands-Free "Hey Argus" Status Indicators & Controls
+   ARGUS.AI — APPROVED REFERENCE DESIGN SYSTEM (PIXEL-CLOSE IMPLEMENTATION)
+   Theme: Warm Ivory / Cream, Deep Forest Green, Botanical Accents
+   Reference Target: Approved UI/UX Design Mockup
    ========================================================================== */
 
 :root {
-  /* Surface & Background Palette (Warm Ivory / White) */
-  --comp-bg-ivory: #FBFBFA;
-  --comp-bg-surface: #FFFFFF;
-  --comp-bg-subtle: #F5F4F0;
-  --comp-bg-hover: #F0EFEA;
-  
-  /* Borders & Dividers */
-  --comp-border-subtle: #E2E8E4;
-  --comp-border-card: #D8E2DC;
-  --comp-border-active: #0D7A68;
-  --comp-border-focus: rgba(13, 122, 104, 0.4);
+  /* Surface & Canvas Palette */
+  --argus-ivory: #F9F9F4;
+  --argus-cream: #F5F5ED;
+  --argus-surface: #FFFFFF;
+  --argus-surface-subtle: #F1F4F1;
+  --argus-surface-card: #FFFFFF;
 
-  /* High-Contrast Typography */
-  --comp-text-primary: #131E18;      /* Deep Forest Charcoal (> 13:1 contrast) */
-  --comp-text-secondary: #4A5E53;    /* Muted Forest Slate (> 5.5:1 contrast) */
-  --comp-text-muted: #6B7F74;        /* Accessible Label Slate */
-  --comp-text-inverse: #FFFFFF;      /* Pure Crisp White */
+  /* Forest Green & Emerald Palette */
+  --argus-forest: #0C382E;
+  --argus-forest-dark: #07261F;
+  --argus-forest-light: #164E41;
+  --argus-emerald: #10B981;
+  --argus-emerald-dark: #059669;
+  --argus-mint-tint: #E8F5EE;
+  --argus-mint-border: #D1EADE;
 
-  /* Brand Accents: Deep Forest Green & Restrained Teal */
-  --comp-forest: #163324;            /* Primary Deep Forest Green */
-  --comp-forest-deep: #0E2419;
-  --comp-forest-light: #234B36;
-  --comp-teal: #0D7A68;              /* Restrained Calibrated Teal */
-  --comp-teal-light: #129B84;
-  --comp-teal-soft: #E0F4F0;         /* Soft Mint/Teal Tint */
-  --comp-sage-tint: #EBF5F0;         /* Soft Sage Badge Tint */
+  /* Typography Colors */
+  --argus-text-dark: #163324;
+  --argus-text-body: #52665E;
+  --argus-text-muted: #6B7C75;
+  --argus-text-white: #FFFFFF;
 
-  /* Status Colors */
-  --comp-ready-bg: #EBF5F0;
-  --comp-ready-text: #1A5336;
-  --comp-ready-border: #C6E7D8;
+  /* Card Accents (Pastel Icon Backgrounds matching Reference) */
+  --icon-mint-bg: #E6F5EE;
+  --icon-mint-fg: #0D7A68;
+  --icon-cyan-bg: #E4F6F4;
+  --icon-cyan-fg: #0D7A68;
+  --icon-purple-bg: #F3E8FF;
+  --icon-purple-fg: #7C3AED;
+  --icon-peach-bg: #FFEDD5;
+  --icon-peach-fg: #EA580C;
+  --icon-blue-bg: #E0F2FE;
+  --icon-blue-fg: #0284C7;
+  --icon-indigo-bg: #EDE9FE;
+  --icon-indigo-fg: #4F46E5;
 
-  --comp-listening-bg: #E0F4F0;
-  --comp-listening-text: #0A5C4E;
-  --comp-listening-border: #8CE0D0;
+  /* Alert / Emergency SOS */
+  --argus-red: #EF4444;
+  --argus-red-hover: #DC2626;
+  --argus-red-shadow: rgba(239, 68, 68, 0.35);
 
-  --comp-processing-bg: #EEF2F6;
-  --comp-processing-text: #2A4365;
-  --comp-processing-border: #CBD5E1;
+  /* Borders & Shadows */
+  --argus-border: rgba(0, 50, 30, 0.08);
+  --argus-border-subtle: #E8ECE6;
+  --argus-shadow-sm: 0 2px 8px rgba(12, 56, 46, 0.04);
+  --argus-shadow-card: 0 4px 20px rgba(12, 56, 46, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --argus-shadow-hover: 0 12px 30px rgba(12, 56, 46, 0.09), 0 3px 8px rgba(0, 0, 0, 0.03);
+  --argus-shadow-btn: 0 8px 24px rgba(12, 56, 46, 0.22);
 
-  --comp-speaking-bg: #E6F7F2;
-  --comp-speaking-text: #0D6E57;
-  --comp-speaking-border: #9DE5D4;
-
-  --comp-error-bg: #FDE8E8;
-  --comp-error-text: #9B1C1C;
-  --comp-error-border: #F8B4B4;
-
-  /* Emergency SOS Alert Colors */
-  --comp-sos-red: #DC2626;
-  --comp-sos-red-dark: #B91C1C;
-  --comp-sos-bg: #FEF2F2;
-  --comp-sos-border: #FCA5A5;
-  --comp-sos-badge: #FEE2E2;
-
-  /* Typography Scales */
-  --comp-font-display: 'Space Grotesk', -apple-system, sans-serif;
-  --comp-font-body: 'Inter', -apple-system, sans-serif;
-  --comp-font-mono: 'IBM Plex Mono', monospace;
-
-  /* Border Radii */
-  --comp-radius-sm: 8px;
-  --comp-radius-md: 14px;
-  --comp-radius-lg: 20px;
-  --comp-radius-pill: 9999px;
-
-  /* Elevation Shadows */
-  --comp-shadow-subtle: 0 2px 6px rgba(22, 51, 36, 0.04);
-  --comp-shadow-card: 0 3px 12px rgba(22, 51, 36, 0.05), 0 1px 3px rgba(22, 51, 36, 0.03);
-  --comp-shadow-hover: 0 8px 24px rgba(22, 51, 36, 0.08), 0 2px 6px rgba(22, 51, 36, 0.04);
-  --comp-shadow-button: 0 4px 16px rgba(22, 51, 36, 0.16);
-
-  --comp-transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Fonts */
+  --argus-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --argus-font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
-/* Base Body: Warm Ivory Background */
+/* Base Body: Warm Ivory with Botanical Corner Foliage */
 body.companion-mode {
-  background-color: var(--comp-bg-ivory);
-  color: var(--comp-text-primary);
-  font-family: var(--comp-font-body);
+  background-color: var(--argus-ivory);
+  background-image: 
+    url('../img/botanical-bg.jpg'),
+    radial-gradient(circle at 50% 120px, rgba(16, 185, 129, 0.04) 0%, transparent 60%);
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-size: 100% auto, auto;
+  color: var(--argus-text-dark);
+  font-family: var(--argus-font);
   margin: 0;
   padding: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 50% 120px, rgba(13, 122, 104, 0.03) 0%, transparent 60%),
-    radial-gradient(circle at 80% 450px, rgba(22, 51, 36, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 20% 800px, rgba(13, 122, 104, 0.02) 0%, transparent 50%);
-  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Companion Page Wrapper */
+/* Master Layout Wrapper (Wide Desktop matching Reference) */
 .companion-wrapper {
-  max-width: 680px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 0 20px 80px 20px;
+  padding: 20px 32px 40px 32px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -117,1018 +93,1138 @@ body.companion-mode {
 }
 
 /* ==========================================================================
-   COMPACT RESPONSIVE HEADER
+   1. HORIZONTAL HEADER (FLOATING PILL BAR MATCHING REFERENCE)
    ========================================================================== */
 .companion-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 0 18px 0;
-  border-bottom: 1px solid var(--comp-border-subtle);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--argus-border);
+  border-radius: 50px;
+  padding: 10px 24px;
+  box-shadow: 0 4px 20px rgba(12, 56, 46, 0.04);
   margin-bottom: 24px;
-  gap: 12px;
+  gap: 16px;
 }
 
-.companion-brand {
+/* Brand & Tagline */
+.companion-brand-group {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   text-decoration: none;
-  color: inherit;
 }
 
-.companion-brand-title {
+.companion-brand-logo {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+}
+
+.argus-eye-logo-svg {
+  width: 38px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
 .companion-wordmark {
-  font-family: var(--comp-font-display);
-  font-size: 24px;
-  font-weight: 700;
+  font-family: var(--argus-font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--comp-forest);
-}
-
-.companion-wordmark span {
-  color: var(--comp-teal);
-}
-
-.companion-live-pulse {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--comp-teal);
-  box-shadow: 0 0 8px rgba(13, 122, 104, 0.5);
-  animation: pulseBeacon 2.4s infinite ease-in-out;
+  color: var(--argus-forest);
 }
 
 .companion-tagline {
-  font-size: 11px;
-  font-family: var(--comp-font-mono);
-  color: var(--comp-text-secondary);
-  text-transform: lowercase;
-  letter-spacing: 0.5px;
-  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--argus-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
 }
 
+/* Center Navigation Bar */
+.companion-nav-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(240, 245, 242, 0.8);
+  padding: 4px;
+  border-radius: 40px;
+  gap: 4px;
+}
+
+.companion-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 30px;
+  color: var(--argus-text-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.companion-nav-item svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.companion-nav-item:hover {
+  color: var(--argus-forest);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.companion-nav-item.active {
+  background: #FFFFFF;
+  color: var(--argus-forest);
+  box-shadow: 0 2px 6px rgba(12, 56, 46, 0.06);
+}
+
+.companion-nav-item.active svg {
+  color: var(--argus-forest);
+}
+
+/* Header Right Actions */
 .companion-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-/* Profile Header Trigger Button */
+/* Profile Dropdown Button */
 .btn-companion-profile {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
-  border-radius: var(--comp-radius-pill);
-  background: var(--comp-bg-surface);
-  border: 1px solid var(--comp-border-subtle);
-  color: var(--comp-forest);
-  font-size: 13px;
+  padding: 6px 14px 6px 8px;
+  border-radius: 40px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 50, 30, 0.1);
+  color: var(--argus-forest);
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
-  text-decoration: none;
-  transition: var(--comp-transition);
-  min-height: 40px;
-  box-shadow: var(--comp-shadow-subtle);
+  transition: all 0.2s ease;
+  box-shadow: var(--argus-shadow-sm);
 }
 
-.btn-companion-profile:hover,
-.btn-companion-profile:focus-visible {
-  background: var(--comp-sage-tint);
-  border-color: var(--comp-teal);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--comp-border-focus);
+.btn-companion-profile:hover {
+  background: var(--argus-mint-tint);
+  border-color: var(--argus-emerald);
 }
 
-.btn-companion-profile .profile-avatar-icon {
-  width: 20px;
-  height: 20px;
+.profile-avatar-circle {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--comp-forest);
+  background: var(--argus-forest);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 13px;
+}
+
+.profile-dropdown-caret {
   font-size: 10px;
-  font-weight: 700;
+  color: var(--argus-text-muted);
+  margin-left: 2px;
 }
 
 /* Emergency SOS Header Button */
 .btn-companion-sos-header {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: var(--comp-radius-pill);
-  background: var(--comp-sos-bg);
-  border: 1.5px solid var(--comp-sos-border);
-  color: var(--comp-sos-red-dark);
-  font-size: 13px;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 40px;
+  background: var(--argus-red);
+  border: none;
+  color: #FFFFFF;
+  font-size: 0.88rem;
   font-weight: 700;
   cursor: pointer;
-  transition: var(--comp-transition);
-  min-height: 40px;
-  box-shadow: var(--comp-shadow-subtle);
+  box-shadow: 0 4px 14px var(--argus-red-shadow);
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.btn-companion-sos-header:hover,
-.btn-companion-sos-header:focus-visible {
-  background: #FEE2E2;
-  border-color: var(--comp-sos-red);
-  color: var(--comp-sos-red);
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
-  outline: none;
+.btn-companion-sos-header:hover {
+  background: var(--argus-red-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px var(--argus-red-shadow);
 }
 
 /* ==========================================================================
-   CENTRAL STAGE: ANIMATED 3D ARGUS ROBOT
+   2. HERO SECTION (THREE-PART LAYOUT MATCHING REFERENCE)
    ========================================================================== */
-.robot-stage-section {
+.hero-three-part-container {
+  display: grid;
+  grid-template-columns: 1.1fr 1.35fr 1fr;
+  gap: 28px;
+  align-items: center;
+  margin-top: 10px;
+  margin-bottom: 34px;
+}
+
+/* --- Hero Left Column: Headline & Benefits --- */
+.hero-col-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-right: 10px;
+}
+
+.hero-eyebrow-pill {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--argus-mint-tint);
+  color: var(--argus-forest);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  border: 1px solid var(--argus-mint-border);
+}
+
+.hero-main-headline {
+  font-family: var(--argus-font-display);
+  font-size: 3.1rem;
+  font-weight: 800;
+  line-height: 1.08;
+  color: var(--argus-text-dark);
+  margin: 0 0 16px 0;
+  letter-spacing: -0.03em;
+}
+
+.hero-confidence-wrap {
+  position: relative;
+  display: inline-block;
+  color: var(--argus-forest);
+}
+
+.hero-leaf-accent {
+  position: absolute;
+  top: -14px;
+  right: -12px;
+  font-size: 1.15rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.hero-supporting-text {
+  font-size: 1.02rem;
+  line-height: 1.58;
+  color: var(--argus-text-body);
+  margin: 0 0 28px 0;
+  max-width: 420px;
+}
+
+/* 3 Benefit Badges */
+.hero-benefits-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.hero-benefit-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 10px 0 20px 0;
   text-align: center;
-  position: relative;
+  width: 96px;
 }
 
-/* Soft Warm Rim Light behind Robot */
-.robot-ambient-glow {
-  position: absolute;
-  top: 15px;
-  width: 220px;
-  height: 220px;
+.hero-benefit-icon-ring {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(13, 122, 104, 0.08) 0%, rgba(22, 51, 36, 0.02) 50%, transparent 75%);
-  filter: blur(20px);
-  pointer-events: none;
-  z-index: 0;
-  transition: background 0.35s ease;
-}
-
-.robot-3d-wrapper {
-  position: relative;
-  width: 180px;
-  height: 180px;
-  z-index: 1;
+  border: 1.5px solid var(--argus-forest);
+  background: var(--argus-forest);
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #FFFFFF;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(12, 56, 46, 0.15);
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
-.robot-3d-floating-rig {
+.hero-benefit-item:hover .hero-benefit-icon-ring {
+  transform: translateY(-2px);
+  background: var(--argus-forest-dark);
+}
+
+.hero-benefit-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--argus-text-dark);
+}
+
+/* --- Hero Center Column: Robot, Greeting, Tap to Speak --- */
+.hero-col-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  text-align: center;
+}
+
+/* Robot Visual Stage */
+.robot-hero-stage {
+  position: relative;
   width: 100%;
-  height: 100%;
-  animation: robotFloat 3.8s ease-in-out infinite;
-  transform-origin: center bottom;
-  will-change: transform;
+  max-width: 330px;
+  height: 290px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
 }
 
-.robot-3d-svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 10px 18px rgba(22, 51, 36, 0.16));
-}
-
-/* Robot Natural Floor Shadow */
-.robot-floor-shadow {
-  width: 100px;
-  height: 12px;
-  background: radial-gradient(ellipse at center, rgba(19, 30, 24, 0.2) 0%, rgba(19, 30, 24, 0.05) 50%, transparent 75%);
+.robot-ambient-soft-glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
   border-radius: 50%;
-  margin: -8px auto 14px auto;
-  animation: shadowScale 3.8s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(12, 56, 46, 0.03) 60%, transparent 75%);
+  filter: blur(25px);
+  pointer-events: none;
   z-index: 0;
 }
 
-/* Status Pill below Robot */
-.robot-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 14px;
-  border-radius: var(--comp-radius-pill);
-  background: var(--comp-ready-bg);
-  border: 1px solid var(--comp-ready-border);
-  font-size: 12px;
-  font-family: var(--comp-font-mono);
-  color: var(--comp-ready-text);
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  box-shadow: var(--comp-shadow-subtle);
-  transition: var(--comp-transition);
+.robot-3d-img-element {
+  position: relative;
+  z-index: 1;
+  max-width: 270px;
+  max-height: 280px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 22px rgba(12, 40, 25, 0.14));
+  transition: transform 0.3s ease;
+  user-select: none;
 }
 
-.robot-status-pill .status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--comp-ready-text);
-  box-shadow: 0 0 6px rgba(26, 83, 54, 0.4);
+/* Robot Speech Bubble */
+.robot-speech-bubble {
+  position: absolute;
+  top: 22px;
+  right: -15px;
+  z-index: 3;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 50, 30, 0.08);
+  border-radius: 18px;
+  padding: 12px 18px;
+  box-shadow: 0 10px 28px rgba(12, 56, 46, 0.08);
+  text-align: left;
+  max-width: 195px;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  color: var(--argus-text-dark);
 }
 
-/* Robot Contextual Greeting */
-.companion-greeting {
-  margin-top: 10px;
-  font-family: var(--comp-font-display);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--comp-forest);
-  letter-spacing: -0.015em;
-  padding: 0 12px;
-  max-width: 100%;
-  box-sizing: border-box;
+.robot-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: 26px;
+  left: -7px;
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF;
+  border-left: 1px solid rgba(0, 50, 30, 0.08);
+  border-bottom: 1px solid rgba(0, 50, 30, 0.08);
+  transform: rotate(45deg);
 }
 
-.companion-greeting .user-name-highlight {
-  color: var(--comp-teal);
+.speech-bubble-name {
+  font-weight: 800;
+  color: var(--argus-forest);
+  display: block;
+  font-size: 0.95rem;
 }
 
-/* ==========================================================================
-   ROBOT STATE MODIFIERS
-   ========================================================================== */
-
-/* State: LISTENING (Command or Wake) */
-.robot-stage-section.state-listening .robot-ambient-glow,
-.robot-stage-section.state-listening-wake .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(13, 122, 104, 0.22) 0%, rgba(18, 155, 132, 0.08) 50%, transparent 75%);
+.speech-bubble-sub {
+  color: var(--argus-text-body);
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 2px;
 }
 
-.robot-stage-section.state-listening .robot-listening-ring,
-.robot-stage-section.state-listening-wake .robot-listening-ring {
-  opacity: 0.9;
-  stroke: var(--comp-teal);
-  animation: listeningPulse 1.8s infinite ease-out;
-}
-
-.robot-stage-section.state-listening .robot-status-pill,
-.robot-stage-section.state-listening-wake .robot-status-pill {
-  background: var(--comp-listening-bg);
-  border-color: var(--comp-listening-border);
-  color: var(--comp-listening-text);
-  box-shadow: 0 0 12px rgba(13, 122, 104, 0.2);
-}
-
-.robot-stage-section.state-listening .robot-status-pill .status-dot,
-.robot-stage-section.state-listening-wake .robot-status-pill .status-dot {
-  background: var(--comp-teal);
-  box-shadow: 0 0 8px rgba(13, 122, 104, 0.6);
-}
-
-/* State: PROCESSING */
-.robot-stage-section.state-processing .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(42, 67, 101, 0.16) 0%, transparent 75%);
-}
-
-.robot-stage-section.state-processing .robot-antenna-orb {
-  animation: antennaThink 0.8s infinite alternate ease-in-out;
-}
-
-.robot-stage-section.state-processing .robot-status-pill {
-  background: var(--comp-processing-bg);
-  border-color: var(--comp-processing-border);
-  color: var(--comp-processing-text);
-}
-
-.robot-stage-section.state-processing .robot-status-pill .status-dot {
-  background: var(--comp-processing-text);
-  box-shadow: 0 0 6px rgba(42, 67, 101, 0.5);
-}
-
-/* State: SPEAKING */
-.robot-stage-section.state-speaking .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(13, 122, 104, 0.22) 0%, transparent 75%);
-}
-
-.robot-stage-section.state-speaking .robot-mouth-wave {
-  opacity: 1;
-  animation: mouthResonate 0.4s infinite alternate ease-in-out;
-}
-
-.robot-stage-section.state-speaking .robot-status-pill {
-  background: var(--comp-speaking-bg);
-  border-color: var(--comp-speaking-border);
-  color: var(--comp-speaking-text);
-}
-
-.robot-stage-section.state-speaking .robot-status-pill .status-dot {
-  background: var(--comp-speaking-text);
-  box-shadow: 0 0 8px rgba(13, 110, 87, 0.6);
-}
-
-/* State: ERROR */
-.robot-stage-section.state-error .robot-ambient-glow {
-  background: radial-gradient(circle, rgba(220, 38, 38, 0.18) 0%, transparent 75%);
-}
-
-.robot-stage-section.state-error .robot-eye-glow {
-  fill: var(--comp-sos-red);
-}
-
-.robot-stage-section.state-error .robot-status-pill {
-  background: var(--comp-error-bg);
-  border-color: var(--comp-error-border);
-  color: var(--comp-error-text);
-}
-
-.robot-stage-section.state-error .robot-status-pill .status-dot {
-  background: var(--comp-error-text);
-  box-shadow: 0 0 6px rgba(155, 28, 28, 0.5);
-}
-
-/* ==========================================================================
-   HANDS-FREE "HEY ARGUS" CONTROL ROW
-   ========================================================================== */
-.wake-word-control-row {
+/* Voice Interaction Row: Tap to Speak + Status Waveform */
+.voice-action-pill-row {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
+  margin-bottom: 14px;
   width: 100%;
-  margin-bottom: 12px;
 }
 
-.btn-wake-toggle {
+/* Big Forest-Green Tap to Speak Button */
+.btn-tap-to-speak-main {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: var(--comp-radius-pill);
-  background: var(--comp-bg-surface);
-  border: 1.5px solid var(--comp-border-subtle);
-  color: var(--comp-forest);
-  font-size: 13px;
-  font-weight: 600;
+  gap: 12px;
+  background: var(--argus-forest);
+  color: #FFFFFF;
+  padding: 10px 22px;
+  border-radius: 50px;
+  border: none;
   cursor: pointer;
-  transition: var(--comp-transition);
-  box-shadow: var(--comp-shadow-subtle);
+  box-shadow: var(--argus-shadow-btn);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
 }
 
-.btn-wake-toggle:hover,
-.btn-wake-toggle:focus-visible {
-  border-color: var(--comp-teal);
-  background: var(--comp-sage-tint);
-  outline: none;
-  box-shadow: 0 0 0 3px var(--comp-border-focus);
-}
-
-.btn-wake-toggle.is-active {
-  background: var(--comp-listening-bg);
-  border-color: var(--comp-teal);
-  color: var(--comp-listening-text);
-  box-shadow: 0 0 10px rgba(13, 122, 104, 0.15);
-}
-
-.btn-wake-toggle .wake-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #94A3B8;
-  transition: var(--comp-transition);
-}
-
-.btn-wake-toggle.is-active .wake-dot {
-  background: var(--comp-teal);
-  box-shadow: 0 0 8px rgba(13, 122, 104, 0.7);
-  animation: pulseBeacon 1.8s infinite ease-in-out;
-}
-
-/* ==========================================================================
-   LARGE TAP TO SPEAK ACCESSIBLE CONTROL
-   ========================================================================== */
-.voice-control-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 8px 0 24px 0;
-  width: 100%;
-}
-
-.btn-tap-to-speak {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  width: 100%;
-  max-width: 440px;
-  padding: 18px 28px;
-  border-radius: var(--comp-radius-pill);
-  background: var(--comp-forest);
-  border: 2px solid var(--comp-teal);
-  color: var(--comp-text-inverse);
-  font-family: var(--comp-font-display);
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  box-shadow: var(--comp-shadow-button);
-  transition: var(--comp-transition);
-  touch-action: manipulation;
-}
-
-.btn-tap-to-speak:hover,
-.btn-tap-to-speak:focus-visible {
-  background: var(--comp-forest-deep);
-  border-color: var(--comp-teal-light);
-  box-shadow: 0 6px 24px rgba(22, 51, 36, 0.28), 0 0 0 3px var(--comp-border-focus);
+.btn-tap-to-speak-main:hover {
+  background: var(--argus-forest-dark);
   transform: translateY(-2px);
-  outline: none;
+  box-shadow: 0 12px 30px rgba(12, 56, 46, 0.3);
 }
 
-.btn-tap-to-speak:active {
-  transform: translateY(1px);
+.btn-tap-to-speak-main.is-listening {
+  background: #0E6855;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.35), 0 8px 24px rgba(12, 56, 46, 0.3);
 }
 
-/* Microphone Icon Frame */
-.tap-to-speak-icon {
+.tap-mic-circle {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--comp-teal);
+  background: var(--argus-emerald);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.tap-mic-circle svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.btn-tap-to-speak-main:hover .tap-mic-circle {
+  transform: scale(1.08);
+}
+
+.tap-text-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.tap-main-label {
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.tap-sub-hint {
+  font-size: 0.72rem;
+  color: #A7DEC8;
+  font-weight: 500;
+}
+
+/* Status & Waveform Pill (also acts as hands-free toggle trigger) */
+.voice-status-waveform-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  border: 1px solid var(--argus-border);
+  border-radius: 50px;
+  padding: 8px 16px;
+  box-shadow: var(--argus-shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.voice-status-waveform-pill:hover {
+  border-color: var(--argus-emerald);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.12);
+}
+
+.voice-status-waveform-pill.is-active {
+  background: var(--argus-mint-tint);
+  border-color: var(--argus-emerald);
+}
+
+.status-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--argus-emerald);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.state-error .status-live-dot {
+  background: var(--argus-red);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+}
+
+.status-pill-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--argus-forest);
+}
+
+/* Audio Waveform Bars */
+.compact-audio-waveform {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+}
+
+.compact-wave-bar {
+  width: 3px;
+  background: var(--argus-emerald);
+  border-radius: 2px;
+  height: 6px;
+  transition: height 0.18s ease;
+}
+
+.compact-wave-bar:nth-child(1) { height: 6px; }
+.compact-wave-bar:nth-child(2) { height: 12px; }
+.compact-wave-bar:nth-child(3) { height: 16px; }
+.compact-wave-bar:nth-child(4) { height: 10px; }
+.compact-wave-bar:nth-child(5) { height: 5px; }
+
+/* Animate waveform when listening or speaking */
+.state-listening .compact-wave-bar,
+.state-listening-wake .compact-wave-bar,
+.state-speaking .compact-wave-bar {
+  animation: waveBarBounce 0.8s ease-in-out infinite alternate;
+}
+
+.state-listening .compact-wave-bar:nth-child(1) { animation-delay: 0.1s; }
+.state-listening .compact-wave-bar:nth-child(2) { animation-delay: 0.3s; }
+.state-listening .compact-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.state-listening .compact-wave-bar:nth-child(4) { animation-delay: 0.4s; }
+.state-listening .compact-wave-bar:nth-child(5) { animation-delay: 0.15s; }
+
+@keyframes waveBarBounce {
+  0% { height: 4px; }
+  100% { height: 17px; }
+}
+
+/* Quick Command Suggestion Pills */
+.voice-suggestions-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.suggestions-prefix-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--argus-text-muted);
+  margin-right: 2px;
+}
+
+.command-pill-btn {
+  background: #FFFFFF;
+  border: 1px solid #E2E8E4;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--argus-forest);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.command-pill-btn:hover {
+  background: var(--argus-mint-tint);
+  border-color: var(--argus-emerald);
+  transform: translateY(-1px);
+}
+
+/* Transcript Live Notification Card */
+.voice-transcript-card {
+  display: none;
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--argus-mint-border);
+  border-radius: 12px;
+  box-shadow: var(--argus-shadow-sm);
+  font-size: 0.8rem;
+  color: var(--argus-forest);
+  max-width: 380px;
+}
+
+.voice-transcript-card.has-content {
+  display: block;
+}
+
+/* --- Hero Right Column: Scenic Live View Panel --- */
+.hero-col-right {
+  display: flex;
+  justify-content: center;
+}
+
+.scenic-live-view-card {
+  width: 100%;
+  max-width: 340px;
+  height: 330px;
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 14px 34px rgba(12, 40, 25, 0.15);
+  background-image: url('../img/live-view-pathway.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Top bar badge over preview */
+.live-view-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.live-view-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.live-view-green-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--argus-emerald);
+  box-shadow: 0 0 6px var(--argus-emerald);
+}
+
+.live-view-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-control-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 0 10px rgba(13, 122, 104, 0.35);
-  transition: var(--comp-transition);
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.tap-to-speak-icon svg {
-  width: 18px;
-  height: 18px;
+.live-control-icon-btn:hover {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.live-control-icon-btn svg {
+  width: 14px;
+  height: 14px;
   fill: currentColor;
 }
 
-/* Button Active / Listening State */
-.btn-tap-to-speak.is-listening {
-  background: var(--comp-forest-deep);
-  border-color: var(--comp-teal-light);
-  box-shadow: 0 0 0 4px rgba(13, 122, 104, 0.3), var(--comp-shadow-button);
-  animation: buttonPulseTeal 1.6s infinite alternate;
+/* Bottom Information Overlay Panel */
+.live-environment-overlay-panel {
+  margin: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 12px 14px;
+  color: #FFFFFF;
+  z-index: 2;
 }
 
-.btn-tap-to-speak.is-listening .tap-to-speak-icon {
-  background: var(--comp-teal-light);
-  animation: iconRippleTeal 1.2s infinite ease-out;
-}
-
-/* Button Speaking State */
-.btn-tap-to-speak.is-speaking {
-  background: #113627;
-  border-color: var(--comp-teal);
-  box-shadow: 0 0 20px rgba(13, 122, 104, 0.25);
-}
-
-/* Supporting Hint Text */
-.voice-hint-text {
-  font-size: 13px;
-  color: var(--comp-text-secondary);
-  margin-top: 10px;
-  text-align: center;
-  line-height: 1.5;
-}
-
-.voice-hint-text strong {
-  color: var(--comp-forest);
-  font-weight: 600;
-}
-
-/* Transcript & Voice Feedback Box */
-.voice-transcript-card {
-  width: 100%;
-  max-width: 520px;
-  margin-top: 14px;
-  padding: 14px 18px;
-  background: var(--comp-bg-surface);
-  border: 1px solid var(--comp-border-subtle);
-  border-radius: var(--comp-radius-md);
-  box-shadow: var(--comp-shadow-card);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: var(--comp-transition);
-}
-
-.voice-transcript-card.has-content {
-  border-color: var(--comp-teal);
-  box-shadow: 0 4px 16px rgba(13, 122, 104, 0.12);
-}
-
-.voice-transcript-header {
+.env-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
-  font-family: var(--comp-font-mono);
-  color: var(--comp-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
 
-.voice-transcript-live-label {
+.env-title-group {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--comp-teal);
-  font-weight: 600;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
-.voice-transcript-text {
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--comp-text-primary);
-  min-height: 22px;
-  word-break: break-word;
+.env-title-group svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 
-.voice-transcript-text.is-interim {
-  color: var(--comp-teal);
-  font-style: italic;
+.env-audio-wave-icon svg {
+  width: 18px;
+  height: 12px;
+  fill: currentColor;
+  opacity: 0.8;
 }
 
-/* Visualizer Audio Wave */
-.voice-wave-visualizer {
+.env-bullet-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: #E2E8F0;
+}
+
+.env-bullet-list li {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  height: 18px;
-  margin-top: 4px;
+  gap: 6px;
 }
 
-.voice-wave-bar {
+.env-bullet-list li::before {
+  content: '';
   width: 3px;
-  height: 6px;
-  background: var(--comp-teal);
-  border-radius: var(--comp-radius-pill);
-  transition: height 0.15s ease;
+  height: 3px;
+  border-radius: 50%;
+  background: #A7F3D0;
 }
-
-.is-listening .voice-wave-bar,
-.is-speaking .voice-wave-bar {
-  animation: waveBarBounce 0.8s infinite ease-in-out alternate;
-}
-
-.voice-wave-bar:nth-child(2) { animation-delay: 0.1s; }
-.voice-wave-bar:nth-child(3) { animation-delay: 0.2s; }
-.voice-wave-bar:nth-child(4) { animation-delay: 0.3s; }
-.voice-wave-bar:nth-child(5) { animation-delay: 0.15s; }
 
 /* ==========================================================================
-   SIX CORE FEATURE LAUNCHERS (WHITE CARDS, RESTRAINED ACCENTS)
+   3. CORE ASSISTIVE MODULES (EXACTLY SIX CARDS MATCHING REFERENCE)
    ========================================================================== */
-.features-stack-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  margin-top: 10px;
+.modules-section-wrapper {
+  margin-top: 14px;
+  margin-bottom: 30px;
 }
 
-.features-stack-label {
-  font-family: var(--comp-font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--comp-forest);
-  padding: 0 4px;
-  margin-bottom: 2px;
+.modules-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 18px;
 }
 
-/* Individual Full-Width Feature Card */
-.feature-launcher-card {
-  display: flex;
+.modules-section-title {
+  font-family: var(--argus-font-display);
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--argus-text-dark);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.modules-ready-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  width: 100%;
-  padding: 16px 20px;
-  background: var(--comp-bg-surface);
-  border: 1px solid var(--comp-border-card);
-  border-radius: var(--comp-radius-lg);
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--argus-border);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: var(--argus-forest);
+  letter-spacing: 0.05em;
+  box-shadow: var(--argus-shadow-sm);
+}
+
+.modules-ready-badge .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--argus-emerald);
+}
+
+.modules-ready-badge .chevron-arrow {
+  color: var(--argus-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Six Cards Desktop Grid: Exactly 3 columns, 2 rows matching reference & explicit requirement */
+.core-modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Individual Feature Card */
+.feature-launcher-card {
+  background: var(--argus-surface-card);
+  border: 1px solid var(--argus-border-subtle);
+  border-radius: 20px;
+  padding: 20px 18px 16px 18px;
+  box-shadow: var(--argus-shadow-card);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   text-decoration: none;
   color: inherit;
-  transition: var(--comp-transition);
   position: relative;
   overflow: hidden;
-  box-shadow: var(--comp-shadow-card);
-  cursor: pointer;
+  min-height: 225px;
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.feature-launcher-card::before {
-  content: '';
+.feature-launcher-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--argus-shadow-hover);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.feature-launcher-card:focus-visible {
+  outline: 3px solid var(--argus-emerald);
+  outline-offset: 2px;
+}
+
+/* Top Subtle Pastel Gradient Accent */
+.feature-card-corner-wave {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: transparent;
-  transition: var(--comp-transition);
+  right: 0;
+  width: 70px;
+  height: 70px;
+  border-radius: 0 20px 0 60px;
+  opacity: 0.35;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
 }
 
-.feature-launcher-card:hover,
-.feature-launcher-card:focus-visible {
-  border-color: var(--comp-teal);
-  background: #FFFFFF;
-  transform: translateY(-2px);
-  box-shadow: var(--comp-shadow-hover);
-  outline: none;
+.feature-launcher-card:hover .feature-card-corner-wave {
+  opacity: 0.55;
 }
 
-.feature-launcher-card:hover::before,
-.feature-launcher-card:focus-visible::before {
-  background: var(--comp-teal);
-}
+/* Individual Card Corner Accent Colors */
+.card-pathguide .feature-card-corner-wave { background: radial-gradient(circle at top right, #10B981, transparent 70%); }
+.card-object .feature-card-corner-wave { background: radial-gradient(circle at top right, #06B6D4, transparent 70%); }
+.card-visionaid .feature-card-corner-wave { background: radial-gradient(circle at top right, #8B5CF6, transparent 70%); }
+.card-queue .feature-card-corner-wave { background: radial-gradient(circle at top right, #F97316, transparent 70%); }
+.card-optima .feature-card-corner-wave { background: radial-gradient(circle at top right, #0284C7, transparent 70%); }
+.card-nightvision .feature-card-corner-wave { background: radial-gradient(circle at top right, #6366F1, transparent 70%); }
 
-/* Specific Accent Highlights */
-.feature-launcher-card.card-pathguide:hover::before { background: var(--comp-forest); }
-.feature-launcher-card.card-object:hover::before { background: var(--comp-teal); }
-.feature-launcher-card.card-visionaid:hover::before { background: #5B21B6; }
-.feature-launcher-card.card-queue:hover::before { background: #059669; }
-.feature-launcher-card.card-optima:hover::before { background: #0284C7; }
-.feature-launcher-card.card-nightvision:hover::before { background: #0F766E; }
-
-/* Icon Badge */
+/* Icon Container */
 .feature-card-icon-frame {
   width: 48px;
   height: 48px;
-  border-radius: var(--comp-radius-md);
-  background: var(--comp-bg-subtle);
-  border: 1px solid var(--comp-border-subtle);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 16px;
   flex-shrink: 0;
-  transition: var(--comp-transition);
-}
-
-.feature-card-icon-frame svg {
-  width: 28px;
-  height: 28px;
+  transition: transform 0.2s ease;
 }
 
 .feature-launcher-card:hover .feature-card-icon-frame {
-  background: var(--comp-sage-tint);
-  border-color: var(--comp-teal);
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-/* Text Content */
+.feature-card-icon-frame svg {
+  width: 26px;
+  height: 26px;
+}
+
+/* Pastel Icon Frame Colors matching Reference */
+.card-pathguide .feature-card-icon-frame { background: var(--icon-mint-bg); color: var(--icon-mint-fg); }
+.card-object .feature-card-icon-frame { background: var(--icon-cyan-bg); color: var(--icon-cyan-fg); }
+.card-visionaid .feature-card-icon-frame { background: var(--icon-purple-bg); color: var(--icon-purple-fg); }
+.card-queue .feature-card-icon-frame { background: var(--icon-peach-bg); color: var(--icon-peach-fg); }
+.card-optima .feature-card-icon-frame { background: var(--icon-blue-bg); color: var(--icon-blue-fg); }
+.card-nightvision .feature-card-icon-frame { background: var(--icon-indigo-bg); color: var(--icon-indigo-fg); }
+
+/* Card Body */
 .feature-card-body {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-}
-
-.feature-card-header-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  flex-grow: 1;
 }
 
 .feature-card-title {
-  font-family: var(--comp-font-display);
-  font-size: 16px;
+  font-family: var(--argus-font-display);
+  font-size: 0.98rem;
   font-weight: 700;
+  color: var(--argus-text-dark);
+  margin: 0 0 6px 0;
   letter-spacing: -0.01em;
-  color: var(--comp-forest);
-  margin: 0;
-}
-
-.feature-status-pill {
-  font-family: var(--comp-font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--comp-radius-pill);
-  background: var(--comp-ready-bg);
-  color: var(--comp-ready-text);
-  border: 1px solid var(--comp-ready-border);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
 }
 
 .feature-card-desc {
-  font-size: 13px;
+  font-size: 0.78rem;
   line-height: 1.45;
-  color: var(--comp-text-secondary);
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: var(--argus-text-body);
+  margin: 0 0 16px 0;
 }
 
-/* Launch Chevron */
+/* Card Bottom Footer: Ready Badge + Arrow Action */
+.feature-card-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.feature-status-pill {
+  background: var(--argus-mint-tint);
+  color: var(--argus-forest);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .feature-card-chevron {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--comp-bg-subtle);
+  background: var(--argus-forest);
+  color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--comp-text-muted);
-  font-size: 14px;
+  font-size: 13px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
   flex-shrink: 0;
-  transition: var(--comp-transition);
 }
 
 .feature-launcher-card:hover .feature-card-chevron {
-  background: var(--comp-teal);
-  color: #FFFFFF;
   transform: translateX(3px);
+  background: var(--argus-emerald-dark);
 }
 
 /* ==========================================================================
-   DISTINCT EMERGENCY SOS ACTION CARD
-   ========================================================================== */
-.emergency-sos-action-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  padding: 18px 22px;
-  background: var(--comp-sos-bg);
-  border: 1.5px solid var(--comp-sos-border);
-  border-radius: var(--comp-radius-lg);
-  color: inherit;
-  cursor: pointer;
-  margin-top: 10px;
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
-  transition: var(--comp-transition);
-}
-
-.emergency-sos-action-card:hover,
-.emergency-sos-action-card:focus-visible {
-  background: #FEE2E2;
-  border-color: var(--comp-sos-red);
-  box-shadow: 0 6px 22px rgba(220, 38, 38, 0.18), 0 0 0 3px rgba(220, 38, 38, 0.25);
-  transform: translateY(-2px);
-  outline: none;
-}
-
-.sos-action-icon-frame {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #FEE2E2;
-  border: 1.5px solid var(--comp-sos-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
-.sos-action-body {
-  flex: 1;
-}
-
-.sos-action-title {
-  font-family: var(--comp-font-display);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--comp-sos-red-dark);
-  margin: 0;
-}
-
-.sos-action-desc {
-  font-size: 12.5px;
-  color: #7F1D1D;
-  margin-top: 2px;
-}
-
-.sos-action-badge {
-  font-family: var(--comp-font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 6px 12px;
-  border-radius: var(--comp-radius-pill);
-  background: #FEE2E2;
-  color: var(--comp-sos-red-dark);
-  border: 1px solid var(--comp-sos-border);
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-
-/* ==========================================================================
-   COMPACT FOOTER
+   4. COMPACT FOOTER (MATCHING REFERENCE)
    ========================================================================== */
 .companion-footer {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid var(--comp-border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  color: var(--comp-text-secondary);
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--argus-border);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: var(--argus-text-muted);
+  margin-top: 20px;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 16px;
 }
 
-.companion-footer a {
-  color: var(--comp-teal);
-  text-decoration: none;
+.footer-left-status-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 600;
+  color: var(--argus-text-dark);
+  text-decoration: none;
 }
 
-.companion-footer a:hover {
-  text-decoration: underline;
+.footer-green-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--argus-emerald);
 }
 
-/* ==========================================================================
-   ANIMATIONS & KEYFRAMES
-   ========================================================================== */
-@keyframes robotFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+.footer-status-item svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
 }
 
-@keyframes shadowScale {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(0.85);
-    opacity: 0.35;
-  }
+.footer-select-caret {
+  font-size: 10px;
+  color: var(--argus-text-muted);
 }
 
-@keyframes pulseBeacon {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.65;
-  }
+.footer-right-copyright-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
 }
 
-@keyframes listeningPulse {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(1.25);
-    opacity: 0;
-  }
+.footer-tagline-quote {
+  font-style: normal;
+  color: var(--argus-text-body);
 }
 
-@keyframes antennaThink {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(1.25);
-  }
+.footer-leaf-icon {
+  margin-left: 2px;
 }
 
-@keyframes mouthResonate {
-  0% {
-    transform: scaleY(0.7);
-  }
-  100% {
-    transform: scaleY(1.3);
-  }
-}
-
-@keyframes buttonPulseTeal {
-  0% {
-    box-shadow: 0 4px 16px rgba(22, 51, 36, 0.2), 0 0 0 2px rgba(13, 122, 104, 0.2);
-  }
-  100% {
-    box-shadow: 0 6px 24px rgba(22, 51, 36, 0.3), 0 0 0 6px rgba(13, 122, 104, 0.35);
-  }
-}
-
-@keyframes iconRippleTeal {
-  0% {
-    box-shadow: 0 0 0 0 rgba(13, 122, 104, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(13, 122, 104, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(13, 122, 104, 0);
-  }
-}
-
-@keyframes waveBarBounce {
-  0% {
-    height: 4px;
-  }
-  100% {
-    height: 18px;
-  }
+.footer-copyright-text {
+  font-weight: 600;
+  color: var(--argus-forest);
 }
 
 /* ==========================================================================
-   REDUCED MOTION & ACCESSIBILITY
+   5. RESPONSIVE BREAKPOINTS (DESKTOP, TABLET, MOBILE)
    ========================================================================== */
-@media (prefers-reduced-motion: reduce) {
-  .robot-3d-floating-rig,
-  .robot-floor-shadow,
-  .companion-live-pulse,
-  .btn-tap-to-speak.is-listening,
-  .tap-to-speak-icon,
-  .voice-wave-bar {
-    animation: none !important;
-    transition: none !important;
+@media (max-width: 1220px) {
+  .hero-three-part-container {
+    grid-template-columns: 1fr 1.25fr 1fr;
+    gap: 20px;
+  }
+
+  .core-modules-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .hero-main-headline {
+    font-size: 2.7rem;
   }
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 520px) {
-  .companion-wrapper {
-    padding: 0 16px 60px 16px;
-  }
-
+@media (max-width: 992px) {
   .companion-header {
-    padding: 16px 0 14px 0;
-    margin-bottom: 16px;
-    flex-wrap: nowrap;
-    gap: 8px;
-  }
-
-  .companion-wordmark {
-    font-size: 19px;
+    border-radius: 30px;
+    padding: 10px 18px;
   }
 
   .companion-tagline {
-    font-size: 9.5px;
-    letter-spacing: 0.2px;
+    display: none;
   }
 
-  .companion-header-actions {
+  .hero-three-part-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .hero-col-right {
+    grid-column: span 2;
+    justify-content: center;
+  }
+
+  .scenic-live-view-card {
+    max-width: 500px;
+  }
+
+  .core-modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .companion-wrapper {
+    padding: 12px 16px 40px 16px;
+  }
+
+  .companion-header {
+    flex-wrap: wrap;
+    border-radius: 20px;
+    padding: 12px 16px;
+  }
+
+  .companion-nav-bar {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .hero-three-part-container {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    margin-top: 14px;
+  }
+
+  .hero-col-left {
+    padding-right: 0;
+    text-align: center;
+    align-items: center;
+  }
+
+  .hero-eyebrow-pill {
+    align-self: center;
+  }
+
+  .hero-main-headline {
+    font-size: 2.3rem;
+  }
+
+  .hero-benefits-row {
+    justify-content: center;
+  }
+
+  .hero-col-right {
+    grid-column: auto;
+  }
+
+  .robot-speech-bubble {
+    right: 5px;
+    top: 5px;
+  }
+
+  .core-modules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .companion-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-right-copyright-group {
+    margin-left: 0;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 6px;
-    flex-shrink: 0;
   }
+}
 
-  .btn-companion-profile,
-  .btn-companion-sos-header {
-    padding: 6px 10px;
-    font-size: 11.5px;
-    min-height: 36px;
-  }
-
-  .robot-3d-wrapper {
-    width: 150px;
-    height: 150px;
-  }
-
-  .companion-greeting {
-    font-size: 17px;
-    margin-top: 8px;
-  }
-
-  .btn-tap-to-speak {
-    font-size: 15px;
-    padding: 14px 20px;
-    max-width: 100%;
-  }
-
-  .feature-launcher-card {
-    padding: 14px 16px;
-  }
-
-  .feature-card-icon-frame {
-    width: 42px;
-    height: 42px;
-  }
-
-  .feature-card-icon-frame svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .emergency-sos-action-card {
-    padding: 16px;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
