@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Argus.AI — Your AI vision companion</title>
     
-    <!-- Typography: Space Grotesk, Inter, IBM Plex Mono -->
+    <!-- Typography: Space Grotesk, Inter, IBM Plex Mono, Noto Sans Telugu, Noto Sans Devanagari -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
 
     <!-- Argus Voice Profile Onboarding Styles -->
     <link rel="stylesheet" href="assets/css/profile-setup.css">
@@ -375,8 +375,20 @@
                 <span class="companion-tagline">Your AI vision companion</span>
             </div>
 
-            <!-- Right Controls: Profile Dropdown & Emergency SOS -->
+            <!-- Right Controls: Language Selector, Profile Dropdown & Emergency SOS -->
             <div class="companion-header-actions">
+                <div class="header-language-container">
+                    <label for="header-language-select" class="sr-only">Select Assistant Language</label>
+                    <div class="header-language-wrapper">
+                        <span class="language-globe-icon" aria-hidden="true">🌐</span>
+                        <select id="header-language-select" class="header-language-select" aria-label="Select Assistant Language">
+                            <option value="en">EN — English</option>
+                            <option value="te">తెలుగు — Telugu</option>
+                            <option value="hi">हिन्दी — Hindi</option>
+                        </select>
+                    </div>
+                </div>
+
                 <button type="button" id="btn-header-profile" class="btn-companion-profile" onclick="openProfileModalSafe()" aria-label="Open User Profile Settings">
                     <span class="profile-avatar-circle" aria-hidden="true">
                         <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
@@ -574,35 +586,16 @@
             </section>
         </main>
 
-        <!-- 4. COMPACT FOOTER MATCHING APPROVED REFERENCE -->
+        <!-- 4. CLEAN MINIMAL FOOTER -->
         <footer class="companion-footer" role="contentinfo">
             <div class="footer-left-group">
-                <div class="footer-item">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
-                    </svg>
-                    <span id="footer-mic-status-text">Voice: Ready</span>
-                </div>
-                <div class="footer-item">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-                        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm7.93 9h-3.95a15.65 15.65 0 00-1.37-5.06A8.02 8.02 0 0119.93 11zM12 4.07c1.07 1.76 1.87 3.84 2.14 6.93H9.86c.27-3.09 1.07-5.17 2.14-6.93zM4.07 13h3.95c.27 3.09 1.07 5.17 2.14 6.93A8.02 8.02 0 014.07 13zm3.95-2H4.07a8.02 8.02 0 014.56-5.06A15.65 15.65 0 008.02 11zm1.84 2h4.28c-.27 3.09-1.07 5.17-2.14 6.93-1.07-1.76-1.87-3.84-2.14-6.93zm6.05 5.06c.64-1.53 1.13-3.23 1.37-5.06h3.95a8.02 8.02 0 01-5.32 5.06z"/>
-                    </svg>
-                    <span>Language: English</span>
-                    <span class="footer-caret">▼</span>
-                </div>
-                <button type="button" class="footer-item footer-link-btn" onclick="openProfileModalSafe()">
+                <span class="footer-copyright">© 2026 Argus.AI</span>
+                <button type="button" class="footer-item footer-link-btn" onclick="openProfileModalSafe()" aria-label="Open Profile Settings">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
                         <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
                     </svg>
                     <span>Settings</span>
                 </button>
-            </div>
-
-            <div class="footer-right-group">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                </svg>
-                <span>See More. Live Independently.</span>
             </div>
         </footer>
 

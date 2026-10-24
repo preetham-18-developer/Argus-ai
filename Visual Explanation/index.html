@@ -741,7 +741,18 @@
             window.speechSynthesis.cancel();
             const cleanText = text.replace(/[*#_~`]/g, '');
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 1.05;
+            const savedLang = localStorage.getItem('argus_language_preference') || 'en';
+            const bcp47 = (savedLang === 'te') ? 'te-IN' : (savedLang === 'hi') ? 'hi-IN' : 'en-IN';
+            utterance.lang = bcp47;
+            const voices = window.speechSynthesis.getVoices() || [];
+            if (savedLang === 'te') {
+                const teVoice = voices.find(v => v.lang.startsWith('te') || /telugu/i.test(v.name));
+                if (teVoice) utterance.voice = teVoice;
+            } else if (savedLang === 'hi') {
+                const hiVoice = voices.find(v => v.lang.startsWith('hi') || /hindi/i.test(v.name) || /(lekha|kalpana|neel)/i.test(v.name));
+                if (hiVoice) utterance.voice = hiVoice;
+            }
+            utterance.rate = 1.0;
             utterance.pitch = 1.0;
             window.speechSynthesis.speak(utterance);
         }
@@ -825,6 +836,7 @@
         // Main Multimodal AI Analysis Pipeline
         async function performMultimodalAnalysis(imageBase64, customQuestion) {
             confidenceInfo.innerText = "Connecting to Vision AI Gateway...";
+            const currentLang = localStorage.getItem('argus_language_preference') || 'en';
 
             try {
                 const response = await fetch('/api/vision', {
@@ -833,7 +845,8 @@
                     body: JSON.stringify({
                         image: imageBase64,
                         mode: currentMode,
-                        customPrompt: customQuestion || ""
+                        customPrompt: customQuestion || "",
+                        language: currentLang
                     })
                 });
 
@@ -877,7 +890,9 @@
             scanBtn.innerHTML = "<span>⚙️ ANALYZING SCENE...</span>";
             scanner.style.display = "block";
             resultText.innerText = "VisionAid AI is analyzing the image with NVIDIA NIM... Please hold.";
-            speak("Analyzing image. Please wait.");
+            const savedLang = localStorage.getItem('argus_language_preference') || 'en';
+            const waitMsg = (savedLang === 'te') ? "చిత్రాన్ని విశ్లేషిస్తున్నాను. దయచేసి వేచి ఉండండి." : (savedLang === 'hi') ? "चित्र का विश्लेषण किया जा रहा है। कृपया प्रतीक्षा करें।" : "Analyzing image. Please wait.";
+            speak(waitMsg);
 
             const imageBase64 = getValidatedImageBase64();
             const customQuestion = (customQuestionInput.value || '').trim();

@@ -359,6 +359,20 @@
             <div class="manual-form-container">
               <div class="manual-error-alert" id="manual-form-error" role="alert"></div>
 
+              <!-- Field 0: Language Preference -->
+              <div class="manual-form-group">
+                <label class="manual-label" for="manual-language-select">
+                  <span>Preferred Language / భాష / भाषा</span>
+                  <span class="manual-required-badge">ACTIVE</span>
+                </label>
+                <select id="manual-language-select" class="manual-input" style="cursor: pointer;">
+                  <option value="en">English (EN)</option>
+                  <option value="te">తెలుగు — Telugu</option>
+                  <option value="hi">हिन्दी — Hindi</option>
+                </select>
+                <span class="manual-input-hint">Voice guidance and assistant speech language.</span>
+              </div>
+
               <!-- Field 1: Name -->
               <div class="manual-form-group">
                 <label class="manual-label" for="manual-input-name">
@@ -490,7 +504,15 @@
                   <div class="review-item-label">Secondary Emergency Contact</div>
                   <div class="review-item-value" id="review-contact2">Not provided</div>
                 </div>
-                <button type="button" class="btn-review-edit" onclick="window.argusUI.openEditField('contact2')">Edit</button>
+                <button type="button" class="btn-review-edit" onclick="(window.argusProfileUI || window.argusUI).openEditField('contact2')">Edit</button>
+              </div>
+
+              <div class="review-item">
+                <div>
+                  <div class="review-item-label">Preferred Language</div>
+                  <div class="review-item-value" id="review-preferred-language">English (EN)</div>
+                </div>
+                <button type="button" class="btn-review-edit" onclick="(window.argusProfileUI || window.argusUI).openEditField('language')">Edit</button>
               </div>
             </div>
 
@@ -643,7 +665,10 @@
 
       const editAllManualBtn = document.getElementById('btn-edit-all-manual');
       if (editAllManualBtn) {
-        editAllManualBtn.addEventListener('click', () => this.machine.switchToManualMode());
+        editAllManualBtn.addEventListener('click', () => {
+          this.machine.switchToManualMode();
+          this._populateManualForm();
+        });
       }
 
       const clearBtn = document.getElementById('btn-clear-profile');
@@ -664,9 +689,16 @@
         });
       }
 
-      // Nav Profile Button
+      // Nav Profile Button & Header Profile Control
       if (this.navProfileBtn) {
         this.navProfileBtn.addEventListener('click', () => this.openModal());
+      }
+      const headerProfileBtn = document.getElementById('btn-header-profile');
+      if (headerProfileBtn) {
+        headerProfileBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.openModal();
+        });
       }
 
       // Keyboard Accessibility
@@ -776,7 +808,8 @@
       this.machine.switchToManualMode();
       this._populateManualForm();
       setTimeout(() => {
-        if (fieldKey === 'name') document.getElementById('manual-input-name')?.focus();
+        if (fieldKey === 'language') document.getElementById('manual-language-select')?.focus();
+        else if (fieldKey === 'name') document.getElementById('manual-input-name')?.focus();
         else if (fieldKey === 'phone') document.getElementById('manual-input-phone')?.focus();
         else if (fieldKey === 'address') document.getElementById('manual-input-address')?.focus();
         else if (fieldKey === 'contact1') document.getElementById('manual-input-contact1-name')?.focus();
@@ -948,6 +981,12 @@
         document.getElementById('review-contact2').innerText = 'Not provided';
       }
 
+      const langReview = document.getElementById('review-preferred-language');
+      if (langReview) {
+        const l = profile.preferredLanguage || ProfileStorage.getLanguagePreference();
+        langReview.innerText = (l === 'te') ? 'తెలుగు — Telugu' : (l === 'hi') ? 'हिन्दी — Hindi' : 'English (EN)';
+      }
+
       if (this.progressBar) this.progressBar.style.width = '100%';
       if (this.progressText) this.progressText.innerText = 'Profile Review';
     }
@@ -958,6 +997,10 @@
 
     _populateManualForm() {
       const profile = ProfileStorage.loadProfile();
+      const langSelect = document.getElementById('manual-language-select');
+      if (langSelect) {
+        langSelect.value = profile.preferredLanguage || ProfileStorage.getLanguagePreference();
+      }
       document.getElementById('manual-input-name').value = profile.displayName || '';
       document.getElementById('manual-input-phone').value = profile.phoneNumber || '';
       document.getElementById('manual-input-address').value = profile.address || '';
@@ -1022,9 +1065,13 @@
 
       // Save to profile
       const profile = ProfileStorage.loadProfile();
+      const langSelect = document.getElementById('manual-language-select');
+      const selectedLang = (langSelect && (langSelect.value === 'te' || langSelect.value === 'hi' || langSelect.value === 'en')) ? langSelect.value : 'en';
       profile.displayName = name;
       profile.phoneNumber = phone;
       profile.address = address;
+      profile.preferredLanguage = selectedLang;
+      profile.completed = true;
 
       const contacts = [];
       if (c1Name) {
@@ -1046,6 +1093,7 @@
       profile.emergencyContacts = contacts;
 
       ProfileStorage.saveProfile(profile);
+      ProfileStorage.setLanguagePreference(selectedLang);
 
       // Transition to review
       this._renderReview();
@@ -1138,13 +1186,25 @@
   if (typeof document !== 'undefined') {
     if (document.readyState === 'interactive' || document.readyState === 'complete') {
       const ui = new ProfileSetupUI();
-      if (typeof window !== 'undefined') window.argusUI = ui;
-      if (typeof global !== 'undefined') global.argusUI = ui;
+      if (typeof window !== 'undefined') {
+        window.argusUI = ui;
+        window.argusProfileUI = ui;
+      }
+      if (typeof global !== 'undefined') {
+        global.argusUI = ui;
+        global.argusProfileUI = ui;
+      }
     } else {
       document.addEventListener('DOMContentLoaded', () => {
         const ui = new ProfileSetupUI();
-        if (typeof window !== 'undefined') window.argusUI = ui;
-        if (typeof global !== 'undefined') global.argusUI = ui;
+        if (typeof window !== 'undefined') {
+          window.argusUI = ui;
+          window.argusProfileUI = ui;
+        }
+        if (typeof global !== 'undefined') {
+          global.argusUI = ui;
+          global.argusProfileUI = ui;
+        }
       });
     }
   }

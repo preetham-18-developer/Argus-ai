@@ -27,6 +27,11 @@
       this._isStartingListening = false;
       this.currentState = 'idle'; // idle | listening-wake | listening | processing | speaking | error
 
+      // Active Language (en, te, hi)
+      this.currentLanguage = (root.ArgusProfile && root.ArgusProfile.ProfileStorage)
+        ? root.ArgusProfile.ProfileStorage.getLanguagePreference()
+        : 'en';
+
       this.commandTimeoutTimer = null;
       this.wakeRestartTimer = null;
 
@@ -42,52 +47,83 @@
       this.transcriptText = null;
       this.profileHeaderBtn = null;
       this.profileNameLabel = null;
+      this.headerLanguageSelect = null;
       this.wakeToggleBtn = null;
       this.wakeToggleLabel = null;
 
-      // Verified Canonical Routes & Comprehensive Command Aliases
+      // Verified Canonical Routes & Comprehensive Multilingual Command Aliases
       this.routes = [
         {
           id: 'pathguide',
           name: 'PathGuide Pro',
           url: './Night-Vision/index.html',
-          regex: /(open pathguide|start pathguide|pathguide pro|pathguide|path guide|navigation mode|walking guidance|start navigation|navigate|obstacle awareness|obstacles)/i,
-          spokenConfirm: 'Starting PathGuide Pro navigation.'
+          regex: /(open pathguide|start pathguide|pathguide pro|pathguide|path guide|navigation mode|walking guidance|start navigation|navigate|obstacle awareness|obstacles|పాత్గైడ్ తెరువు|పాత్ గైడ్ ఓపెన్ చేయి|పాత్గైడ్ ప్రారంభించు|దారి చూపించు|నావిగేట్ చేయి|దారి చూపు|పాత్గైడ్ ప్రో|పాత్గైడ్|పాత్ గైడ్|पाथगाइड खोलो|पाथगाइड शुरू करो|पाथगाइड खोलें|रास्ता दिखाओ|नेविगेट करो|पाथगाइड प्रो|पाथगाइड|पाथ गाइड)/i,
+          spokenConfirm: 'Starting PathGuide Pro navigation.',
+          spokenConfirms: {
+            en: 'Starting PathGuide Pro navigation.',
+            te: 'పాత్గైడ్ ప్రో నావిగేషన్ ప్రారంభిస్తున్నాను.',
+            hi: 'पाथगाइड प्रो नेविगेशन शुरू कर रहा हूँ।'
+          }
         },
         {
           id: 'object-detection',
           name: 'Object Detection Pro',
           url: './object-detection-pro/index.html',
-          regex: /(open object detection|start object detection|object detection pro|object detection|object detector|detect objects?|identify objects?|find objects?|object scanner)/i,
-          spokenConfirm: 'Opening Object Detection Pro.'
+          regex: /(open object detection|start object detection|object detection pro|object detection|object detector|detect objects?|identify objects?|find objects?|object scanner|can you identify this object|what is in front of me|ఆబ్జెక్ట్ డిటెక్షన్ తెరువు|ఆబ్జెక్ట్ డిటెక్షన్ ఓపెన్ చేయి|ఇది ఏ వస్తువో చెప్పు|వస్తువులను గుర్తించు|వస్తువును గుర్తించు|నా ముందు ఏముంది|వస్తువులను స్కాన్ చేయి|ఆబ్జెక్ట్ డిటెక్టర్|ऑब्जेक्ट डिटेक्शन खोलो|ऑब्जेक्ट डिटेक्शन शुरू करो|यह कौन सी वस्तु है|वस्तु पहचानो|वस्तुओं की पहचान करो|मेरे सामने क्या है|ऑब्जेक्ट डिटेक्टर)/i,
+          spokenConfirm: 'Opening Object Detection Pro.',
+          spokenConfirms: {
+            en: 'Opening Object Detection Pro.',
+            te: 'ఆబ్జెక్ట్ డిటెక్షన్ ప్రో తెరుస్తున్నాను.',
+            hi: 'ऑब्जेक्ट डिटेक्शन प्रो खोल रहा हूँ।'
+          }
         },
         {
           id: 'visionaid',
           name: 'VisionAid AI',
           url: './Visual%20Explanation/index.html',
-          regex: /(open visionaid|start visionaid|open vision aid|start vision aid|visionaid ai|visionaid|vision aid|visual explanation|explain surroundings|explain my surroundings|describe scene|describe surroundings|read text|read document|medicine scanner|multimodal)/i,
-          spokenConfirm: 'Opening VisionAid AI.'
+          regex: /(open visionaid|start visionaid|open vision aid|start vision aid|visionaid ai|visionaid|vision aid|visual explanation|explain surroundings|explain my surroundings|describe scene|describe surroundings|read text|read document|medicine scanner|multimodal|విజన్ ఎయిడ్ తెరువు|విజన్ఎయిడ్ ఓపెన్ చేయి|విజన్ ఎయిడ్ ప్రారంభించు|దృశ్యాన్ని వివరించు|పరిసరాలను వివరించు|వివరించు|విజన్ ఎయిడ్|విజన్ఎయిడ్|विज़नएड खोलो|विज़न एड खोलो|विज़नएड शुरू करो|विज़न एड शुरू करो|दृश्य समझाओ|आसपास का दृश्य बताओ|चित्र का वर्णन करो|वर्णन करो|विज़नएड|विज़न एड)/i,
+          spokenConfirm: 'Opening VisionAid AI.',
+          spokenConfirms: {
+            en: 'Opening VisionAid AI.',
+            te: 'ఇప్పుడే విజన్ ఎయిడ్ తెరుస్తున్నాను.',
+            hi: 'अब विज़नएड खोल रहा हूँ।'
+          }
         },
         {
           id: 'queue-detector',
           name: 'Queue Detector',
           url: './queue-detection/index.html',
-          regex: /(open queue detector|start queue detector|open queue|start queue|check queue|check the queue|queue detector|queue detection|detect people in line|people in line|distance tracker|track queue|check line|line check|queue)/i,
-          spokenConfirm: 'Opening Queue Detector.'
+          regex: /(open queue detector|start queue detector|open queue|start queue|check queue|check the queue|queue detector|queue detection|detect people in line|people in line|distance tracker|track queue|check line|line check|queue|క్యూ డిటెక్టర్ తెరువు|క్యూ తనిఖీ చేయి|క్యూ చెక్ చేయి|లైన్ చెక్ చేయి|లైన్లో ఎంతమంది ఉన్నారు|క్యూలో ఎంతమంది ఉన్నారు|క్యూ డిటెక్టర్|క్యూ|कतार डिटेक्टर खोलो|क्यू डिटेक्टर खोलो|कतार जांचो|कतार चेक करो|लाइन चेक करो|लाइन में कितने लोग हैं|कतार में कितने लोग हैं|कतार|क्यू)/i,
+          spokenConfirm: 'Opening Queue Detector.',
+          spokenConfirms: {
+            en: 'Opening Queue Detector.',
+            te: 'క్యూ డిటెక్టర్ తెరుస్తున్నాను.',
+            hi: 'कतार डिटेक्टर खोल रहा हूँ।'
+          }
         },
         {
           id: 'optima-vision',
           name: 'Optima Vision',
           url: './Camera%20Check/index.html',
-          regex: /(open optima vision|start optima vision|open optima|start optima|check camera quality|camera quality|check camera|check lens|check visibility|optima vision|optima|camera check|optical monitor|blur check)/i,
-          spokenConfirm: 'Opening Optima Vision camera check.'
+          regex: /(open optima vision|start optima vision|open optima|start optima|check camera quality|camera quality|check camera|check lens|check visibility|optima vision|optima|camera check|optical monitor|blur check|read this text|read text|ఆప్టిమా విజన్ తెరువు|ఆప్టిమా విజన్ ఓపెన్ చేయి|కెమెరా నాణ్యత తనిఖీ చేయి|కెమెరా చెక్ చేయి|లెన్స్ చెక్ చేయి|ఈ టెక్స్ట్ చదువు|టెక్స్ట్ చదువు|ఆప్టిమా విజన్|ఆప్టిమా|కెమెరా చెక్|ऑप्टिमा विज़न खोलो|ऑप्टिमा विज़न शुरू करो|कैमरा गुणवत्ता जांचो|कैमरा चेक करो|लेंस चेक करो|यह टेक्स्ट पढ़ो|टेक्स्ट पढ़ो|ऑप्टिमा विज़न|ऑप्टिमा|कैमरा चेक)/i,
+          spokenConfirm: 'Opening Optima Vision camera check.',
+          spokenConfirms: {
+            en: 'Opening Optima Vision camera check.',
+            te: 'ఆప్టిమా విజన్ కెమెరా చెక్ తెరుస్తున్నాను.',
+            hi: 'ऑप्टिमा विज़न कैमरा चेक खोल रहा हूँ।'
+          }
         },
         {
           id: 'night-vision',
           name: 'Night Vision',
           url: './Night-Vision/index.html?mode=ON',
-          regex: /(turn on night vision|turn night vision on|activate night vision|enable night vision|start night vision|open night vision|night vision|night mode|dark mode|low light mode|photon enhancement)/i,
-          spokenConfirm: 'Turning on Night Vision mode.'
+          regex: /(turn on night vision|turn night vision on|activate night vision|enable night vision|start night vision|open night vision|night vision|night mode|dark mode|low light mode|photon enhancement|నైట్ విజన్ ఆన్ చేయి|నైట్ విజన్ తెరువు|నైట్ విజన్ ప్రారంభించు|తక్కువ వెలుతురు మోడ్|నైట్ విజన్|नाइट विज़न चालू करो|नाइट विज़न खोलो|नाइट विज़न शुरू करो|कम रोशनी मोड|नाइट विज़न)/i,
+          spokenConfirm: 'Turning on Night Vision mode.',
+          spokenConfirms: {
+            en: 'Turning on Night Vision mode.',
+            te: 'నైట్ విజన్ మోడ్ ఆన్ చేస్తున్నాను.',
+            hi: 'नाइट विज़न मोड चालू कर रहा हूँ।'
+          }
         },
         {
           id: 'emergency-sos',
@@ -97,8 +133,13 @@
               root.triggerEmergencySOS();
             }
           },
-          regex: /(emergency sos|call my emergency contact|call emergency contact|trigger emergency sos|trigger sos|help me|call 112|send help|danger|emergency)/i,
-          spokenConfirm: 'Opening Emergency SOS. You have 5 seconds to cancel.'
+          regex: /(emergency sos|call my emergency contact|call emergency contact|trigger emergency sos|trigger sos|help me|call 112|send help|danger|emergency|ఎమర్జెన్సీ ఎస్ఓఎస్|నా అత్యవసర కాంటాక్ట్‌కు కాల్ చేయి|సహాయం కావాలి|నాకు సహాయం చేయండి|అత్యవసరం|ఎమర్జెన్సీ|इमरजेंसी एसओएस|मेरे आपातकालीन संपर्क को कॉल करो|मदद चाहिए|मेरी मदद करो|आपातकाल|इमरजेंसी)/i,
+          spokenConfirm: 'Opening Emergency SOS. You have 5 seconds to cancel.',
+          spokenConfirms: {
+            en: 'Opening Emergency SOS. You have 5 seconds to cancel.',
+            te: 'ఎమర్జెన్సీ ఎస్ఓఎస్ తెరుస్తున్నాను. రద్దు చేయడానికి 5 సెకన్ల సమయం ఉంది.',
+            hi: 'इमरजेंसी एसओएस खोल रहा हूँ। रद्द करने के लिए आपके पास 5 सेकंड हैं।'
+          }
         },
         {
           id: 'profile-setup',
@@ -110,8 +151,13 @@
               root.argusProfileUI.openModal();
             }
           },
-          regex: /(open my profile|open profile|edit my details|set up profile|edit profile|change my name|profile settings|user profile|my profile)/i,
-          spokenConfirm: 'Opening your profile settings.'
+          regex: /(open my profile|open profile|edit my details|set up profile|edit profile|change my name|profile settings|user profile|my profile|settings|నా ప్రొఫైల్ తెరువు|ప్రొఫైల్ తెరువు|ప్రొఫైల్ సెట్టింగ్స్|నా వివరాలు మార్చు|నా పేరు మార్చు|సెట్టింగ్స్|ప్రొఫైల్|मेरी प्रोफ़ाइल खोलो|प्रोफ़ाइल खोलो|प्रोफ़ाइल सेटिंग्स|मेरा विवरण बदलो|मेरा नाम बदलो|सेटिंग्स|प्रोफ़ाइल)/i,
+          spokenConfirm: 'Opening your profile settings.',
+          spokenConfirms: {
+            en: 'Opening your profile settings.',
+            te: 'మీ ప్రొఫైల్ సెట్టింగ్స్ తెరుస్తున్నాను.',
+            hi: 'आपकी प्रोफ़ाइल सेटिंग्स खोल रहा हूँ।'
+          }
         }
       ];
 
@@ -139,8 +185,17 @@
       this.transcriptText = document.getElementById('voice-transcript-text');
       this.profileHeaderBtn = document.getElementById('btn-header-profile');
       this.profileNameLabel = document.getElementById('header-profile-name');
+      this.headerLanguageSelect = document.getElementById('header-language-select');
       this.wakeToggleBtn = document.getElementById('btn-wake-toggle');
       this.wakeToggleLabel = document.getElementById('wake-toggle-label');
+
+      // Bind header language selector
+      if (this.headerLanguageSelect) {
+        this.headerLanguageSelect.value = this.currentLanguage;
+        this.headerLanguageSelect.addEventListener('change', (e) => {
+          this.setLanguage(e.target.value);
+        });
+      }
 
       // Initialize speech coordination
       this._initSpeechService();
@@ -182,15 +237,23 @@
         }
       } catch (e) {}
 
-      // Listen for profile save events
+      // Listen for profile save and language change events
       if (typeof window !== 'undefined') {
         window.addEventListener('storage', (e) => {
           if (e.key === 'argus_user_profile') {
             this.syncUserProfile();
           }
+          if (e.key === 'argus_language_preference' && e.newValue) {
+            this.setLanguage(e.newValue, false);
+          }
         });
         window.addEventListener('argus_profile_updated', () => {
           this.syncUserProfile();
+        });
+        window.addEventListener('argus_language_changed', (e) => {
+          if (e.detail && e.detail.language) {
+            this.setLanguage(e.detail.language, false);
+          }
         });
       }
 
@@ -201,6 +264,51 @@
           syncTimer.unref();
         }
       }
+    }
+
+    setLanguage(langCode, syncStorage = true) {
+      const code = (langCode === 'te' || langCode === 'hi') ? langCode : 'en';
+      this.currentLanguage = code;
+
+      const storage = (typeof root !== 'undefined' && root.localStorage)
+        ? root.localStorage
+        : ((typeof window !== 'undefined' && window.localStorage) ? window.localStorage : null);
+
+      if (syncStorage && root.ArgusProfile && root.ArgusProfile.ProfileStorage) {
+        root.ArgusProfile.ProfileStorage.setLanguagePreference(code, storage);
+      } else if (storage) {
+        try {
+          storage.setItem('argus_language_preference', code);
+        } catch (e) {}
+      }
+
+      if (this.headerLanguageSelect && this.headerLanguageSelect.value !== code) {
+        this.headerLanguageSelect.value = code;
+      }
+
+      const modalLangSelect = document.getElementById('manual-language-select');
+      if (modalLangSelect && modalLangSelect.value !== code) {
+        modalLangSelect.value = code;
+      }
+
+      if (this.speechService && typeof this.speechService.setLanguage === 'function') {
+        this.speechService.setLanguage(code);
+      }
+
+      return code;
+    }
+
+    _getSpokenConfirm(route) {
+      if (!route) return '';
+      const lang = this.currentLanguage || 'en';
+      if (route.spokenConfirms && route.spokenConfirms[lang]) {
+        return route.spokenConfirms[lang];
+      }
+      if (typeof route.spokenConfirm === 'string') return route.spokenConfirm;
+      if (route.spokenConfirm && typeof route.spokenConfirm === 'object') {
+        return route.spokenConfirm[lang] || route.spokenConfirm.en || '';
+      }
+      return '';
     }
 
     _initSpeechService() {
@@ -383,23 +491,43 @@
 
     _detectWakeWord(normalizedText) {
       if (!normalizedText) return false;
-      return /\b(hey\s+argus|hi\s+argus|hello\s+argus|ok\s+argus|okay\s+argus|argus|argos|august|argo)\b/i.test(normalizedText);
+      const enMatch = /\b(hey\s+argus|hi\s+argus|hello\s+argus|ok\s+argus|okay\s+argus|argus|argos|august|argo)\b/i.test(normalizedText);
+      const teMatch = /(హాయ్\s+ఆర్గస్|హే\s+ఆర్గస్|ఆర్గస్)/i.test(normalizedText);
+      const hiMatch = /(हाय\s+आर्गस|हे\s+आर्गस|नमस्ते\s+आर्गस|आर्गस)/i.test(normalizedText);
+      return enMatch || teMatch || hiMatch;
     }
 
     /**
      * Executes conversational reaction when voice interaction or "Hey Argus" is triggered:
-     * Argus: "Hi [Name], I'm Argus. What kind of help do you need?"
+     * English: "I'm here, [Name]. What kind of help do you need?"
+     * Telugu: "నేను ఇక్కడే ఉన్నాను, [Name]. మీకు ఎలాంటి సహాయం కావాలి?"
+     * Hindi: "मैं यहाँ हूँ, [Name]। आपको किस प्रकार की मदद चाहिए?"
      */
     _triggerWakeWordReaction() {
       this._stopAllListening();
 
       const displayName = this.getUserDisplayName();
-      const greeting = displayName
-        ? `Hi ${displayName}, I'm Argus. What kind of help do you need?`
-        : `Hello, I'm Argus. What kind of help do you need?`;
+      let greeting;
+      if (this.currentLanguage === 'te') {
+        greeting = displayName
+          ? `నేను ఇక్కడే ఉన్నాను, ${displayName}. మీకు ఎలాంటి సహాయం కావాలి?`
+          : `నేను ఇక్కడే ఉన్నాను. మీకు ఎలాంటి సహాయం కావాలి?`;
+      } else if (this.currentLanguage === 'hi') {
+        greeting = displayName
+          ? `मैं यहाँ हूँ, ${displayName}। आपको किस प्रकार की मदद चाहिए?`
+          : `मैं यहाँ हूँ। आपको किस प्रकार की मदद चाहिए?`;
+      } else {
+        greeting = displayName
+          ? `I'm here, ${displayName}. What kind of help do you need?`
+          : `I'm here. What kind of help do you need?`;
+      }
 
       this.setRobotState('speaking', 'Argus is responding...');
-      this.setTranscript(`✓ "Hey Argus" detected`);
+      this.setTranscript(
+        this.currentLanguage === 'te' ? '✓ "ఆర్గస్" గుర్తించబడింది' :
+        this.currentLanguage === 'hi' ? '✓ "आर्गस" पहचाना गया' :
+        '✓ "Hey Argus" detected'
+      );
 
       if (this.speechService) {
         this.speechService.speak(greeting, () => {
@@ -478,10 +606,18 @@
       }
 
       this._stopAllListening();
-      this.setTranscript("I didn't hear a command. Tap to speak or say 'Hey Argus' anytime.");
+      let timeoutMsg;
+      if (this.currentLanguage === 'te') {
+        timeoutMsg = "నాకు ఎలాంటి ఆదేశం వినిపించలేదు. మాట్లాడటానికి నొక్కండి లేదా 'హాయ్ ఆర్గస్' అనండి.";
+      } else if (this.currentLanguage === 'hi') {
+        timeoutMsg = "मुझे कोई कमांड नहीं सुनाई दी। बोलने के लिए टैप करें या 'हाय आर्गस' कहें।";
+      } else {
+        timeoutMsg = "I didn't hear a command. Tap to speak or say 'Hey Argus' anytime.";
+      }
+      this.setTranscript(timeoutMsg);
 
       if (this.speechService) {
-        this.speechService.speak("I didn't hear a command. Tap to speak or say 'Hey Argus' anytime.", () => {
+        this.speechService.speak(timeoutMsg, () => {
           this._returnToStandby();
         });
       } else {
@@ -555,22 +691,23 @@
      * Normalizes spoken input text:
      * - Converts to lowercase and trims
      * - Replaces curly apostrophes
-     * - Removes punctuation
-     * - Strips conversational prefixes (e.g. "hey argus", "please", "can you")
+     * - Removes punctuation (including Latin and Indic dandas ।॥)
+     * - Strips conversational prefixes (e.g. "hey argus", "please", "can you", Telugu/Hindi equivalents)
      * - Collapses multiple spaces
      */
     _normalizeCommand(rawText) {
       if (!rawText || typeof rawText !== 'string') return '';
       let str = rawText.toLowerCase().trim();
       str = str.replace(/[’`]/g, "'");
-      str = str.replace(/[.,\/#!$%\^&\*;:{}=\-_~()?"`]/g, ' ');
+      // Clean punctuation while preserving Indic Unicode letters and vowels
+      str = str.replace(/[.,\/#!$%\^&\*;:{}=\-_~()?"`।॥]/g, ' ');
       str = str.replace(/\s+/g, ' ').trim();
 
-      // Iteratively strip conversational prefixes
+      // Iteratively strip conversational prefixes across English, Telugu, and Hindi
       let prev;
       do {
         prev = str;
-        str = str.replace(/^(hey argus|argus|can you please|could you please|please can you|can you|could you|please|i want to|i need to)\s+/i, '');
+        str = str.replace(/^(hey argus|hi argus|hello argus|argus|can you please|could you please|please can you|can you|could you|please|i want to|i need to|హాయ్ ఆర్గస్|హే ఆర్గస్|ఆర్గస్|దయచేసి|నాకు|నేను|ఒక్కసారి|हाय आर्गस|हे आर्गस|नमस्ते आर्गस|आर्गस|कृपया|जरा|मुझे)\s+/i, '');
       } while (str !== prev);
 
       return str.trim();
@@ -600,10 +737,11 @@
           this._executeRoute(matched);
         };
 
+        const spokenText = this._getSpokenConfirm(matched);
         if (this.speechService) {
           // Safety timeout in case TTS onend does not fire in 3 seconds
           const fallbackTimer = setTimeout(doNavigate, 3000);
-          this.speechService.speak(matched.spokenConfirm, () => {
+          this.speechService.speak(spokenText, () => {
             clearTimeout(fallbackTimer);
             doNavigate();
           });
@@ -613,15 +751,22 @@
       } else {
         // Unrecognized command
         this.setRobotState('error', 'Command not recognized');
-        this.setTranscript(`Could not match "${rawTranscript.trim()}". Try saying "Open VisionAid", "Open PathGuide", or "Detect Objects".`);
+        let unrecMsg;
+        if (this.currentLanguage === 'te') {
+          unrecMsg = "ఆ ఆదేశం నాకు అర్థం కాలేదు. మీరు 'విజన్ ఎయిడ్ తెరువు' లేదా 'పాత్గైడ్ తెరువు' అని అనవచ్చు.";
+          this.setTranscript(`"${rawTranscript.trim()}" అర్థం కాలేదు. 'విజన్ ఎయిడ్ తెరువు' లేదా 'పాత్గైడ్ తెరువు' అని ప్రయత్నించండి.`);
+        } else if (this.currentLanguage === 'hi') {
+          unrecMsg = "मुझे यह कमांड समझ नहीं आई। आप 'विज़नएड खोलो' या 'पाथगाइड खोलो' कह सकते हैं।";
+          this.setTranscript(`"${rawTranscript.trim()}" समझ नहीं आई। 'विज़नएड खोलो' या 'पाथगाइड खोलो' बोलें।`);
+        } else {
+          unrecMsg = "I didn't recognize that command. You can say 'Open VisionAid', 'Open PathGuide', or tap any feature below.";
+          this.setTranscript(`Could not match "${rawTranscript.trim()}". Try saying "Open VisionAid", "Open PathGuide", or "Detect Objects".`);
+        }
 
         if (this.speechService) {
-          this.speechService.speak(
-            "I didn't recognize that command. You can say 'Open VisionAid', 'Open PathGuide', or tap any feature below.",
-            () => {
-              setTimeout(() => this._returnToStandby(), 1000);
-            }
-          );
+          this.speechService.speak(unrecMsg, () => {
+            setTimeout(() => this._returnToStandby(), 1000);
+          });
         } else {
           setTimeout(() => this._returnToStandby(), 2200);
         }

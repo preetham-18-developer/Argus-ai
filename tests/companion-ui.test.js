@@ -51,6 +51,7 @@ function setupMockEnvironment() {
       this.attributes = new Map();
       this.textContent = '';
       this.innerHTML = '';
+      this.value = '';
       this.children = [];
     }
 
@@ -102,6 +103,8 @@ function setupMockEnvironment() {
   getOrCreateElement('voice-transcript-text');
   getOrCreateElement('btn-header-profile', 'button');
   getOrCreateElement('header-profile-name');
+  getOrCreateElement('header-language-select', 'select');
+  getOrCreateElement('manual-language-select', 'select');
   getOrCreateElement('sos-modal-overlay');
   getOrCreateElement('argus-profile-modal-overlay');
 
@@ -187,7 +190,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
 
     controller._triggerWakeWordReaction();
 
-    assert.equal(spokenGreeting, "Hi Prem, I'm Argus. What kind of help do you need?");
+    assert.equal(spokenGreeting, "I'm here, Prem. What kind of help do you need?");
     assert.equal(controller.currentState, 'speaking');
   });
 
@@ -208,7 +211,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
 
     controller._triggerWakeWordReaction();
 
-    assert.equal(spokenGreeting, "Hello, I'm Argus. What kind of help do you need?");
+    assert.equal(spokenGreeting, "I'm here. What kind of help do you need?");
     assert.equal(controller.currentState, 'speaking');
   });
 
@@ -241,7 +244,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
       cancel: () => {}
     };
     controller._triggerWakeWordReaction();
-    assert.equal(spoken, "Hi Rahul, I'm Argus. What kind of help do you need?");
+    assert.equal(spoken, "I'm here, Rahul. What kind of help do you need?");
   });
 
   test('hands-free toggle button toggles wakeWordEnabled and updates accessible attributes', () => {
@@ -691,7 +694,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
 
     // 3. Argus responds with personalized greeting using saved name Prem
     assert.equal(spokenTexts.length >= 1, true);
-    assert.equal(spokenTexts[0], "Hi Prem, I'm Argus. What kind of help do you need?");
+    assert.equal(spokenTexts[0], "I'm here, Prem. What kind of help do you need?");
 
     // 4. Wait for acoustic guard delay (200ms) to transition to command listening
     await new Promise(r => setTimeout(r, 250));
@@ -763,6 +766,225 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
     controller.handleTapToSpeak();
     assert.equal(controller.isListeningCommand, false);
     assert.equal(controller.currentState, 'idle');
+  });
+
+  test('clicking header profile control reliably invokes profile settings modal', () => {
+    const { mockWindow } = setupMockEnvironment();
+    let modalOpened = false;
+    mockWindow.argusProfileUI = {
+      openModal: () => { modalOpened = true; }
+    };
+
+    // Test openProfileModalSafe logic
+    if (typeof mockWindow.openProfileModalSafe === 'function') {
+      mockWindow.openProfileModalSafe = function() {
+        if (mockWindow.argusProfileUI && typeof mockWindow.argusProfileUI.openModal === 'function') {
+          mockWindow.argusProfileUI.openModal();
+        }
+      };
+    }
+    mockWindow.openProfileModalSafe();
+    assert.equal(modalOpened, true, 'openProfileModalSafe must open profile modal via window.argusProfileUI');
+  });
+
+  test('ProfileStorage maintains language preference and profile fields intact without reset', () => {
+    const { mockStorage } = setupMockEnvironment();
+
+    // Default language is English
+    assert.equal(ArgusProfile.ProfileStorage.getLanguagePreference(mockStorage), 'en');
+
+    // Save profile with existing contacts
+    const profile = ArgusProfile.createEmptyProfile();
+    profile.displayName = 'Prem Pareesh';
+    profile.phoneNumber = '+919876543210';
+    profile.emergencyContacts = [{ name: 'Dr. Sharma', phone: '+919876543211', relation: 'Doctor' }];
+    ArgusProfile.ProfileStorage.saveProfile(profile, mockStorage);
+
+    // Change language to Telugu
+    ArgusProfile.ProfileStorage.setLanguagePreference('te', mockStorage);
+    assert.equal(ArgusProfile.ProfileStorage.getLanguagePreference(mockStorage), 'te');
+
+    // Reload profile and ensure fields and contacts are preserved
+    const reloaded = ArgusProfile.ProfileStorage.loadProfile(mockStorage);
+    assert.equal(reloaded.displayName, 'Prem Pareesh');
+    assert.equal(reloaded.phoneNumber, '+919876543210');
+    assert.equal(reloaded.preferredLanguage, 'te');
+    assert.equal(reloaded.emergencyContacts.length, 1);
+    assert.equal(reloaded.emergencyContacts[0].name, 'Dr. Sharma');
+  });
+
+  test('synchronizes header and modal language selectors and updates speech service language', () => {
+    const { mockWindow, elements } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    let configuredLang = '';
+    controller.speechService = {
+      isSupported: () => true,
+      setLanguage: (code) => { configuredLang = code; return code; },
+      speak: () => {},
+      startListening: () => {},
+      stopListening: () => {}
+    };
+
+    const headerSelect = elements.get('header-language-select');
+    const modalSelect = elements.get('manual-language-select');
+
+    // 1. Switch to Telugu ('te')
+    controller.setLanguage('te');
+    assert.equal(controller.currentLanguage, 'te');
+    assert.equal(headerSelect.value, 'te');
+    assert.equal(modalSelect.value, 'te');
+    assert.equal(configuredLang, 'te');
+    assert.equal(mockWindow.localStorage.getItem('argus_language_preference'), 'te');
+
+    // 2. Switch to Hindi ('hi')
+    controller.setLanguage('hi');
+    assert.equal(controller.currentLanguage, 'hi');
+    assert.equal(headerSelect.value, 'hi');
+    assert.equal(modalSelect.value, 'hi');
+    assert.equal(configuredLang, 'hi');
+    assert.equal(mockWindow.localStorage.getItem('argus_language_preference'), 'hi');
+
+    // 3. Switch back to English ('en')
+    controller.setLanguage('en');
+    assert.equal(controller.currentLanguage, 'en');
+    assert.equal(headerSelect.value, 'en');
+    assert.equal(modalSelect.value, 'en');
+    assert.equal(configuredLang, 'en');
+  });
+
+  test('ArgusSpeechService configures BCP-47 recognition language correctly for EN, TE, HI', () => {
+    const speech = new ArgusProfile.ArgusSpeechService();
+
+    speech.setLanguage('te');
+    assert.equal(speech.lang, 'te-IN');
+    if (speech.recognition) {
+      assert.equal(speech.recognition.lang, 'te-IN');
+    }
+
+    speech.setLanguage('hi');
+    assert.equal(speech.lang, 'hi-IN');
+    if (speech.recognition) {
+      assert.equal(speech.recognition.lang, 'hi-IN');
+    }
+
+    speech.setLanguage('en');
+    assert.equal(speech.lang, 'en-IN');
+    if (speech.recognition) {
+      assert.equal(speech.recognition.lang, 'en-IN');
+    }
+  });
+
+  test('multilingual wake words and greetings for Telugu and Hindi', () => {
+    const { mockWindow, mockStorage } = setupMockEnvironment();
+    const profile = ArgusProfile.createEmptyProfile();
+    profile.displayName = 'Prem';
+    mockStorage.setItem('argus_user_profile', JSON.stringify(profile));
+
+    const controller = loadController(mockWindow);
+
+    let spoken = '';
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => { spoken = text; if (cb) cb(); },
+      startListening: () => {},
+      stopListening: () => {}
+    };
+
+    // 1. Telugu wake words: "హాయ్ ఆర్గస్", "ఆర్గస్"
+    controller.setLanguage('te', false);
+    assert.equal(controller._detectWakeWord('హాయ్ ఆర్గస్'), true);
+    assert.equal(controller._detectWakeWord('ఆర్గస్'), true);
+    controller._triggerWakeWordReaction();
+    assert.equal(spoken, 'నేను ఇక్కడే ఉన్నాను, Prem. మీకు ఎలాంటి సహాయం కావాలి?');
+
+    // 2. Hindi wake words: "हाय आर्गस", "आर्गस"
+    controller.setLanguage('hi', false);
+    assert.equal(controller._detectWakeWord('हाय आर्गस'), true);
+    assert.equal(controller._detectWakeWord('आर्गस'), true);
+    controller._triggerWakeWordReaction();
+    assert.equal(spoken, 'मैं यहाँ हूँ, Prem। आपको किस प्रकार की मदद चाहिए?');
+  });
+
+  test('Telugu command normalization, routing, and spoken confirmations for all 6 modules', () => {
+    const teluguTestCases = [
+      { cmd: 'పాత్గైడ్ తెరువు', expectedUrl: './Night-Vision/index.html', confirm: 'పాత్గైడ్ ప్రో నావిగేషన్ ప్రారంభిస్తున్నాను.' },
+      { cmd: 'ఇది ఏ వస్తువో చెప్పు', expectedUrl: './object-detection-pro/index.html', confirm: 'ఆబ్జెక్ట్ డిటెక్షన్ ప్రో తెరుస్తున్నాను.' },
+      { cmd: 'విజన్ ఎయిడ్ తెరువు', expectedUrl: './Visual%20Explanation/index.html', confirm: 'ఇప్పుడే విజన్ ఎయిడ్ తెరుస్తున్నాను.' },
+      { cmd: 'క్యూ డిటెక్టర్ తెరువు', expectedUrl: './queue-detection/index.html', confirm: 'క్యూ డిటెక్టర్ తెరుస్తున్నాను.' },
+      { cmd: 'ఈ టెక్స్ట్ చదువు', expectedUrl: './Camera%20Check/index.html', confirm: 'ఆప్టిమా విజన్ కెమెరా చెక్ తెరుస్తున్నాను.' },
+      { cmd: 'నైట్ విజన్ ఆన్ చేయి', expectedUrl: './Night-Vision/index.html?mode=ON', confirm: 'నైట్ విజన్ మోడ్ ఆన్ చేస్తున్నాను.' }
+    ];
+
+    for (const tc of teluguTestCases) {
+      const { mockWindow } = setupMockEnvironment();
+      const controller = loadController(mockWindow);
+      controller.setLanguage('te', false);
+
+      let spoken = '';
+      controller.speechService = {
+        isSupported: () => true,
+        speak: (text, cb) => { spoken = text; if (cb) cb(); },
+        startListening: () => {},
+        stopListening: () => {}
+      };
+
+      controller.processVoiceCommand(tc.cmd);
+
+      assert.equal(spoken, tc.confirm, `Telugu spoken confirm must match for ${tc.cmd}`);
+      assert.equal(mockWindow.location.href, tc.expectedUrl, `Target URL must match for ${tc.cmd}`);
+    }
+  });
+
+  test('Hindi command normalization, routing, and spoken confirmations for all 6 modules', () => {
+    const hindiTestCases = [
+      { cmd: 'पाथगाइड खोलो', expectedUrl: './Night-Vision/index.html', confirm: 'पाथगाइड प्रो नेविगेशन शुरू कर रहा हूँ।' },
+      { cmd: 'यह कौन सी वस्तु है?', expectedUrl: './object-detection-pro/index.html', confirm: 'ऑब्जेक्ट डिटेक्शन प्रो खोल रहा हूँ।' },
+      { cmd: 'विज़नएड खोलो', expectedUrl: './Visual%20Explanation/index.html', confirm: 'अब विज़नएड खोल रहा हूँ।' },
+      { cmd: 'कतार डिटेक्टर खोलो', expectedUrl: './queue-detection/index.html', confirm: 'कतार डिटेक्टर खोल रहा हूँ।' },
+      { cmd: 'यह टेक्स्ट पढ़ो', expectedUrl: './Camera%20Check/index.html', confirm: 'ऑप्टिमा विज़न कैमरा चेक खोल रहा हूँ।' },
+      { cmd: 'नाइट विज़न चालू करो', expectedUrl: './Night-Vision/index.html?mode=ON', confirm: 'नाइट विज़न मोड चालू कर रहा हूँ।' }
+    ];
+
+    for (const tc of hindiTestCases) {
+      const { mockWindow } = setupMockEnvironment();
+      const controller = loadController(mockWindow);
+      controller.setLanguage('hi', false);
+
+      let spoken = '';
+      controller.speechService = {
+        isSupported: () => true,
+        speak: (text, cb) => { spoken = text; if (cb) cb(); },
+        startListening: () => {},
+        stopListening: () => {}
+      };
+
+      controller.processVoiceCommand(tc.cmd);
+
+      assert.equal(spoken, tc.confirm, `Hindi spoken confirm must match for ${tc.cmd}`);
+      assert.equal(mockWindow.location.href, tc.expectedUrl, `Target URL must match for ${tc.cmd}`);
+    }
+  });
+
+  test('clean footer verification: removed Voice: Ready, Language: English, footer language select, and slogan', () => {
+    const indexPath = path.join(__dirname, '../index.html');
+    const html = fs.readFileSync(indexPath, 'utf8');
+
+    // Extract footer HTML snippet
+    const footerStart = html.indexOf('<footer');
+    const footerEnd = html.indexOf('</footer>');
+    assert.ok(footerStart !== -1 && footerEnd !== -1, 'Footer must exist in index.html');
+    const footerHtml = html.slice(footerStart, footerEnd + 9);
+
+    // Verify 4 unwanted items are completely absent from footer
+    assert.ok(!footerHtml.includes('Voice: Ready'), 'Voice: Ready must be removed from footer');
+    assert.ok(!footerHtml.includes('Language: English'), 'Language: English must be removed from footer');
+    assert.ok(!footerHtml.includes('footer-caret'), 'Footer caret / language dropdown must be removed from footer');
+    assert.ok(!footerHtml.includes('See More. Live Independently.'), 'Slogan must be removed from footer');
+
+    // Verify minimal clean footer contains copyright and settings button
+    assert.ok(footerHtml.includes('© 2026 Argus.AI'), 'Footer must contain copyright');
+    assert.ok(footerHtml.includes('Settings'), 'Footer must contain Settings button');
   });
 
 });

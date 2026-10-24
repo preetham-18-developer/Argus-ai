@@ -80,7 +80,7 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    const { image, mode = 'scene', customPrompt } = body || {};
+    const { image, mode = 'scene', customPrompt, language = 'en' } = body || {};
 
     if (!image || typeof image !== 'string') {
         return res.status(400).json({
@@ -116,6 +116,13 @@ User Question: "${customPrompt.trim()}"`;
     } else {
         // General scene & object understanding
         promptText = "You are VisionAid AI, an assistive vision guide helping a blind person understand their immediate environment. Describe this scene clearly and concisely in 2 to 3 spoken sentences. Identify prominent objects, their relative positions (left, center, right, foreground), and distinguish visually similar objects (for instance, distinguish an AC remote from a smartphone by checking for physical rubber buttons and temperature display vs. a glass touchscreen). Highlight any obstacles ahead.";
+    }
+
+    // Append localized response directive when Telugu or Hindi is selected
+    if (language === 'te' || language === 'te-IN') {
+        promptText += "\n\nImportant Response Directive: Respond completely and naturally in Telugu (తెలుగు). Use clear, helpful spoken sentences.";
+    } else if (language === 'hi' || language === 'hi-IN') {
+        promptText += "\n\nImportant Response Directive: Respond completely and naturally in Hindi (हिन्दी). Use clear, helpful spoken sentences.";
     }
 
     // 5. Query NVIDIA NIM Multimodal Vision API

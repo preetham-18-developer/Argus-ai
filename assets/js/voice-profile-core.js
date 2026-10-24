@@ -23,12 +23,19 @@
   const EMERGENCY_CONTACT_KEY = 'argus_emergency_contact';
   const CURRENT_PROFILE_VERSION = 1;
 
+  const SUPPORTED_LANGUAGES = {
+    en: { code: 'en', bcp47: 'en-IN', name: 'English', label: 'EN' },
+    te: { code: 'te', bcp47: 'te-IN', name: 'తెలుగు (Telugu)', label: 'తెలుగు' },
+    hi: { code: 'hi', bcp47: 'hi-IN', name: 'हिन्दी (Hindi)', label: 'हिन्दी' }
+  };
+
   function createEmptyProfile() {
     return {
       profileVersion: CURRENT_PROFILE_VERSION,
       displayName: '',
       phoneNumber: '',
       address: '',
+      preferredLanguage: 'en',
       emergencyContacts: [],
       completed: false,
       updatedAt: new Date().toISOString()
@@ -40,20 +47,61 @@
       return PROFILE_STORAGE_KEY;
     },
 
+    getLanguagePreference(storage = (typeof window !== 'undefined' ? window.localStorage : null)) {
+      if (!storage) return 'en';
+      try {
+        const val = storage.getItem('argus_language_preference');
+        if (val === 'te' || val === 'hi' || val === 'en') return val;
+        const profile = this.loadProfile(storage);
+        if (profile && (profile.preferredLanguage === 'te' || profile.preferredLanguage === 'hi')) {
+          return profile.preferredLanguage;
+        }
+      } catch (e) {}
+      return 'en';
+    },
+
+    setLanguagePreference(langCode, storage = (typeof window !== 'undefined' ? window.localStorage : null)) {
+      const code = (langCode === 'te' || langCode === 'hi') ? langCode : 'en';
+      if (storage) {
+        try {
+          storage.setItem('argus_language_preference', code);
+        } catch (e) {}
+      }
+      const profile = this.loadProfile(storage);
+      profile.preferredLanguage = code;
+      this.saveProfile(profile, storage);
+
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        try {
+          window.dispatchEvent(new CustomEvent('argus_language_changed', { detail: { language: code } }));
+        } catch (e) {}
+      }
+      return code;
+    },
+
     loadProfile(storage = (typeof window !== 'undefined' ? window.localStorage : null)) {
       if (!storage) return createEmptyProfile();
       try {
         const raw = storage.getItem(PROFILE_STORAGE_KEY);
-        if (!raw) return createEmptyProfile();
+        if (!raw) {
+          const empty = createEmptyProfile();
+          empty.preferredLanguage = this.getLanguagePreference(storage);
+          return empty;
+        }
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') return createEmptyProfile();
 
         // Migrate older versions if needed
+        const langVal = (parsed.preferredLanguage === 'te' || parsed.preferredLanguage === 'hi' || parsed.preferredLanguage === 'en')
+          ? parsed.preferredLanguage
+          : (storage.getItem('argus_language_preference') || 'en');
+
         return {
           profileVersion: parsed.profileVersion || CURRENT_PROFILE_VERSION,
           displayName: typeof parsed.displayName === 'string' ? parsed.displayName.trim() : '',
           phoneNumber: typeof parsed.phoneNumber === 'string' ? parsed.phoneNumber.trim() : '',
           address: typeof parsed.address === 'string' ? parsed.address.trim() : '',
+          preferredLanguage: langVal,
           emergencyContacts: Array.isArray(parsed.emergencyContacts) ? parsed.emergencyContacts : [],
           completed: !!parsed.completed,
           updatedAt: parsed.updatedAt || new Date().toISOString()
@@ -67,16 +115,22 @@
     saveProfile(profile, storage = (typeof window !== 'undefined' ? window.localStorage : null)) {
       if (!storage) return false;
       try {
+        const langVal = (profile.preferredLanguage === 'te' || profile.preferredLanguage === 'hi' || profile.preferredLanguage === 'en')
+          ? profile.preferredLanguage
+          : (storage.getItem('argus_language_preference') || 'en');
+
         const toSave = {
           profileVersion: profile.profileVersion || CURRENT_PROFILE_VERSION,
           displayName: (profile.displayName || '').trim(),
           phoneNumber: (profile.phoneNumber || '').trim(),
           address: (profile.address || '').trim(),
+          preferredLanguage: langVal,
           emergencyContacts: Array.isArray(profile.emergencyContacts) ? profile.emergencyContacts : [],
           completed: !!profile.completed,
           updatedAt: new Date().toISOString()
         };
         storage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(toSave));
+        storage.setItem('argus_language_preference', langVal);
 
         // Sync Primary Emergency Contact with existing Emergency SOS module
         if (toSave.emergencyContacts && toSave.emergencyContacts.length > 0) {
@@ -95,6 +149,7 @@
         if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
           try {
             window.dispatchEvent(new CustomEvent('argus_profile_updated', { detail: toSave }));
+            window.dispatchEvent(new CustomEvent('argus_language_changed', { detail: { language: langVal } }));
           } catch (e) {}
         }
         if (typeof window !== 'undefined' && window.argusCompanion && typeof window.argusCompanion.syncUserProfile === 'function') {
@@ -1024,7 +1079,11 @@
 
   class ArgusSpeechService {
     constructor(options = {}) {
-      this.lang = options.lang || 'en-US';
+      const savedLang = (typeof window !== 'undefined' && window.localStorage)
+        ? window.localStorage.getItem('argus_language_preference')
+        : 'en';
+      const defaultBcp47 = (savedLang === 'te') ? 'te-IN' : (savedLang === 'hi') ? 'hi-IN' : 'en-IN';
+      this.lang = options.lang || defaultBcp47;
       // Calm, comfortable, natural pacing (0.95)
       this.voiceRate = options.voiceRate || 0.95;
       this.pitch = options.pitch || 1.0;
@@ -1045,6 +1104,18 @@
 
       this._initVoices();
       this._initRecognition();
+    }
+
+    setLanguage(langCode) {
+      const code = (langCode === 'te' || langCode === 'te-IN') ? 'te-IN'
+                 : (langCode === 'hi' || langCode === 'hi-IN') ? 'hi-IN'
+                 : 'en-IN';
+      this.lang = code;
+      if (this.recognition) {
+        this.recognition.lang = code;
+      }
+      this.selectedVoice = this._selectBestVoice();
+      return this.lang;
     }
 
     isSupported() {
@@ -1068,28 +1139,44 @@
       const voices = window.speechSynthesis.getVoices();
       if (!voices || voices.length === 0) return null;
 
-      // 1. Natural / Enhanced / Neural / Premium English voices
+      // 1. If active language is Telugu (te / te-IN)
+      if (this.lang.startsWith('te')) {
+        const teVoice = voices.find(v => v.lang.startsWith('te') || /telugu/i.test(v.name));
+        if (teVoice) return teVoice;
+      }
+
+      // 2. If active language is Hindi (hi / hi-IN)
+      if (this.lang.startsWith('hi')) {
+        const hiVoice = voices.find(v => 
+          v.lang.startsWith('hi') || 
+          /hindi/i.test(v.name) || 
+          /(lekha|kalpana|neel)/i.test(v.name)
+        );
+        if (hiVoice) return hiVoice;
+      }
+
+      // 3. Natural / Enhanced / Neural / Premium English voices
       const naturalPref = voices.find(v => 
         v.lang.startsWith('en') && 
         /(natural|enhanced|premium|neural)/i.test(v.name)
       );
       if (naturalPref) return naturalPref;
 
-      // 2. High-quality system English voices (Samantha, Ava, Serena, Karen, Daniel, Oliver, Alex)
+      // 4. High-quality system English voices (Samantha, Ava, Serena, Karen, Daniel, Oliver, Alex)
       const systemPref = voices.find(v => 
         v.lang.startsWith('en') && 
         /^(samantha|ava|serena|karen|daniel|oliver|kate|tessa|moira|alex)/i.test(v.name)
       );
       if (systemPref) return systemPref;
 
-      // 3. Google Chrome English voices
+      // 5. Google Chrome English voices
       const googlePref = voices.find(v => 
         v.name.includes('Google') && v.lang.startsWith('en')
       );
       if (googlePref) return googlePref;
 
-      // 4. Default or local en-US / en-GB voice
-      const localPref = voices.find(v => v.lang === 'en-US' && v.localService) ||
+      // 6. Default or local en-US / en-GB / en-IN voice
+      const localPref = voices.find(v => (v.lang === 'en-IN' || v.lang === 'en-US') && v.localService) ||
                         voices.find(v => v.lang.startsWith('en') && v.default) ||
                         voices.find(v => v.lang.startsWith('en'));
       if (localPref) return localPref;
@@ -1374,6 +1461,7 @@
     STEPS,
     VoiceProfileStateMachine,
     ArgusSpeechService,
+    SUPPORTED_LANGUAGES,
     createEmptyProfile
   };
 
