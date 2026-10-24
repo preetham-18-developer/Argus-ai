@@ -189,11 +189,14 @@
             this.syncUserProfile();
           }
         });
+        window.addEventListener('argus_profile_updated', () => {
+          this.syncUserProfile();
+        });
       }
 
-      // Periodic check if profile was saved in the same window
+      // Fast periodic check (600ms) to ensure instantaneous update across all components
       if (typeof root !== 'undefined' && typeof root.setInterval === 'function') {
-        const syncTimer = root.setInterval(() => this.syncUserProfile(), 1500);
+        const syncTimer = root.setInterval(() => this.syncUserProfile(), 600);
         if (syncTimer && typeof syncTimer.unref === 'function') {
           syncTimer.unref();
         }
@@ -228,12 +231,17 @@
       const hasName = profile && profile.displayName && profile.displayName.trim().length > 0;
       const displayName = hasName ? profile.displayName.trim() : '';
 
-      // Update greeting speech bubble
+      // Update greeting in DOM
+      const greetingNameElem = document.getElementById('hero-greeting-name');
+      if (greetingNameElem) {
+        greetingNameElem.textContent = hasName ? displayName : 'there';
+      }
+
       if (this.robotGreeting) {
         if (hasName) {
-          this.robotGreeting.innerHTML = `<span class="speech-bubble-name">Hi ${this._escapeHTML(displayName)},</span><span class="speech-bubble-sub">What kind of help do you need?</span>`;
+          this.robotGreeting.innerHTML = `Hi <span id="hero-greeting-name" class="greeting-name-highlight">${this._escapeHTML(displayName)}</span>,<br>I'm Argus.`;
         } else {
-          this.robotGreeting.innerHTML = `<span class="speech-bubble-name">Hi there,</span><span class="speech-bubble-sub">What kind of help do you need?</span>`;
+          this.robotGreeting.innerHTML = `Hi <span id="hero-greeting-name" class="greeting-name-highlight">there</span>,<br>I'm Argus.`;
         }
       }
 
@@ -379,17 +387,16 @@
     }
 
     /**
-     * Executes the conversational reaction to "Hey Argus":
-     * Argus: "I'm here, Prem. What kind of help do you need?"
-     * Then initiates command listening.
+     * Executes conversational reaction when voice interaction or "Hey Argus" is triggered:
+     * Argus: "Hi [Name], I'm Argus. What kind of help do you need?"
      */
     _triggerWakeWordReaction() {
       this._stopAllListening();
 
       const displayName = this.getUserDisplayName();
       const greeting = displayName
-        ? `I'm here, ${displayName}. What kind of help do you need?`
-        : `I'm here. What kind of help do you need?`;
+        ? `Hi ${displayName}, I'm Argus. What kind of help do you need?`
+        : `Hello, I'm Argus. What kind of help do you need?`;
 
       this.setRobotState('speaking', 'Argus is responding...');
       this.setTranscript(`✓ "Hey Argus" detected`);

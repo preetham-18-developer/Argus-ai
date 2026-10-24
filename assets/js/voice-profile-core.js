@@ -91,6 +91,18 @@
           }
         }
 
+        // Notify runtime and companion controller of profile updates immediately
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          try {
+            window.dispatchEvent(new CustomEvent('argus_profile_updated', { detail: toSave }));
+          } catch (e) {}
+        }
+        if (typeof window !== 'undefined' && window.argusCompanion && typeof window.argusCompanion.syncUserProfile === 'function') {
+          try {
+            window.argusCompanion.syncUserProfile();
+          } catch (e) {}
+        }
+
         return true;
       } catch (e) {
         console.error('[ArgusProfile] Failed to persist profile:', e);
@@ -103,6 +115,17 @@
       try {
         storage.removeItem(PROFILE_STORAGE_KEY);
         storage.removeItem(EMERGENCY_CONTACT_KEY);
+
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+          try {
+            window.dispatchEvent(new CustomEvent('argus_profile_updated', { detail: null }));
+          } catch (e) {}
+        }
+        if (typeof window !== 'undefined' && window.argusCompanion && typeof window.argusCompanion.syncUserProfile === 'function') {
+          try {
+            window.argusCompanion.syncUserProfile();
+          } catch (e) {}
+        }
       } catch (e) {
         console.warn('[ArgusProfile] Failed to clear profile storage:', e);
       }

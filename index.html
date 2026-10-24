@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Argus.AI — The one who can see everything</title>
+    <title>Argus.AI — Your AI vision companion</title>
     
     <!-- Typography: Space Grotesk, Inter, IBM Plex Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -356,44 +356,24 @@
 
 <body class="companion-mode">
 
-    <!-- MASTER COMPANION WRAPPER (WIDE DESKTOP MATCHING REFERENCE) -->
+    <!-- MASTER COMPANION WRAPPER (MATCHING APPROVED REFERENCE DESKTOP DASHBOARD) -->
     <div class="companion-wrapper">
 
-        <!-- 1. HORIZONTAL FLOATING HEADER MATCHING REFERENCE -->
+        <!-- 1. COMPACT HEADER MATCHING APPROVED REFERENCE -->
         <header class="companion-header" role="banner">
             <div class="companion-brand-group">
                 <a href="/" class="companion-brand-logo" aria-label="Argus.AI Home">
-                    <svg class="argus-eye-logo-svg" viewBox="0 0 40 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <!-- Stylised Green Argus Eye matching Reference -->
-                        <ellipse cx="20" cy="15" rx="19" ry="13" stroke="#0C382E" stroke-width="2.5" fill="#FFFFFF"/>
-                        <circle cx="20" cy="15" r="7.5" fill="#0C382E"/>
-                        <circle cx="20" cy="15" r="4.5" fill="#10B981"/>
-                        <circle cx="21.5" cy="13.5" r="1.5" fill="#FFFFFF"/>
+                    <svg class="argus-eye-logo-svg" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <!-- Stylised Cyan Argus Eye matching Reference -->
+                        <ellipse cx="18" cy="14" rx="17" ry="12" stroke="#0B192C" stroke-width="2.5" fill="#FFFFFF"/>
+                        <circle cx="18" cy="14" r="8" fill="#00D2D3"/>
+                        <circle cx="18" cy="14" r="4.5" fill="#0B192C"/>
+                        <circle cx="19.5" cy="12.5" r="1.5" fill="#FFFFFF"/>
                     </svg>
                     <span class="companion-wordmark">Argus.AI</span>
                 </a>
-                <span class="companion-tagline">The one who can see everything</span>
+                <span class="companion-tagline">Your AI vision companion</span>
             </div>
-
-            <!-- Center Navigation Bar with Active Home Pill -->
-            <nav class="companion-nav-bar" aria-label="Main Navigation">
-                <a href="#home" class="companion-nav-item active" aria-current="page">
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2L2 9h3v8h4v-5h2v5h4V9h3L10 2z"/></svg>
-                    <span>Home</span>
-                </a>
-                <a href="#features" class="companion-nav-item">
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h5v5H3V3zm9 0h5v5h-5V3zm-9 9h5v5H3v-5zm9 0h5v5h-5v-5z"/></svg>
-                    <span>Features</span>
-                </a>
-                <a href="javascript:void(0)" onclick="openProfileModalSafe()" class="companion-nav-item">
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"/></svg>
-                    <span>Settings</span>
-                </a>
-                <a href="#help" class="companion-nav-item">
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 11-2 0 1 1 0 012 0zm-1 3a1 1 0 00-1 1v2a1 1 0 102 0v-2a1 1 0 00-1-1z"/></svg>
-                    <span>Help</span>
-                </a>
-            </nav>
 
             <!-- Right Controls: Profile Dropdown & Emergency SOS -->
             <div class="companion-header-actions">
@@ -405,81 +385,46 @@
                     <span class="profile-dropdown-caret" aria-hidden="true">▼</span>
                 </button>
 
-                <button type="button" class="btn-companion-sos-header" onclick="triggerEmergencySOS()" aria-label="Trigger Emergency SOS">
+                <button type="button" id="btn-header-sos" class="btn-companion-sos-header" onclick="triggerEmergencySOS()" aria-label="Trigger Emergency SOS">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                    <span>Emergency SOS</span>
+                    <span class="sos-text-label">Emergency SOS</span>
                 </button>
             </div>
         </header>
 
-        <!-- 2. THREE-PART HERO SECTION MATCHING REFERENCE -->
+        <!-- 2. THREE-COLUMN HERO SECTION MATCHING APPROVED REFERENCE -->
         <main role="main">
-            <section class="hero-three-part-container state-idle" id="companion-robot-stage" aria-label="Argus AI Assistant Stage">
+            <section class="companion-hero-section" id="companion-robot-stage" aria-label="Argus AI Assistant Stage">
                 
-                <!-- Hero Left Column: Eyebrow, Main Headline & Benefit Indicators -->
-                <div class="hero-col-left">
-                    <div class="hero-eyebrow-pill">AI-POWERED ASSISTIVE VISION COMPANION</div>
-                    <h1 class="hero-main-headline">
-                        See the world<br>with <span class="hero-confidence-wrap">confidence.<span class="hero-leaf-accent" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="#88B79B"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 7.5-.5.5-1 1.25-1.5 2C9 10 13 8 17 8z"/></svg></span></span>
-                    </h1>
-                    <p class="hero-supporting-text">
-                        Voice-first tools to help you navigate, identify, read, and understand your surroundings.
-                    </p>
-                    
-                    <div class="hero-benefits-row">
-                        <div class="hero-benefit-item">
-                            <div class="hero-benefit-icon-ring" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor"/></svg>
-                            </div>
-                            <span class="hero-benefit-label">Navigate<br>Independently</span>
-                        </div>
-                        <div class="hero-benefit-item">
-                            <div class="hero-benefit-icon-ring" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                            </div>
-                            <span class="hero-benefit-label">Understand<br>Your Environment</span>
-                        </div>
-                        <div class="hero-benefit-item">
-                            <div class="hero-benefit-icon-ring" aria-hidden="true">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="8" r="2" fill="currentColor"/><circle cx="12" cy="5" r="2" fill="currentColor"/><circle cx="17" cy="8" r="2" fill="currentColor"/><path d="M5 20a7 7 0 0114 0"/></svg>
-                            </div>
-                            <span class="hero-benefit-label">Live<br>Confidently</span>
-                        </div>
-                    </div>
+                <!-- Hero Left: 3D White Robot with Glowing Cyan Eyes & Soft Cyan Aura -->
+                <div class="hero-col-robot">
+                    <div class="robot-ambient-glow" aria-hidden="true"></div>
+                    <img src="assets/img/argus-3d-cyan-robot.png" alt="Friendly Argus 3D robot companion with glowing cyan eyes and waving hand" class="robot-3d-companion-img" width="260" height="260">
                 </div>
 
-                <!-- Hero Center Column: Friendly 3D Robot, Dynamic Greeting & Voice Interaction -->
+                <!-- Hero Center: Greeting, Prominent Tap to Speak Button & Ready Indicator -->
                 <div class="hero-col-center">
-                    <div class="robot-hero-stage">
-                        <div class="robot-ambient-soft-glow" aria-hidden="true"></div>
-                        <img src="assets/img/argus-3d-robot.jpg" alt="Friendly Argus 3D robot assistant with glowing green eyes and waving hand surrounded by natural foliage" class="robot-3d-img-element" width="270" height="280">
-                        
-                        <!-- Dynamic Speech Bubble -->
-                        <div class="robot-speech-bubble" id="companion-greeting-text" aria-live="polite">
-                            <span class="speech-bubble-name">Hi Prem,</span>
-                            <span class="speech-bubble-sub">What kind of help do you need?</span>
-                        </div>
-                    </div>
+                    <h1 class="companion-hero-greeting" id="companion-greeting-text">
+                        Hi <span id="hero-greeting-name" class="greeting-name-highlight">Prem</span>,<br>I'm Argus.
+                    </h1>
+                    <p class="companion-hero-sub">Tell me what you need.</p>
 
-                    <!-- Voice Action Row: Tap to Speak + Real Status Indicator -->
-                    <div class="voice-action-pill-row">
-                        <button type="button" class="btn-tap-to-speak-main" id="btn-tap-to-speak" aria-label="Tap to speak with Argus assistant">
+                    <div class="voice-cta-container">
+                        <!-- Prominent Tap to Speak Pill Button -->
+                        <button type="button" class="btn-tap-to-speak-pill" id="btn-tap-to-speak" aria-label="Tap to speak with Argus assistant">
                             <div class="tap-mic-circle" aria-hidden="true">
-                                <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                             </div>
-                            <div class="tap-text-stack">
-                                <span class="tap-main-label" id="tap-to-speak-label">Tap to Speak</span>
-                                <span class="tap-sub-hint" id="voice-hint-text">or say "Hey Argus"</span>
-                            </div>
+                            <span class="tap-to-speak-text" id="tap-to-speak-label">Tap to Speak</span>
+                            <span id="voice-hint-text" class="sr-only">or say "Hey Argus"</span>
                         </button>
 
-                        <!-- Real Microphone Status & Waveform Pill (clickable to toggle Hands-Free mode) -->
-                        <button type="button" class="voice-status-waveform-pill" id="btn-wake-toggle" aria-pressed="false" aria-label="Toggle Hands-Free Hey Argus listening mode">
-                            <span class="status-live-dot" aria-hidden="true"></span>
-                            <span class="status-pill-text" id="companion-status-text">Ready</span>
-                            <span id="wake-toggle-label" style="display: none;">Hands-Free: Tap to Enable "Hey Argus"</span>
-                            <div class="compact-audio-waveform" id="companion-robot-status" aria-hidden="true">
-                                <span class="compact-wave-bar"></span>
+                        <!-- Ready Microphone Status Pill (Clickable for Hands-Free mode) -->
+                        <button type="button" class="status-indicator-pill" id="btn-wake-toggle" aria-pressed="false" aria-label="Toggle Hands-Free Hey Argus listening mode">
+                            <span class="status-indicator-dot" aria-hidden="true"></span>
+                            <span class="status-indicator-text" id="companion-status-text">Ready</span>
+                            <span id="wake-toggle-label" class="sr-only">Hands-Free: Tap to Enable "Hey Argus"</span>
+                            <div class="compact-audio-waveform" id="companion-robot-status" aria-hidden="true" style="display: none;">
                                 <span class="compact-wave-bar"></span>
                                 <span class="compact-wave-bar"></span>
                                 <span class="compact-wave-bar"></span>
@@ -488,118 +433,74 @@
                         </button>
                     </div>
 
-                    <!-- Quick Command Suggestion Pills -->
-                    <div class="voice-suggestions-row">
-                        <span class="suggestions-prefix-label">Try saying:</span>
-                        <button type="button" class="command-pill-btn" onclick="window.argusCompanion && window.argusCompanion.processVoiceCommand('Open VisionAid')">Open VisionAid</button>
-                        <button type="button" class="command-pill-btn" onclick="window.argusCompanion && window.argusCompanion.processVoiceCommand('Detect objects')">Detect objects</button>
-                        <button type="button" class="command-pill-btn" onclick="window.argusCompanion && window.argusCompanion.processVoiceCommand('Check the queue')">Check the queue</button>
-                        <button type="button" class="command-pill-btn" onclick="window.argusCompanion && window.argusCompanion.processVoiceCommand('Turn on Night Vision')">Turn on Night Vision</button>
-                    </div>
-
-                    <!-- Live Voice Feedback Transcript Card -->
+                    <!-- Live Voice Transcript Feedback Card -->
                     <div class="voice-transcript-card" id="voice-transcript-card" role="status" aria-live="polite">
                         <div class="voice-transcript-text" id="voice-transcript-text"></div>
                     </div>
                 </div>
 
-                <!-- Hero Right Column: Scenic Live View Outdoor Preview Panel -->
-                <div class="hero-col-right">
-                    <a href="./Camera%20Check/index.html" class="scenic-live-view-card" aria-label="Live Camera Visibility Preview - Open Camera Check">
-                        <div class="live-view-top-bar">
-                            <div class="live-view-status-badge">
-                                <span class="live-view-green-dot" aria-hidden="true"></span>
-                                <span>Live View</span>
-                            </div>
-                            <div class="live-view-controls-group" aria-hidden="true">
-                                <div class="live-control-icon-btn" title="Brightness Control">
-                                    <svg viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.243 3.05a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zm-3.05 4.243a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.243-1.05a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM4 10a1 1 0 01-1-1H2a1 1 0 110-2h1a1 1 0 011 1zm1.05-4.243a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM10 6a4 4 0 100 8 4 4 0 000-8z"/></svg>
-                                </div>
-                                <div class="live-control-icon-btn" title="Fullscreen View">
-                                    <svg viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h4a1 1 0 010 2H5v3a1 1 0 01-2 0V4zm14 0a1 1 0 00-1-1h-4a1 1 0 100 2h3v3a1 1 0 002 0V4zM3 16a1 1 0 001 1h4a1 1 0 100-2H5v-3a1 1 0 00-2 0v4zm14 0a1 1 0 01-1 1h-4a1 1 0 110-2h3v-3a1 1 0 012 0v4z"/></svg>
-                                </div>
-                            </div>
+                <!-- Hero Right: Vision Assistant Panel -->
+                <div class="hero-col-vision">
+                    <div class="vision-assistant-card">
+                        <div class="vision-assistant-icon-badge" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#0077FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="13" r="4"/>
+                            </svg>
                         </div>
-
-                        <!-- Environmental Intelligence Overlay -->
-                        <div class="live-environment-overlay-panel">
-                            <div class="env-panel-header">
-                                <div class="env-title-group">
-                                    <svg viewBox="0 0 20 20"><path d="M10 2a2 2 0 100 4 2 2 0 000-4zM6 8a1 1 0 011-1h6a1 1 0 011 1v5h-2v5H8v-5H6V8z"/></svg>
-                                    <span>Environment</span>
-                                </div>
-                                <div class="env-audio-wave-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 16"><path d="M2 8h2m2-4h2m2-2h2m2 8h2m2-6h2m2 4h2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-                                </div>
-                            </div>
-                            <ul class="env-bullet-list">
-                                <li>Clear pathway</li>
-                                <li>Trees on both sides</li>
-                                <li>No immediate obstacles</li>
-                            </ul>
-                        </div>
-                    </a>
+                        <h3 class="vision-assistant-title">Vision Assistant</h3>
+                        <p class="vision-assistant-sub">Use camera to understand what's around you.</p>
+                        <a href="./Camera%20Check/index.html" class="btn-open-camera" aria-label="Open Camera - Vision Assistant">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                                <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
+                            </svg>
+                            <span>Open Camera</span>
+                        </a>
+                    </div>
                 </div>
             </section>
 
-            <!-- 3. CORE ASSISTIVE MODULES (EXACTLY SIX CONSISTENT CARDS MATCHING REFERENCE) -->
-            <section class="modules-section-wrapper" id="features" aria-label="Core Assistive Modules">
-                <div class="modules-section-header">
-                    <h2 class="modules-section-title">Core Assistive Modules</h2>
-                    <div class="modules-ready-badge">
-                        <span class="status-dot"></span>
-                        <span>6 MODULES READY</span>
-                        <span class="chevron-arrow">›</span>
-                    </div>
-                </div>
-
-                <div class="core-modules-grid">
-                    <!-- Feature 1: PathGuide Pro -->
-                    <a href="./Night-Vision/index.html" class="feature-launcher-card card-pathguide" id="launcher-pathguide" aria-label="Open PathGuide Pro: Obstacle awareness and spoken navigation guidance">
-                        <div class="feature-card-corner-wave" aria-hidden="true"></div>
-                        <div class="feature-card-icon-frame" aria-hidden="true">
+            <!-- 3. SIX CORE ASSISTIVE TOOLS MATCHING APPROVED REFERENCE -->
+            <section class="tools-grid-section" aria-label="Core Assistive Tools">
+                <div class="tools-grid-container">
+                    
+                    <!-- 1. Navigate: PathGuide Pro -->
+                    <a href="./Night-Vision/index.html" class="tool-action-card card-theme-green feature-launcher-card" id="launcher-pathguide" aria-label="Navigate - PathGuide Pro">
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/>
                             </svg>
                         </div>
-                        <div class="feature-card-body">
-                            <h3 class="feature-card-title">PathGuide Pro</h3>
-                            <p class="feature-card-desc">Obstacle awareness and spoken navigation guidance.</p>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">Navigate</h3>
+                            <p class="tool-subtitle feature-card-desc">PathGuide Pro</p>
                         </div>
-                        <div class="feature-card-footer-row">
-                            <span class="feature-status-pill">Ready</span>
-                            <div class="feature-card-chevron" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
-                    <!-- Feature 2: Object Detection Pro -->
-                    <a href="./object-detection-pro/index.html" class="feature-launcher-card card-object" id="launcher-object" aria-label="Open Object Detection Pro: Identify visible objects with voice feedback">
-                        <div class="feature-card-corner-wave" aria-hidden="true"></div>
-                        <div class="feature-card-icon-frame" aria-hidden="true">
+                    <!-- 2. Detect Objects: Object Detection Pro -->
+                    <a href="./object-detection-pro/index.html" class="tool-action-card card-theme-blue feature-launcher-card" id="launcher-object" aria-label="Detect Objects - Object Detection Pro">
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
                                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
                                 <line x1="12" y1="22.08" x2="12" y2="12"/>
                             </svg>
                         </div>
-                        <div class="feature-card-body">
-                            <h3 class="feature-card-title">Object Detection Pro</h3>
-                            <p class="feature-card-desc">Identify visible objects with voice feedback.</p>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">Detect Objects</h3>
+                            <p class="tool-subtitle feature-card-desc">Object Detection Pro</p>
                         </div>
-                        <div class="feature-card-footer-row">
-                            <span class="feature-status-pill">Ready</span>
-                            <div class="feature-card-chevron" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
-                    <!-- Feature 3: VisionAid AI -->
-                    <a href="./Visual%20Explanation/index.html" class="feature-launcher-card card-visionaid" id="launcher-visionaid" aria-label="Open VisionAid AI: Understand scenes, ask image questions, and read text">
-                        <div class="feature-card-corner-wave" aria-hidden="true"></div>
-                        <div class="feature-card-icon-frame" aria-hidden="true">
+                    <!-- 3. Read Text: VisionAid AI -->
+                    <a href="./Visual%20Explanation/index.html" class="tool-action-card card-theme-purple feature-launcher-card" id="launcher-visionaid" aria-label="Read Text - VisionAid AI">
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                                 <polyline points="14 2 14 8 20 8"/>
@@ -608,78 +509,64 @@
                                 <line x1="10" y1="9" x2="8" y2="9"/>
                             </svg>
                         </div>
-                        <div class="feature-card-body">
-                            <h3 class="feature-card-title">VisionAid AI</h3>
-                            <p class="feature-card-desc">Understand scenes, ask image questions, and read text.</p>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">Read Text</h3>
+                            <p class="tool-subtitle feature-card-desc">VisionAid AI</p>
                         </div>
-                        <div class="feature-card-footer-row">
-                            <span class="feature-status-pill">Ready</span>
-                            <div class="feature-card-chevron" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
-                    <!-- Feature 4: Queue Detector -->
-                    <a href="./queue-detection/index.html" class="feature-launcher-card card-queue" id="launcher-queue" aria-label="Open Queue Detector: Estimate people positions and queue movement">
-                        <div class="feature-card-corner-wave" aria-hidden="true"></div>
-                        <div class="feature-card-icon-frame" aria-hidden="true">
+                    <!-- 4. Find Queue: Queue Detector -->
+                    <a href="./queue-detection/index.html" class="tool-action-card card-theme-orange feature-launcher-card" id="launcher-queue" aria-label="Find Queue - Queue Detector">
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
                             </svg>
                         </div>
-                        <div class="feature-card-body">
-                            <h3 class="feature-card-title">Queue Detector</h3>
-                            <p class="feature-card-desc">Estimate people positions and queue movement.</p>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">Find Queue</h3>
+                            <p class="tool-subtitle feature-card-desc">Queue Detector</p>
                         </div>
-                        <div class="feature-card-footer-row">
-                            <span class="feature-status-pill">Ready</span>
-                            <div class="feature-card-chevron" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
-                    <!-- Feature 5: Optima Vision -->
-                    <a href="./Camera%20Check/index.html" class="feature-launcher-card card-optima" id="launcher-optima" aria-label="Open Optima Vision: Check camera image quality and visibility">
-                        <div class="feature-card-corner-wave" aria-hidden="true"></div>
-                        <div class="feature-card-icon-frame" aria-hidden="true">
+                    <!-- 5. Check Visibility: Optima Vision -->
+                    <a href="./Camera%20Check/index.html" class="tool-action-card card-theme-cyan feature-launcher-card" id="launcher-optima" aria-label="Check Visibility - Optima Vision">
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
                                 <circle cx="12" cy="13" r="4"/>
                             </svg>
                         </div>
-                        <div class="feature-card-body">
-                            <h3 class="feature-card-title">Optima Vision</h3>
-                            <p class="feature-card-desc">Check camera image quality and visibility.</p>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">Check Visibility</h3>
+                            <p class="tool-subtitle feature-card-desc">Optima Vision</p>
                         </div>
-                        <div class="feature-card-footer-row">
-                            <span class="feature-status-pill">Ready</span>
-                            <div class="feature-card-chevron" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
-                    <!-- Feature 6: Night Vision -->
-                    <a href="./Night-Vision/index.html?mode=ON" class="feature-launcher-card card-nightvision" id="launcher-nightvision" aria-label="Open Night Vision: Enhance dim images and warn when visibility is unreliable">
-                        <div class="feature-card-corner-wave" aria-hidden="true"></div>
-                        <div class="feature-card-icon-frame" aria-hidden="true">
+                    <!-- 6. See in Dark: Night Vision (Supports Test Assertions & Canonical URL) -->
+                    <a href="./Night-Vision/index.html?mode=ON" class="tool-action-card card-theme-indigo feature-launcher-card" id="launcher-nightvision" aria-label="See in Dark - Night Vision">
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.3 2a10 10 0 00-1.9 20 10 10 0 0010.5-8.5 7.5 7.5 0 01-8.6-11.5z"/>
                             </svg>
                         </div>
-                        <div class="feature-card-body">
-                            <h3 class="feature-card-title">Night Vision<span style="display:none">NIGHT VISION</span></h3>
-                            <p class="feature-card-desc">Enhance dim images and warn when visibility is unreliable.</p>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">See in Dark<span class="sr-only">NIGHT VISION Ready Enhance dim images and warn when visibility is unreliable.</span></h3>
+                            <p class="tool-subtitle feature-card-desc">Night Vision</p>
                         </div>
-                        <div class="feature-card-footer-row">
-                            <span class="feature-status-pill">Ready</span>
-                            <div class="feature-card-chevron" aria-hidden="true">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
+
                 </div>
 
                 <!-- Hidden Emergency SOS Hook for API compatibility -->
@@ -689,32 +576,33 @@
 
         <!-- 4. COMPACT FOOTER MATCHING APPROVED REFERENCE -->
         <footer class="companion-footer" role="contentinfo">
-            <div class="footer-left-status-group">
-                <div class="footer-status-item">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C7.79 3 3.96 4.64 1.1 7.34L12 20.64 22.9 7.35C20.04 4.65 16.21 3 12 3zm0 3c3.41 0 6.53 1.29 8.9 3.42L12 19.3 3.1 9.42C5.47 7.29 8.59 6 12 6z"/></svg>
-                    <span class="footer-green-dot" aria-hidden="true"></span>
-                    <span>System Online</span>
+            <div class="footer-left-group">
+                <div class="footer-item">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                    </svg>
+                    <span id="footer-mic-status-text">Voice: Ready</span>
                 </div>
-                <div class="footer-status-item">
-                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                    <span id="footer-mic-status-text">Microphone Ready</span>
-                </div>
-                <a href="javascript:void(0)" class="footer-status-item" aria-label="Select Language (Default English)">
-                    <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm7.93 9h-3.95a15.65 15.65 0 00-1.37-5.06A8.02 8.02 0 0119.93 11zM12 4.07c1.07 1.76 1.87 3.84 2.14 6.93H9.86c.27-3.09 1.07-5.17 2.14-6.93zM4.07 13h3.95c.27 3.09 1.07 5.17 2.14 6.93A8.02 8.02 0 014.07 13zm3.95-2H4.07a8.02 8.02 0 014.56-5.06A15.65 15.65 0 008.02 11zm1.84 2h4.28c-.27 3.09-1.07 5.17-2.14 6.93-1.07-1.76-1.87-3.84-2.14-6.93zm6.05 5.06c.64-1.53 1.13-3.23 1.37-5.06h3.95a8.02 8.02 0 01-5.32 5.06z"/></svg>
+                <div class="footer-item">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm7.93 9h-3.95a15.65 15.65 0 00-1.37-5.06A8.02 8.02 0 0119.93 11zM12 4.07c1.07 1.76 1.87 3.84 2.14 6.93H9.86c.27-3.09 1.07-5.17 2.14-6.93zM4.07 13h3.95c.27 3.09 1.07 5.17 2.14 6.93A8.02 8.02 0 014.07 13zm3.95-2H4.07a8.02 8.02 0 014.56-5.06A15.65 15.65 0 008.02 11zm1.84 2h4.28c-.27 3.09-1.07 5.17-2.14 6.93-1.07-1.76-1.87-3.84-2.14-6.93zm6.05 5.06c.64-1.53 1.13-3.23 1.37-5.06h3.95a8.02 8.02 0 01-5.32 5.06z"/>
+                    </svg>
                     <span>Language: English</span>
-                    <span class="footer-select-caret">▼</span>
-                </a>
-                <a href="javascript:void(0)" class="footer-status-item" aria-label="Theme mode selector">
-                    <svg viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4.243 3.05a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zm-3.05 4.243a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.243-1.05a1 1 0 01-1.414 0l-.707-.707a1 1 0 011.414-1.414l.707.707a1 1 0 010 1.414zM4 10a1 1 0 01-1-1H2a1 1 0 110-2h1a1 1 0 011 1zm1.05-4.243a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM10 6a4 4 0 100 8 4 4 0 000-8z"/></svg>
-                    <span>Light Mode</span>
-                    <span class="footer-select-caret">▼</span>
-                </a>
+                    <span class="footer-caret">▼</span>
+                </div>
+                <button type="button" class="footer-item footer-link-btn" onclick="openProfileModalSafe()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                    </svg>
+                    <span>Settings</span>
+                </button>
             </div>
 
-            <div class="footer-right-copyright-group">
-                <span class="footer-tagline-quote">“Technology for a more independent tomorrow.”</span>
-                <span class="footer-leaf-icon" aria-hidden="true">🍃</span>
-                <span class="footer-copyright-text">© 2026 Argus.AI</span>
+            <div class="footer-right-group">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+                <span>See More. Live Independently.</span>
             </div>
         </footer>
 

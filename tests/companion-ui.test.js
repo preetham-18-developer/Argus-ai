@@ -187,7 +187,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
 
     controller._triggerWakeWordReaction();
 
-    assert.equal(spokenGreeting, "I'm here, Prem. What kind of help do you need?");
+    assert.equal(spokenGreeting, "Hi Prem, I'm Argus. What kind of help do you need?");
     assert.equal(controller.currentState, 'speaking');
   });
 
@@ -208,8 +208,40 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
 
     controller._triggerWakeWordReaction();
 
-    assert.equal(spokenGreeting, "I'm here. What kind of help do you need?");
+    assert.equal(spokenGreeting, "Hello, I'm Argus. What kind of help do you need?");
     assert.equal(controller.currentState, 'speaking');
+  });
+
+  test('changing profile name updates visual greeting and spoken greeting to new name dynamically', () => {
+    const { mockWindow, mockStorage, elements } = setupMockEnvironment();
+    const profile = ArgusProfile.createEmptyProfile();
+    profile.displayName = 'Prem';
+    mockStorage.setItem('argus_user_profile', JSON.stringify(profile));
+
+    const controller = loadController(mockWindow);
+    assert.equal(controller.getUserDisplayName(), 'Prem');
+
+    // Change name in storage to Rahul
+    profile.displayName = 'Rahul';
+    mockStorage.setItem('argus_user_profile', JSON.stringify(profile));
+    controller.syncUserProfile();
+
+    // Verify visual update
+    const greetingEl = elements.get('companion-greeting-text');
+    assert.ok(greetingEl.innerHTML.includes('Rahul'), 'Greeting must display updated name Rahul');
+    assert.equal(elements.get('header-profile-name').textContent, 'Rahul');
+
+    // Verify spoken greeting update
+    let spoken = '';
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, cb) => { spoken = text; if (cb) cb(); },
+      startListening: () => {},
+      stopListening: () => {},
+      cancel: () => {}
+    };
+    controller._triggerWakeWordReaction();
+    assert.equal(spoken, "Hi Rahul, I'm Argus. What kind of help do you need?");
   });
 
   test('hands-free toggle button toggles wakeWordEnabled and updates accessible attributes', () => {
@@ -659,7 +691,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
 
     // 3. Argus responds with personalized greeting using saved name Prem
     assert.equal(spokenTexts.length >= 1, true);
-    assert.equal(spokenTexts[0], "I'm here, Prem. What kind of help do you need?");
+    assert.equal(spokenTexts[0], "Hi Prem, I'm Argus. What kind of help do you need?");
 
     // 4. Wait for acoustic guard delay (200ms) to transition to command listening
     await new Promise(r => setTimeout(r, 250));
