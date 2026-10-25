@@ -137,6 +137,12 @@ python launcher.py
 ```
 > 💡 *The launcher will automatically start the backend services and launch the **Argus.AI Integrated Dashboard** in your default web browser at `http://localhost:5000`!*
 
+### Camera visibility gate
+
+All camera-powered modules run a shared browser-side visibility check before their camera stream is handed to the feature. This covers direct feature URLs as well as dashboard and voice-command navigation. The check samples three 160 × 120 frames and evaluates median Rec. 709 luminance (accepted range 25–240 on a 0–255 scale), dark-pixel ratio (luminance below 20, maximum 85%), clipped-pixel ratio (luminance above 250, maximum 40%), and Laplacian variance (minimum 35). Camera startup is limited to 15 seconds and frame acquisition to 10 seconds. The defaults are in `assets/js/visibility-gate.js` and can be tuned there after testing on representative devices and scenes.
+
+The gate uses the feature's existing camera request and returns that same stream after it passes; rejected streams are stopped, concurrent requests are coalesced, and the active stream is released on page exit. Permission, camera, frame, and quality failures keep the camera-powered feature from starting and offer retry/cancel actions. It is a heuristic, not a safety guarantee: unusual sensors, motion, low-texture scenes, glare, and device-specific exposure can cause false positives or negatives. Emergency SOS and profile flows do not require a camera and remain available without this check.
+
 ---
 
 ## 📁 Repository Structure

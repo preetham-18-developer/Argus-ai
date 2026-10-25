@@ -15,7 +15,7 @@ import io
 import base64
 import traceback
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -216,6 +216,12 @@ def _is_valid_api_key(key):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/assets/js/visibility-gate.js")
+def visibility_gate_script():
+    assets_dir = os.path.abspath(os.path.join(basedir, "../../assets/js"))
+    return send_from_directory(assets_dir, "visibility-gate.js")
 
 
 @app.route("/api/analyze", methods=["POST"])
