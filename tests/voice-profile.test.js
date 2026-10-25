@@ -78,6 +78,25 @@ describe('1. ProfileStorage & Schema', () => {
     assert.equal(profile.completed, false);
   });
 
+  test('loads an empty profile without recursively querying language preference', () => {
+    let reads = 0;
+    const emptyStorage = {
+      getItem() {
+        reads += 1;
+        return null;
+      },
+      setItem() {},
+      removeItem() {}
+    };
+
+    const profile = ProfileStorage.loadProfile(emptyStorage);
+
+    assert.equal(profile.preferredLanguage, 'en');
+    assert.equal(reads, 2);
+    assert.equal(ProfileStorage.getLanguagePreference(emptyStorage), 'en');
+    assert.equal(reads, 5);
+  });
+
   test('saves and loads profile accurately', () => {
     const p = {
       profileVersion: 1,
@@ -738,5 +757,3 @@ describe('5. FIX 2: Voice Quality, Selection, and Natural Pacing', () => {
     global.window = origWindow;
   });
 });
-
-

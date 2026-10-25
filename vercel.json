@@ -48,6 +48,14 @@
     {
       "source": "/object-detection-pro/",
       "destination": "/object-detection-pro/index.html"
+    },
+    {
+      "source": "/staircase-detection",
+      "destination": "/staircase-detection/index.html"
+    },
+    {
+      "source": "/staircase-detection/",
+      "destination": "/staircase-detection/index.html"
     }
   ]
 }

@@ -607,7 +607,7 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
     assert.equal(controller.currentState, 'idle');
   });
 
-  test('all six core module target routes exist on filesystem and match Vercel config', () => {
+  test('feature target routes exist on filesystem and match Vercel config', () => {
     const rootDir = path.join(__dirname, '..');
     const vercelConfig = JSON.parse(fs.readFileSync(path.join(rootDir, 'vercel.json'), 'utf8'));
 
@@ -616,7 +616,8 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
       { path: 'object-detection-pro/index.html', vercel: '/object-detection' },
       { path: 'Visual Explanation/index.html', vercel: '/visual-explanation' },
       { path: 'queue-detection/index.html', vercel: '/queue-detection' },
-      { path: 'Camera Check/index.html', vercel: '/camera-check' }
+      { path: 'Camera Check/index.html', vercel: '/camera-check' },
+      { path: 'staircase-detection/index.html', vercel: '/staircase-detection' }
     ];
 
     for (const item of expectedRoutes) {

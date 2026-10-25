@@ -42,6 +42,11 @@
     };
   }
 
+  function getStoredLanguagePreference(storage) {
+    const language = storage && storage.getItem('argus_language_preference');
+    return language === 'te' || language === 'hi' || language === 'en' ? language : 'en';
+  }
+
   const ProfileStorage = {
     getStorageKey() {
       return PROFILE_STORAGE_KEY;
@@ -85,7 +90,7 @@
         const raw = storage.getItem(PROFILE_STORAGE_KEY);
         if (!raw) {
           const empty = createEmptyProfile();
-          empty.preferredLanguage = this.getLanguagePreference(storage);
+          empty.preferredLanguage = getStoredLanguagePreference(storage);
           return empty;
         }
         const parsed = JSON.parse(raw);
@@ -94,7 +99,7 @@
         // Migrate older versions if needed
         const langVal = (parsed.preferredLanguage === 'te' || parsed.preferredLanguage === 'hi' || parsed.preferredLanguage === 'en')
           ? parsed.preferredLanguage
-          : (storage.getItem('argus_language_preference') || 'en');
+          : getStoredLanguagePreference(storage);
 
         return {
           profileVersion: parsed.profileVersion || CURRENT_PROFILE_VERSION,
@@ -117,7 +122,7 @@
       try {
         const langVal = (profile.preferredLanguage === 'te' || profile.preferredLanguage === 'hi' || profile.preferredLanguage === 'en')
           ? profile.preferredLanguage
-          : (storage.getItem('argus_language_preference') || 'en');
+          : getStoredLanguagePreference(storage);
 
         const toSave = {
           profileVersion: profile.profileVersion || CURRENT_PROFILE_VERSION,
