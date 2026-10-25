@@ -1,3 +1,4 @@
+from pathlib import Path
 from types import SimpleNamespace
 
 import cv2
@@ -6,6 +7,19 @@ import pytest
 
 import launcher
 from staircase_inference import StaircaseInferenceService
+
+
+def test_ultralytics_is_excluded_from_vercel_python_requirements():
+    repository_root = Path(__file__).resolve().parents[1]
+    vercel_requirements = (
+        repository_root / "Visual Explanation" / "Visual Explanation" / "requirements.txt"
+    ).read_text(encoding="utf-8").lower()
+    local_staircase_requirements = (
+        repository_root / "requirements-staircase.txt"
+    ).read_text(encoding="utf-8").lower()
+
+    assert "ultralytics" not in vercel_requirements
+    assert "ultralytics" in local_staircase_requirements
 
 
 class FakeBox:

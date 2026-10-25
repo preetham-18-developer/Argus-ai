@@ -43,8 +43,15 @@ repository root:
 
 ```powershell
 python -m pip install -r "Visual Explanation\Visual Explanation\requirements.txt"
+python -m pip install -r requirements-staircase.txt
 python launcher.py
 ```
+
+The Ultralytics/PyTorch stack is kept separate from the Python requirements
+used by Vercel so the serverless function stays within Vercel's bundle-size
+limit. Install `requirements-staircase.txt` only for local Flask inference;
+Vercel hosts the static frontend and lightweight JavaScript APIs, not the
+staircase model.
 
 The same hub serves `POST /api/staircase/detect` and the static Staircase
 Detection page at `/staircase-detection/`.

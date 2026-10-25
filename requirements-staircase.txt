@@ -1,0 +1,2 @@
+# Local-only YOLO inference dependency. Keep out of Vercel's Python function bundle.
+ultralytics>=8.3.0,<9.0.0
