@@ -34,6 +34,7 @@
 
       this.commandTimeoutTimer = null;
       this.wakeRestartTimer = null;
+      this.staircaseCommandHandler = null;
 
       // DOM Elements
       this.robotStage = null;
@@ -715,9 +716,16 @@
       if (!rawText || typeof rawText !== 'string') return '';
       let str = rawText.toLowerCase().trim();
       str = str.replace(/[’`]/g, "'");
+      if (typeof str.normalize === 'function') {
+        str = str.normalize('NFD')
+          .replace(/([A-Za-z\u00C0-\u024F])[\u0300-\u036f]+/g, '$1')
+          .normalize('NFC');
+      }
       // Clean punctuation while preserving Indic Unicode letters and vowels
       str = str.replace(/[.,\/#!$%\^&\*;:{}=\-_~()?"`।॥]/g, ' ');
       str = str.replace(/\s+/g, ' ').trim();
+      str = str.replace(/\bstairs?\s+(case|caze|cases)\b/g, 'staircase');
+      str = str.replace(/\bstaircases\b/g, 'staircase');
 
       // Iteratively strip conversational prefixes across English, Telugu, and Hindi
       let prev;
@@ -742,6 +750,11 @@
       const matched = this._resolveCommand(normalized, rawTranscript);
 
       if (matched) {
+        if (matched.id === 'staircase-command' && this.staircaseCommandHandler) {
+          this._runStaircaseCommand(matched.action);
+          return;
+        }
+
         this.setRobotState('speaking', `Launching ${matched.name}...`);
         this.setTranscript(`✓ Command recognized: "${matched.name}"`);
 
@@ -813,6 +826,24 @@
       const norm = (normalizedText || '').toLowerCase().trim();
       const raw = (rawTranscript || '').toLowerCase().trim();
       const combined = `${norm} ${raw}`.trim();
+
+      const staircaseAction = this._resolveStaircaseIntent(combined);
+      if (staircaseAction) {
+        if (this.staircaseCommandHandler) {
+          return {
+            id: 'staircase-command',
+            action: staircaseAction,
+            name: 'Staircase Mode'
+          };
+        }
+        return {
+          id: 'staircase-command',
+          action: staircaseAction,
+          name: 'Staircase Mode',
+          url: `./staircase-detection/index.html?staircaseCommand=${encodeURIComponent(staircaseAction)}`,
+          spokenConfirm: 'Opening Staircase Detection.'
+        };
+      }
 
       // Tier 1: Canonical Regex Match across registered routes
       for (const route of this.routes) {
@@ -925,6 +956,75 @@
       }
 
       return null;
+    }
+
+    _resolveStaircaseIntent(text) {
+      if (root.ARGUS_FEATURES && root.ARGUS_FEATURES.staircaseMode === false) return null;
+      if (!text) return null;
+      if (/\b(detect\s+stairs?|staircase\s+detection|check\s+stairs?)\b/i.test(text)) {
+        return 'on';
+      }
+      if (!/\bstaircase\b/i.test(text)) return null;
+      if (/\b(staircase\s+status|status\s+staircase|is\s+staircase(\s+mode)?\s+(on|off)|how\s+is\s+staircase)\b/i.test(text)) {
+        return 'status';
+      }
+      if (/\b(deactivate|disable|stop|turn\s+off)\s+(the\s+)?staircase(\s+mode)?\b|\bstaircase\s+off\b/i.test(text)) {
+        return 'off';
+      }
+      if (/\b(activate|enable|start|turn\s+on)\s+(the\s+)?staircase(\s+mode)?\b|\bstart\s+staircase\s+mode\b|\bstaircase\s+on\b/i.test(text)) {
+        return 'on';
+      }
+      return null;
+    }
+
+    registerStaircaseCommandHandler(handler) {
+      if (typeof handler !== 'function') {
+        throw new TypeError('A staircase command handler function is required.');
+      }
+      this.staircaseCommandHandler = handler;
+      return () => {
+        if (this.staircaseCommandHandler === handler) {
+          this.staircaseCommandHandler = null;
+        }
+      };
+    }
+
+    startStaircaseVoiceCommand() {
+      if (!this.speechService || !this.speechService.isSupported()) {
+        this.setTranscript('Voice commands are unavailable in this browser. Use the Staircase Mode button.');
+        return false;
+      }
+
+      this.isListeningCommand = true;
+      this.setRobotState('listening', "I'm listening...");
+      this.speechService.startListening((transcript, isFinal) => {
+        if (!isFinal) return;
+        this.isListeningCommand = false;
+        this.processVoiceCommand(transcript);
+      });
+      return true;
+    }
+
+    _runStaircaseCommand(action) {
+      this.setRobotState('processing', 'Processing Staircase Mode command...');
+      Promise.resolve().then(() => this.staircaseCommandHandler(action)).then((response) => {
+        const message = typeof response === 'string'
+          ? response
+          : 'Staircase detection is unavailable. Do not rely on it.';
+        this.setRobotState('speaking', message);
+        this.setTranscript(message);
+        if (this.speechService) {
+          this.speechService.speak(message, () => this._returnToStandby());
+        } else {
+          this._returnToStandby();
+        }
+      }).catch((error) => {
+        console.error('[ArgusCompanion] Staircase command failed:', error);
+        const message = 'Staircase detection is unavailable. Do not rely on it.';
+        this.setRobotState('error', 'Staircase Mode unavailable');
+        this.setTranscript(message);
+        if (this.speechService) this.speechService.speak(message);
+      });
     }
 
     _executeRoute(route) {

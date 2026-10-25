@@ -3,12 +3,24 @@ import subprocess
 import webbrowser
 import time
 import sys
-from flask import Flask, render_template, jsonify, send_from_directory
+import logging
+from flask import Flask, render_template, jsonify, request, send_from_directory
+from staircase_inference import (
+    InferenceUnavailable,
+    InvalidImage,
+    MAX_IMAGE_BYTES,
+    StaircaseInferenceService,
+)
 
 # ─── CONFIGURATION ───────────────────────────────────────────────────────────
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, template_folder='.')
+app.config['MAX_CONTENT_LENGTH'] = MAX_IMAGE_BYTES
+staircase_service = StaircaseInferenceService()
+staircase_enabled = os.getenv('STAIRCASE_FEATURE_ENABLED', 'true').strip().lower() not in {
+    '0', 'false', 'no', 'off'
+}
 
 # Track running processes to avoid multiple instances
 processes = {}
@@ -84,6 +96,53 @@ def launch_feature(feature):
 
     return jsonify({"success": False, "error": "Unknown feature module"})
 
+
+@app.route('/api/staircase/detect', methods=['POST'])
+def detect_staircase():
+    if not staircase_enabled:
+        return jsonify({
+            "status": "error",
+            "detections": [],
+            "latency_ms": 0,
+            "message": "Staircase detection is disabled.",
+        }), 404
+    try:
+        result = staircase_service.predict_jpeg(request.get_data(cache=False))
+        return jsonify(result)
+    except InvalidImage as error:
+        return jsonify({
+            "status": "error",
+            "detections": [],
+            "latency_ms": 0,
+            "message": str(error),
+        }), 400
+    except InferenceUnavailable:
+        return jsonify({
+            "status": "error",
+            "detections": [],
+            "latency_ms": 0,
+            "message": "Staircase detection unavailable.",
+        }), 503
+    except Exception:
+        logging.getLogger(__name__).exception("[Staircase] Unexpected API failure.")
+        return jsonify({
+            "status": "error",
+            "detections": [],
+            "latency_ms": 0,
+            "message": "Staircase detection unavailable.",
+        }), 500
+
+
+@app.errorhandler(413)
+def staircase_request_too_large(_error):
+    return jsonify({
+        "status": "error",
+        "detections": [],
+        "latency_ms": 0,
+        "message": "Image exceeds the 2 MiB limit.",
+    }), 413
+
+
 @app.route('/<path:filename>')
 def serve_static(filename):
     """Serve static files from the root directory."""
@@ -106,6 +165,8 @@ def find_free_port(preferred_ports=(5000, 5005, 5050, 8000, 8080)):
         return s.getsockname()[1]
 
 def main():
+    if staircase_enabled:
+        staircase_service.load()
     port = find_free_port([int(os.environ['PORT'])] if 'PORT' in os.environ else [5000, 5005, 5050, 8000, 8080])
     url = f"http://localhost:{port}"
     print("="*60)

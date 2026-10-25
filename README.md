@@ -55,6 +55,8 @@ Traditional assistive tools (like white canes or simple screen readers) lack **s
 | **Visual Explanation AI** | 🧠 | Google Gemini 2.0 / NVIDIA NIM | Multimodal AI scene breakdown, document text-to-speech reading, & medicine identification. |
 | **Camera Diagnostic Hub**| 📷 | WebRTC / Hardware API | Lens switching, resolution verifier, field-of-view angle test, and permission diagnostic. |
 
+**Staircase Detection** is a standalone dashboard feature that requires a locally supplied YOLOv8n `best.pt` checkpoint (`downstairs` / `upstairs`), separate from PathGuide. Model weights are excluded from this repository; the feature returns unavailable until the checkpoint is supplied locally. Detection starts off and is not safety-validated; it must not be relied on for stair detection. Checkpoint training metrics and real-world performance have not been measured in this integration. The Ultralytics dependency is AGPL-3.0; see [the setup, limitations, and test guide](docs/staircase-mode.md).
+
 ---
 
 ## ⚡ 10x Performance Optimization Engine

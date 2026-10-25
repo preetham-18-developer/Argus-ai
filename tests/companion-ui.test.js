@@ -304,6 +304,62 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
     }
   });
 
+  test('resolves staircase aliases through the existing command parser', () => {
+    const { mockWindow } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+
+    const commands = [
+      ['activate staircase', 'on'],
+      ['start staircase mode', 'on'],
+      ['Detect stairs', 'on'],
+      ['Staircase detection', 'on'],
+      ['Check stairs', 'on'],
+      ['stair case on', 'on'],
+      ['activaté stairs case', 'on'],
+      ['deactivate staircase', 'off'],
+      ['stop staircase', 'off'],
+      ['staircase status', 'status']
+    ];
+
+    commands.forEach(([phrase, action]) => {
+      const normalized = controller._normalizeCommand(phrase);
+      const match = controller._resolveCommand(normalized, phrase);
+      assert.equal(match.id, 'staircase-command');
+      assert.equal(match.action, action);
+      assert.match(match.url, /staircase-detection\/index\.html\?staircaseCommand=/);
+    });
+  });
+
+  test('dispatches staircase commands to the registered in-page handler', async () => {
+    const { mockWindow } = setupMockEnvironment();
+    const controller = loadController(mockWindow);
+    let handledAction = '';
+    let spokenMessage = '';
+    controller.registerStaircaseCommandHandler(async (action) => {
+      handledAction = action;
+      return 'Staircase mode is on. The detector is unavailable.';
+    });
+    controller.speechService = {
+      isSupported: () => true,
+      speak: (text, callback) => {
+        spokenMessage = text;
+        if (callback) callback();
+      }
+    };
+
+    controller.processVoiceCommand('activate staircase');
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(handledAction, 'on');
+    assert.equal(spokenMessage, 'Staircase mode is on. The detector is unavailable.');
+  });
+
+  test('feature flag disables staircase commands in the shared parser', () => {
+    const { mockWindow } = setupMockEnvironment();
+    mockWindow.ARGUS_FEATURES = { staircaseMode: false };
+    const controller = loadController(mockWindow);
+    assert.equal(controller._resolveCommand('activate staircase'), null);
+  });
+
   test('resolves Object Detection Pro with expanded phrases and spoken confirmation', () => {
     const { mockWindow } = setupMockEnvironment();
     const controller = loadController(mockWindow);
@@ -608,6 +664,18 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
     assert.ok(cardSnippet.includes('Enhance dim images and warn when visibility is unreliable.'), 'Must contain description');
     assert.ok(cardSnippet.includes('feature-card-chevron'), 'Must contain feature-card-chevron');
     assert.ok(cardSnippet.includes('href="./Night-Vision/index.html?mode=ON"'), 'Must have correct canonical URL');
+  });
+
+  test('Staircase Detection has its own dashboard card and is not embedded in PathGuide', () => {
+    const root = path.resolve(__dirname, '..');
+    const dashboard = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    const pathGuideHtml = fs.readFileSync(path.join(root, 'Night-Vision', 'index.html'), 'utf8');
+    const pathGuideScript = fs.readFileSync(path.join(root, 'Night-Vision', 'script.js'), 'utf8');
+
+    assert.match(dashboard, /href="\.\/staircase-detection\/index\.html"[^>]*id="launcher-staircase"/);
+    assert.ok(fs.existsSync(path.join(root, 'staircase-detection', 'index.html')));
+    assert.doesNotMatch(pathGuideHtml, /staircase-toggle|staircase-voice|staircase-health/i);
+    assert.doesNotMatch(pathGuideScript, /staircase|Staircase/);
   });
 
   test('Hands-Free mode lifecycle: toggle, starting state, active listening, error on permission denial', () => {
@@ -1082,5 +1150,3 @@ describe('6. Voice-Command Integration & Companion Controller (Phase D)', () => 
   });
 
 });
-
-

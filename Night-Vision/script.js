@@ -192,7 +192,6 @@ async function startCamera() {
 
         isCameraRunning = true;
         isStreaming = true;
-
         startBtn.style.display = 'none';
         stopBtn.style.display = 'block';
         statusMsg.innerText = "PathGuide Active — Scanning Obstacles";
@@ -214,7 +213,6 @@ async function startCamera() {
 function stopCamera() {
     isStreaming = false;
     isCameraRunning = false;
-
     if (stream) {
         stream.getTracks().forEach(t => t.stop());
         stream = null;
@@ -284,21 +282,30 @@ async function processLiveFrame() {
         }
     }
 
-    // 3. Run neural obstacle detection every 3 frames (~18-20 FPS)
+    // Sample obstacle detections without blocking the display loop.
     frameSkip++;
-    if (model && video.readyState >= 2 && !isDetecting && frameSkip % 3 === 0) {
-        runObstacleInference();
+    if (video.readyState >= 2 && !isDetecting && frameSkip % 3 === 0) {
+        runInferenceCycle();
     }
 
     // 4. Draw HUD overlays, obstacle tags, and guidance vectors
     drawPathGuideHUD(w, h);
-
     animationFrameId = requestAnimationFrame(processLiveFrame);
 }
 
 // 5. Neural Obstacle Detection & Spatial Classification
-async function runObstacleInference() {
+async function runInferenceCycle() {
     isDetecting = true;
+    try {
+        if (model) await runObstacleInference();
+    } catch (err) {
+        console.error('[PathGuide] Inference cycle failed:', err);
+    } finally {
+        isDetecting = false;
+    }
+}
+
+async function runObstacleInference() {
     try {
         const rawDetections = await model.detect(canvas);
         const w = canvas.width || 640;
@@ -348,11 +355,8 @@ async function runObstacleInference() {
 
         // Evaluate conservative guidance decision
         evaluateGuidanceDecision(w, h);
-
     } catch (err) {
-        console.warn("Obstacle inference frame skip:", err);
-    } finally {
-        isDetecting = false;
+        console.warn('Obstacle inference frame skip:', err);
     }
 }
 

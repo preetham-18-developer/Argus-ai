@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101827">
+    <title>Staircase Detection | Argus AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main class="staircase-app">
+        <header class="page-header">
+            <a class="back-link" href="../index.html">Back to Argus Hub</a>
+            <div>
+                <p class="eyebrow">ASSISTIVE VISION FEATURE</p>
+                <h1>Staircase Detection</h1>
+                <p class="intro">Uses the camera view to look for the model's trained upstairs and downstairs classes.</p>
+            </div>
+        </header>
+
+        <section class="camera-panel" aria-label="Staircase camera view">
+            <div class="camera-stage" id="camera-stage">
+                <video id="camera-video" playsinline muted hidden></video>
+                <canvas id="camera-canvas" aria-label="Live camera view with staircase detection boxes"></canvas>
+                <div class="camera-placeholder" id="camera-placeholder">
+                    Start detection to show the camera view.
+                </div>
+            </div>
+            <p id="detection-status" class="status-message" role="status" aria-live="polite">
+                Staircase Detection is off.
+            </p>
+            <p id="detector-health" class="health-message" role="status" aria-live="polite">
+                Detector has not been checked.
+            </p>
+        </section>
+
+        <section class="controls" aria-label="Staircase detection controls">
+            <button type="button" id="start-detection" class="primary-button">Start Detection</button>
+            <button type="button" id="stop-detection" class="stop-button" disabled>Stop Detection</button>
+            <button type="button" id="voice-command" class="voice-button">Use Voice Command</button>
+            <label class="voice-option">
+                <input type="checkbox" id="voice-guidance" checked>
+                Speak detection updates
+            </label>
+        </section>
+
+        <p class="safety-note">
+            Prototype only. Detection scores are not calibrated probabilities. A missing detection does not mean the
+            view is clear. Do not use predicted direction alone to decide where or how to walk.
+        </p>
+    </main>
+
+    <script src="../assets/js/feature-flags.js"></script>
+    <script src="../assets/js/voice-profile-core.js"></script>
+    <script src="../assets/js/companion-controller.js"></script>
+    <script src="camera-session.js"></script>
+    <script src="decision.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
