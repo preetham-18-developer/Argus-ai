@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Argus.AI — Your AI vision companion</title>
     
-    <!-- Typography: Space Grotesk, Inter, IBM Plex Mono, Noto Sans Telugu, Noto Sans Devanagari -->
+    <!-- Typography: Bricolage Grotesque, DM Sans, DM Mono, plus language fallbacks -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Telugu:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Argus Voice Profile Onboarding Styles -->
     <link rel="stylesheet" href="assets/css/profile-setup.css">
@@ -359,20 +359,24 @@
     <!-- MASTER COMPANION WRAPPER (MATCHING APPROVED REFERENCE DESKTOP DASHBOARD) -->
     <div class="companion-wrapper">
 
-        <!-- 1. COMPACT HEADER MATCHING APPROVED REFERENCE -->
+        <div class="home-status-strip" aria-label="Argus status">
+            <span><i aria-hidden="true"></i>Camera ready</span>
+            <span><i aria-hidden="true"></i>Voice on</span>
+            <span><i aria-hidden="true"></i>Online</span>
+        </div>
+
         <header class="companion-header" role="banner">
             <div class="companion-brand-group">
                 <a href="/" class="companion-brand-logo" aria-label="Argus.AI Home">
-                    <svg class="argus-eye-logo-svg" viewBox="0 0 36 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <svg class="argus-eye-logo-svg" viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <!-- Stylised Cyan Argus Eye matching Reference -->
-                        <ellipse cx="18" cy="14" rx="17" ry="12" stroke="#0B192C" stroke-width="2.5" fill="#FFFFFF"/>
-                        <circle cx="18" cy="14" r="8" fill="#00D2D3"/>
-                        <circle cx="18" cy="14" r="4.5" fill="#0B192C"/>
-                        <circle cx="19.5" cy="12.5" r="1.5" fill="#FFFFFF"/>
+                        <circle cx="23" cy="23" r="23" fill="#0E1726"/>
+                        <path d="M7 23s5.6-9 16-9 16 9 16 9-5.6 9-16 9S7 23 7 23Z" stroke="#F3EEE6" stroke-width="2"/>
+                        <circle cx="23" cy="23" r="6.5" fill="#FF6A1A"/>
+                        <circle cx="25" cy="20.5" r="1.7" fill="#F3EEE6"/>
                     </svg>
-                    <span class="companion-wordmark">Argus.AI</span>
+                    <span class="companion-wordmark">Argus<span>.ai</span></span>
                 </a>
-                <span class="companion-tagline">Your AI vision companion</span>
             </div>
 
             <!-- Right Controls: Language Selector, Profile Dropdown & Emergency SOS -->
@@ -380,7 +384,6 @@
                 <div class="header-language-container">
                     <label for="header-language-select" class="sr-only">Select Assistant Language</label>
                     <div class="header-language-wrapper">
-                        <span class="language-globe-icon" aria-hidden="true">🌐</span>
                         <select id="header-language-select" class="header-language-select" aria-label="Select Assistant Language">
                             <option value="en">EN — English</option>
                             <option value="te">తెలుగు — Telugu</option>
@@ -390,82 +393,91 @@
                 </div>
 
                 <button type="button" id="btn-header-profile" class="btn-companion-profile" onclick="openProfileModalSafe()" aria-label="Open User Profile Settings">
-                    <span class="profile-avatar-circle" aria-hidden="true">
-                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
-                    </span>
-                    <span id="header-profile-name">Prem</span>
-                    <span class="profile-dropdown-caret" aria-hidden="true">▼</span>
+                    <span class="profile-avatar-circle" aria-hidden="true">P</span>
+                    <span>Profile</span>
+                    <span id="header-profile-name" class="sr-only">Prem</span>
+                    <span class="profile-dropdown-caret" aria-hidden="true">⌄</span>
                 </button>
 
                 <button type="button" id="btn-header-sos" class="btn-companion-sos-header" onclick="triggerEmergencySOS()" aria-label="Trigger Emergency SOS">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    <span class="sos-icon-circle" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>
+                    </span>
                     <span class="sos-text-label">Emergency SOS</span>
                 </button>
             </div>
         </header>
 
-        <!-- 2. THREE-COLUMN HERO SECTION MATCHING APPROVED REFERENCE -->
         <main role="main">
             <section class="companion-hero-section" id="companion-robot-stage" aria-label="Argus AI Assistant Stage">
-                
-                <!-- Hero Left: Interactive 3D White Robot with Glowing Cyan Eyes & Soft Cyan Aura -->
-                <div class="hero-col-robot" id="interactive-3d-robot-container">
-                    <div class="robot-ambient-glow" aria-hidden="true"></div>
-                    <img src="assets/img/argus-3d-cyan-robot.png" alt="Friendly Argus 3D robot companion with glowing cyan eyes and waving hand" class="robot-3d-companion-img" width="260" height="260">
-                </div>
-
-                <!-- Hero Center: Greeting, Prominent Tap to Speak Button & Ready Indicator -->
                 <div class="hero-col-center">
-                    <h1 class="companion-hero-greeting" id="companion-greeting-text">
-                        Hi <span id="hero-greeting-name" class="greeting-name-highlight">Prem</span>,<br>I'm Argus.
-                    </h1>
-                    <p class="companion-hero-sub">Tell me what you need.</p>
+                    <div class="hero-eyebrow"><span aria-hidden="true"></span>Your AI vision companion</div>
+                    <h1 class="companion-hero-greeting" id="companion-greeting-text">Hi <span id="hero-greeting-name" class="greeting-name-highlight">there</span>,<br>I'm Argus.</h1>
+                    <svg class="hero-squiggle" viewBox="0 0 250 18" aria-hidden="true">
+                        <path d="M4 10c18-11 27 10 44 0s27 10 44 0 27 10 44 0 27 10 44 0 27 10 66-1" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+                    </svg>
+                    <p class="companion-hero-sub">Tell me what you need — I’ll be your eyes.</p>
 
-                    <div class="voice-cta-container">
-                        <!-- Prominent Tap to Speak Pill Button -->
-                        <button type="button" class="btn-tap-to-speak-pill" id="btn-tap-to-speak" aria-label="Tap to speak with Argus assistant">
-                            <div class="tap-mic-circle" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                            </div>
-                            <span class="tap-to-speak-text" id="tap-to-speak-label">Tap to Speak</span>
+                    <div class="voice-row">
+                        <button type="button" class="btn-tap-to-speak-pill" id="btn-tap-to-speak" aria-labelledby="tap-to-speak-label" aria-describedby="voice-hint-text">
+                            <span class="mic-ring mic-ring-outer" aria-hidden="true"></span>
+                            <span class="mic-ring mic-ring-inner" aria-hidden="true"></span>
+                            <span class="tap-mic-circle" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="13" rx="3"/><path d="M5 11v1a7 7 0 0014 0v-1M12 19v3m-4 0h8"/></svg>
+                            </span>
                             <span id="voice-hint-text" class="sr-only">or say "Hey Argus"</span>
                         </button>
-
-                        <!-- Ready Microphone Status Pill (Clickable for Hands-Free mode) -->
-                        <button type="button" class="status-indicator-pill" id="btn-wake-toggle" aria-pressed="false" aria-label="Toggle Hands-Free Hey Argus listening mode">
-                            <span class="status-indicator-dot" aria-hidden="true"></span>
-                            <span class="status-indicator-text" id="companion-status-text">Ready</span>
-                            <span id="wake-toggle-label" class="sr-only">Hands-Free: Tap to Enable "Hey Argus"</span>
-                            <div class="compact-audio-waveform" id="companion-robot-status" aria-hidden="true" style="display: none;">
-                                <span class="compact-wave-bar"></span>
-                                <span class="compact-wave-bar"></span>
-                                <span class="compact-wave-bar"></span>
+                        <div class="voice-copy">
+                            <span class="tap-to-speak-text" id="tap-to-speak-label">Tap to speak</span>
+                            <button type="button" class="status-indicator-pill" id="btn-wake-toggle" aria-pressed="false" aria-label="Toggle Hands-Free Hey Argus listening mode">
+                                <span class="status-indicator-dot" aria-hidden="true"></span>
+                                <span class="status-indicator-text" id="companion-status-text">Ready</span>
+                                <span id="wake-toggle-label" class="sr-only">Hands-Free: Tap to Enable "Hey Argus"</span>
+                            </button>
+                            <div class="compact-audio-waveform" id="companion-robot-status" aria-hidden="true">
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
+                                <span class="compact-wave-bar"></span><span class="compact-wave-bar"></span>
                                 <span class="compact-wave-bar"></span>
                             </div>
-                        </button>
+                        </div>
                     </div>
 
-                    <!-- Live Voice Transcript Feedback Card -->
                     <div class="voice-transcript-card" id="voice-transcript-card" role="status" aria-live="polite">
                         <div class="voice-transcript-text" id="voice-transcript-text"></div>
                     </div>
+                    <div class="try-saying"><span class="mono-label">Try saying</span><span>“Detect stairs”</span><b>/</b><span>“Read this label”</span><b>/</b><span>“Find the queue”</span></div>
                 </div>
 
-                <!-- Hero Right: Vision Assistant Panel -->
                 <div class="hero-col-vision">
                     <div class="vision-assistant-card">
-                        <div class="vision-assistant-icon-badge" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#0077FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                <circle cx="12" cy="13" r="4"/>
-                            </svg>
-                        </div>
-                        <h3 class="vision-assistant-title">Vision Assistant</h3>
-                        <p class="vision-assistant-sub">Use camera to understand what's around you.</p>
+                        <div class="vision-card-header"><span>Vision Assistant</span><span class="vision-standby"><i aria-hidden="true"></i>Standby</span></div>
+                        <svg class="camera-preview" viewBox="0 0 400 250" role="img" aria-label="Decorative illustration of a camera view with stairs marked for careful attention">
+                            <defs>
+                                <linearGradient id="camera-bg" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0" stop-color="#1B2A44"/><stop offset="1" stop-color="#0A111D"/>
+                                </linearGradient>
+                            </defs>
+                            <rect width="400" height="250" rx="18" fill="url(#camera-bg)"/>
+                            <g stroke="#9FB0C8" stroke-opacity=".17" stroke-width="1">
+                                <path d="M200 70 10 250M200 70 80 250M200 70 140 250M200 70 260 250M200 70 320 250M200 70 390 250"/>
+                                <path d="M146 110h108M124 130h152M96 155h208M62 185h276M20 222h360"/>
+                            </g>
+                            <g fill="none" stroke="#F3EEE6" stroke-width="4" stroke-linecap="round">
+                                <path d="M24 36V20h16M360 20h16v16M24 214v16h16M360 230h16v-16"/>
+                            </g>
+                            <path d="M151 112h98v18h-20v20h-20v20h-20v20h-20v20" fill="none" stroke="#FF6A1A" stroke-width="3" stroke-dasharray="7 6"/>
+                            <path d="M148 92h238v25H148z" fill="#FF6A1A"/>
+                            <text x="158" y="109" fill="#0E1726" font-family="DM Mono, monospace" font-size="12" font-weight="500" letter-spacing=".3">DOWNSTAIRS · CHECK CAREFULLY</text>
+                        </svg>
+                        <p class="vision-assistant-sub">Point your camera and I’ll describe what’s around you.</p>
                         <a href="./Camera%20Check/index.html" class="btn-open-camera" aria-label="Open Camera - Vision Assistant">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-                                <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
-                            </svg>
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5a2 2 0 012 2v10a2 2 0 01-2 2h-5M10 17l5-5-5-5M15 12H3"/></svg>
                             <span>Open Camera</span>
                         </a>
                     </div>
@@ -474,10 +486,15 @@
 
             <!-- Core Assistive Tools -->
             <section class="tools-grid-section" aria-label="Core Assistive Tools">
+                <div class="tools-section-heading">
+                    <h2>Everything Argus can do</h2>
+                    <span>7 tools · all voice-controlled</span>
+                </div>
                 <div class="tools-grid-container">
                     
                     <!-- 1. Navigate: PathGuide Pro -->
-                    <a href="./Night-Vision/index.html" class="tool-action-card card-theme-green feature-launcher-card" id="launcher-pathguide" aria-label="Navigate - PathGuide Pro">
+                    <a href="./Night-Vision/index.html" class="tool-action-card feature-launcher-card feature-card card-navigate" id="launcher-pathguide" aria-label="Navigate - PathGuide Pro">
+                        <span class="feature-card-meta"><span>01</span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
                         <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/>
@@ -487,13 +504,51 @@
                             <h3 class="tool-title feature-card-title">Navigate</h3>
                             <p class="tool-subtitle feature-card-desc">PathGuide Pro</p>
                         </div>
+                        <svg class="card-illustration route-illustration" viewBox="0 0 250 100" aria-hidden="true">
+                            <defs><pattern id="route-dots" width="12" height="12" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="#0E1726" opacity=".17"/></pattern></defs>
+                            <rect width="250" height="100" fill="url(#route-dots)"/>
+                            <path d="M20 76c42 5 53-43 96-34s50 39 78 12 23-20 35-27" fill="none" stroke="#0E1726" stroke-width="2" stroke-dasharray="5 6"/>
+                            <circle cx="20" cy="76" r="6" fill="#0E1726"/>
+                            <circle cx="229" cy="27" r="13" fill="#FF6A1A" opacity=".2"/>
+                            <path d="M229 18a8 8 0 00-8 8c0 6 8 14 8 14s8-8 8-14a8 8 0 00-8-8Z" fill="#FF6A1A"/>
+                            <circle cx="229" cy="26" r="2.5" fill="#FCFAF6"/>
+                        </svg>
+                        <span class="say-hint"><span>SAY</span>“Navigate”</span>
                         <div class="feature-card-chevron tool-chevron" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
-                    <!-- 2. Detect Objects: Object Detection Pro -->
-                    <a href="./object-detection-pro/index.html" class="tool-action-card card-theme-blue feature-launcher-card" id="launcher-object" aria-label="Detect Objects - Object Detection Pro">
+                    <!-- Staircase Detection: standalone camera feature -->
+                    <a href="./staircase-detection/index.html" class="tool-action-card feature-launcher-card feature-card card-staircase" id="launcher-staircase" data-feature-flag="staircaseMode" aria-label="Staircase Detection">
+                        <span class="feature-card-meta"><span>02 <em>· NEW</em></span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
+                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 20h5v-5h5v-5h5V5h3"/>
+                                <path d="M3 20V4"/>
+                            </svg>
+                        </div>
+                        <div class="feature-card-body tool-card-body">
+                            <h3 class="tool-title feature-card-title">Staircase Detection</h3>
+                            <p class="tool-subtitle feature-card-desc">Independent stair detector</p>
+                            <p class="staircase-copy">Tells you whether stairs go up or down — or says plainly when it isn’t sure.</p>
+                            <div class="staircase-states"><span>↑ Upstairs</span><span>↓ Downstairs</span><span>? Unsure</span></div>
+                        </div>
+                        <svg class="card-illustration stairs-illustration" viewBox="0 0 260 150" aria-hidden="true">
+                            <rect x="70" y="18" width="174" height="116" fill="none" stroke="#F3EEE6" stroke-opacity=".5" stroke-dasharray="5 5"/>
+                            <text x="80" y="34" fill="#F3EEE6" font-family="DM Mono, monospace" font-size="12" letter-spacing="1">STAIRS</text>
+                            <path d="M24 130h42v-25h38V80h36V55h42V30h48" fill="none" stroke="#FF6A1A" stroke-width="4" stroke-linejoin="round"/>
+                            <path d="M24 138h46v-25h38V88h36V63h42V38h48" fill="none" stroke="#FFA066" stroke-opacity=".35" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="say-hint"><span>SAY</span>“Detect stairs”</span>
+                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </a>
+
+                    <!-- 3. Detect Objects: Object Detection Pro -->
+                    <a href="./object-detection-pro/index.html" class="tool-action-card feature-launcher-card feature-card card-objects" id="launcher-object" aria-label="Detect Objects - Object Detection Pro">
+                        <span class="feature-card-meta"><span>03</span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
                         <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
@@ -505,30 +560,15 @@
                             <h3 class="tool-title feature-card-title">Detect Objects</h3>
                             <p class="tool-subtitle feature-card-desc">Object Detection Pro</p>
                         </div>
-                        <div class="feature-card-chevron tool-chevron" aria-hidden="true">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                        </div>
-                    </a>
-
-                    <!-- Staircase Detection: standalone camera feature -->
-                    <a href="./staircase-detection/index.html" class="tool-action-card card-theme-orange feature-launcher-card" id="launcher-staircase" data-feature-flag="staircaseMode" aria-label="Staircase Detection">
-                        <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 20h5v-5h5v-5h5V5h3"/>
-                                <path d="M3 20V4"/>
-                            </svg>
-                        </div>
-                        <div class="feature-card-body tool-card-body">
-                            <h3 class="tool-title feature-card-title">Staircase Detection</h3>
-                            <p class="tool-subtitle feature-card-desc">Independent stair detector</p>
-                        </div>
+                        <span class="say-hint"><span>SAY</span>“Detect objects”</span>
                         <div class="feature-card-chevron tool-chevron" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
                     <!-- Read Text: VisionAid AI -->
-                    <a href="./Visual%20Explanation/index.html" class="tool-action-card card-theme-purple feature-launcher-card" id="launcher-visionaid" aria-label="Read Text - VisionAid AI">
+                    <a href="./Visual%20Explanation/index.html" class="tool-action-card feature-launcher-card feature-card card-read" id="launcher-visionaid" aria-label="Read Text - VisionAid AI">
+                        <span class="feature-card-meta"><span>04</span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
                         <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -542,13 +582,15 @@
                             <h3 class="tool-title feature-card-title">Read Text</h3>
                             <p class="tool-subtitle feature-card-desc">VisionAid AI</p>
                         </div>
+                        <span class="say-hint"><span>SAY</span>“Read text”</span>
                         <div class="feature-card-chevron tool-chevron" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
                     <!-- 4. Find Queue: Queue Detector -->
-                    <a href="./queue-detection/index.html" class="tool-action-card card-theme-orange feature-launcher-card" id="launcher-queue" aria-label="Find Queue - Queue Detector">
+                    <a href="./queue-detection/index.html" class="tool-action-card feature-launcher-card feature-card card-queue" id="launcher-queue" aria-label="Find Queue - Queue Detector">
+                        <span class="feature-card-meta"><span>05</span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
                         <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
@@ -558,13 +600,15 @@
                             <h3 class="tool-title feature-card-title">Find Queue</h3>
                             <p class="tool-subtitle feature-card-desc">Queue Detector</p>
                         </div>
+                        <span class="say-hint"><span>SAY</span>“Find queue”</span>
                         <div class="feature-card-chevron tool-chevron" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
                     <!-- 5. Check Visibility: Optima Vision -->
-                    <a href="./Camera%20Check/index.html" class="tool-action-card card-theme-cyan feature-launcher-card" id="launcher-optima" aria-label="Check Visibility - Optima Vision">
+                    <a href="./Camera%20Check/index.html" class="tool-action-card feature-launcher-card feature-card card-visibility" id="launcher-optima" aria-label="Check Visibility - Optima Vision">
+                        <span class="feature-card-meta"><span>06</span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
                         <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
@@ -572,25 +616,36 @@
                             </svg>
                         </div>
                         <div class="feature-card-body tool-card-body">
-                            <h3 class="tool-title feature-card-title">Check Visibility</h3>
+                            <h3 class="tool-title feature-card-title">Check Visibility <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></h3>
                             <p class="tool-subtitle feature-card-desc">Optima Vision</p>
                         </div>
+                        <div class="visibility-scale" aria-hidden="true"><span>LOW</span><i></i><i></i><i></i><i></i><i></i><b></b><span>CLEAR</span></div>
+                        <span class="say-hint"><span>SAY</span>“Check visibility”</span>
                         <div class="feature-card-chevron tool-chevron" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
                     </a>
 
                     <!-- 6. See in Dark: Night Vision (Supports Test Assertions & Canonical URL) -->
-                    <a href="./Night-Vision/index.html?mode=ON" class="tool-action-card card-theme-indigo feature-launcher-card" id="launcher-nightvision" aria-label="See in Dark - Night Vision">
+                    <a href="./Night-Vision/index.html?mode=ON" class="tool-action-card feature-launcher-card feature-card card-nightvision" id="launcher-nightvision" aria-label="See in Dark - Night Vision">
+                        <span class="feature-card-meta"><span>07</span><span class="feature-card-arrow" aria-hidden="true">↗</span></span>
                         <div class="feature-card-icon-frame tool-icon-frame" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.3 2a10 10 0 00-1.9 20 10 10 0 0010.5-8.5 7.5 7.5 0 01-8.6-11.5z"/>
                             </svg>
                         </div>
                         <div class="feature-card-body tool-card-body">
-                            <h3 class="tool-title feature-card-title">See in Dark<span class="sr-only">NIGHT VISION Ready Enhance dim images and warn when visibility is unreliable.</span></h3>
+                            <h3 class="tool-title feature-card-title">See in Dark <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.8 15.2A9 9 0 018.8 4.1 9 9 0 1019.8 15.2Z"/></svg><span class="sr-only">NIGHT VISION</span></h3>
                             <p class="tool-subtitle feature-card-desc">Night Vision</p>
+                            <span class="sr-only">Ready. Enhance dim images and warn when visibility is unreliable.</span>
                         </div>
+                        <svg class="card-illustration stars-illustration" viewBox="0 0 200 80" aria-hidden="true">
+                            <circle cx="16" cy="20" r="2" fill="#F3EEE6" opacity=".65"/><circle cx="52" cy="56" r="1.5" fill="#F3EEE6" opacity=".4"/>
+                            <circle cx="92" cy="18" r="2.5" fill="#F3EEE6" opacity=".75"/><circle cx="138" cy="44" r="1.7" fill="#F3EEE6" opacity=".5"/>
+                            <circle cx="178" cy="14" r="1.5" fill="#F3EEE6" opacity=".6"/><circle cx="164" cy="68" r="2" fill="#F3EEE6" opacity=".35"/>
+                            <path d="m120 15 2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5Z" fill="#FFA066"/>
+                        </svg>
+                        <span class="say-hint"><span>SAY</span>“See in dark”</span>
                         <div class="feature-card-chevron tool-chevron" aria-hidden="true">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
                         </div>
@@ -599,20 +654,17 @@
                 </div>
 
                 <!-- Hidden Emergency SOS Hook for API compatibility -->
-                <div id="launcher-emergency-sos" onclick="triggerEmergencySOS()" role="button" tabindex="0" style="display: none;" aria-hidden="true"></div>
+                <button type="button" id="launcher-emergency-sos" onclick="triggerEmergencySOS()" hidden aria-hidden="true"></button>
             </section>
         </main>
 
-        <!-- 4. CLEAN MINIMAL FOOTER -->
         <footer class="companion-footer" role="contentinfo">
             <div class="footer-left-group">
-                <span class="footer-copyright">© 2026 Argus.AI</span>
-                <button type="button" class="footer-item footer-link-btn" onclick="openProfileModalSafe()" aria-label="Open Profile Settings">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-                        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
-                    </svg>
-                    <span>Settings</span>
-                </button>
+                <span class="footer-copyright">© 2026 Argus.AI · Your AI vision companion</span>
+            </div>
+            <div class="footer-right-group">
+                <span>Voice-first · High contrast · Screen-reader ready</span>
+                <button type="button" class="footer-item footer-link-btn" onclick="openProfileModalSafe()" aria-label="Open Profile Settings">Settings</button>
             </div>
         </footer>
 
